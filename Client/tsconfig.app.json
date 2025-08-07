@@ -7,6 +7,12 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
+    // ✅ ADD THESE TWO LINES:
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["*"]
+    },
+
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
