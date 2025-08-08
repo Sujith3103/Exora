@@ -12,3 +12,10 @@ dist/
 .prisma/
 coverage/
 *.log
+
+# Ignore Docker files
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.override.yml
+
