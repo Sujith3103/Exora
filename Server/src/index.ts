@@ -16,8 +16,6 @@ const app = express();
 const upload = multer();
 app.use(upload.none());
 
-const router = express.Router();
-const prisma = new PrismaClient();
 
 app.use(cors());
 app.use(express.json());
@@ -31,7 +29,7 @@ const supabaseUrl = "https://aywktugruubporzskjdt.supabase.co";
 const supabaseKey = process.env.SUPABASE_kEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// -------------------- SOCKET.IO --------------------
+// -------------------- SOCKET.IO -------------------
 const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {

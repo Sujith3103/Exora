@@ -13,6 +13,8 @@ const AuthPage = () => {
     const location = useLocation();
 
     const [activeTab, setActiveTab] = useState("")
+    const [isError, setIsError] = useState(false)
+    const [isLoading , setIsLoading] = useState(false)
     const [formValue, setFormValue] = useState({
         name: "",
         email: "",
@@ -24,24 +26,42 @@ const AuthPage = () => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setIsError(false)
+        setIsLoading(true)
+        try {
+            const form = e.currentTarget;
+            const formData = new FormData(form);
+            const jsonData = Object.fromEntries(formData.entries());
+            let response;
 
-        const form = e.currentTarget;
-        const formData = new FormData(form);
-        const jsonData = Object.fromEntries(formData.entries());
-        const updatedjson = { ...jsonData, rememberMe: formValue.checkbox }
-        console.log(updatedjson)
-        let response;
-        if (activeTab === "signup") {
-            response = await server.post('/auth/register', jsonData)
-        }
-        else if (activeTab === 'login') {
-            response = await server.post('/auth/login', jsonData)
+            if (activeTab === "signup") {
+                response = await server.post('/auth/register', jsonData);
+            } else if (activeTab === 'login') {
+                const updatedjson = { ...jsonData, rememberMe: formValue.checkbox };
+                console.log("updated : ", updatedjson);
+                response = await server.post('/auth/login', updatedjson);
+            }
 
+            console.log("Response:", response);
+
+            if (response && response.data) {
+                if (!response.data.success) {
+                    console.log("Operation failed:", response.data.message);
+                } else {
+                    console.log("Operation successful:", response.data);
+                }
+            }
+        } catch (error: any) {
+            setIsError(true)
+            if (error.response) {
+                console.error("Server error:", error.response.data);
+            } else {
+                console.error("Request failed:", error.message || error);
+            }
         }
-        
-        console.log(response)
-        console.log("respone after signup : ", response)
+        setIsLoading(false)
     };
+
 
     useEffect(() => {
         const pathSegments = window.location.pathname.split('/');
@@ -50,7 +70,7 @@ const AuthPage = () => {
     }, [location])
 
     return (
-        <div className="w-full h-full px-5 py-15  md:py-20 lg:px-50 flex bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-700 ">
+        <div style={{cursor: isLoading? 'progress' : 'default'}} className="w-full h-full px-5 py-15  md:py-20 lg:px-50 flex bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-700 ">
             <div className="lg:bg-white w-full h-full xl:p-10 flex justify-center xl:justify-end ">
 
                 {/* image */}
@@ -92,9 +112,13 @@ const AuthPage = () => {
                                         <Link to={'/auth/forgot-password'} className="text-blue-400 text-sm font-semibold">Forgot Password</Link>
                                     </div>
                                 }
-                                <Button className="bg-blue-400 h-15 hover:bg-blue-300 mtext-d" type="submit">{activeTab === "login" ? "Login" : "Sign Up"}</Button>
+                                <Button className="bg-blue-400 h-15 hover:bg-blue-300 mtext-d" disabled={isLoading} type="submit">{activeTab === "login" ? "Login" : "Sign Up"}</Button>
                             </div>
                         </form>
+                        {
+                            isError &&
+                            <p className="text-red-500 animate-shake mt-3"><i>Invalid UserName or Password</i></p>
+                        }
                     </Tabs>
 
 

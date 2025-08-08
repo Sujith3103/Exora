@@ -111,6 +111,19 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+@layer utilities {
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+}
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -120,3 +133,4 @@
     @apply bg-background text-foreground;
   }
 }
+
