@@ -5,16 +5,21 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs } from "@/components/ui/tabs"
+import { type AppDispatch } from "@/store"
+import { loginFailure, loginSuccess } from "@/store/authSlice"
 import { useEffect, useState } from "react"
-import { Link, useLocation } from "react-router-dom"
+import { useDispatch } from "react-redux"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 
 const AuthPage = () => {
 
     const location = useLocation();
+    const dispatch = useDispatch<AppDispatch>()
+    const navigate = useNavigate()
 
     const [activeTab, setActiveTab] = useState("")
     const [isError, setIsError] = useState(false)
-    const [isLoading , setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
     const [formValue, setFormValue] = useState({
         name: "",
         email: "",
@@ -38,17 +43,16 @@ const AuthPage = () => {
                 response = await server.post('/auth/register', jsonData);
             } else if (activeTab === 'login') {
                 const updatedjson = { ...jsonData, rememberMe: formValue.checkbox };
-                console.log("updated : ", updatedjson);
                 response = await server.post('/auth/login', updatedjson);
-            }
-
-            console.log("Response:", response);
-
-            if (response && response.data) {
-                if (!response.data.success) {
-                    console.log("Operation failed:", response.data.message);
+                if (response.data.success) {
+                    dispatch(loginSuccess({
+                        user: response.data.userData,
+                        token: response.data.token
+                    }))
+                    sessionStorage.setItem('token', response.data.token)
+                    navigate('/')
                 } else {
-                    console.log("Operation successful:", response.data);
+                    dispatch(loginFailure(response.data.message || "Login failed"));
                 }
             }
         } catch (error: any) {
@@ -70,7 +74,7 @@ const AuthPage = () => {
     }, [location])
 
     return (
-        <div style={{cursor: isLoading? 'progress' : 'default'}} className="w-full h-full px-5 py-15  md:py-20 lg:px-50 flex bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-700 ">
+        <div style={{ cursor: isLoading ? 'progress' : 'default' }} className="w-full h-full px-5 py-15  md:py-20 lg:px-50 flex bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-700 ">
             <div className="lg:bg-white w-full h-full xl:p-10 flex justify-center xl:justify-end ">
 
                 {/* image */}

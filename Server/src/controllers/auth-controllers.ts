@@ -1,6 +1,7 @@
 import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
+import jwt from 'jsonwebtoken'
 
 const prisma = new PrismaClient();
 
@@ -69,7 +70,7 @@ export const loginUser = async (req: any, res: any) => {
         const { email, password, rememberMe } = req.body
 
         const user = await prisma.user.findUnique({
-            where:  {email} ,
+            where: { email },
         })
 
         if (!user) {
@@ -97,10 +98,21 @@ export const loginUser = async (req: any, res: any) => {
             role: user.role,
         }
 
+        if (!process.env.JWT_SECRET) {
+            throw new Error("JWT_SECRET is not defined");
+        }
+
+        const accessToken = jwt.sign(
+            { ...userData },
+            process.env.JWT_SECRET,
+            { expiresIn: '30min' }
+        );
+
         res.status(200).json({
             success: true,
             message: "Login Successful",
-            userData
+            userData,
+            token : accessToken
         })
 
     }
