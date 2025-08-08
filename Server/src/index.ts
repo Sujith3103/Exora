@@ -1,44 +1,47 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv"
-import { createClient } from '@supabase/supabase-js'
+import dotenv from "dotenv";
+import { createClient } from "@supabase/supabase-js";
 import { PrismaClient } from "@prisma/client";
+import http from "http";
+import { Server } from "socket.io";
+import multer from "multer";
 
+//routes 
+import auth_route from './routes/auth_route'
 
+// -------------------- CONFIG --------------------
+dotenv.config();
 const app = express();
-dotenv.config()
+const upload = multer();
+app.use(upload.none());
 
-const supabaseUrl = 'https://aywktugruubporzskjdt.supabase.co'
-const supabaseKey = process.env.SUPABASE_kEY!
-const supabase = createClient(supabaseUrl, supabaseKey)
-
-// src/prisma.ts or just prisma.ts
-
-
-
+const router = express.Router();
 const prisma = new PrismaClient();
+
 app.use(cors());
 app.use(express.json());
-const router = express.Router();
-app.use("/", router); // 👈 Add this line before app.listen
 
-router.get('/users', async (req, res) => {
-  const response = await prisma.user.findMany()
+//-------------------- ROUTE REGISTER --------------------
 
-  if(response){
-    console.log("yes : ",response)
-  }
+app.use('/api/auth', auth_route)
 
-  if (!response) {
-    return res.status(500).json({
-      message: "not found"
-    });
-  }
+// -------------------- SUPABASE --------------------
+const supabaseUrl = "https://aywktugruubporzskjdt.supabase.co";
+const supabaseKey = process.env.SUPABASE_kEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-  return res.json(response);
+// -------------------- SOCKET.IO --------------------
+const httpServer = http.createServer(app);
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:5173",
+    credentials: true,
+  },
 });
 
+// -------------------- START SERVER --------------------
 app.listen(process.env.PORT, () => {
   console.log("Server running on port 8800");
 });
-

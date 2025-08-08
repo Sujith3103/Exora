@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom"
 import NavBar from "../navbar"
 
-const Layout = () => {
+const NavBarLayout = () => {
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
       <NavBar/>
@@ -13,4 +13,4 @@ const Layout = () => {
   )
 }
 
-export default Layout
+export default NavBarLayout
