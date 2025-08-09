@@ -14,6 +14,7 @@ dist/
 coverage/
 *.log
 
+
 # Ignore Docker files
 Dockerfile
 .dockerignore

@@ -9,6 +9,7 @@ import multer from "multer";
 
 //routes 
 import auth_route from './routes/auth_route'
+import user_route from './routes/user_route'
 
 // -------------------- CONFIG --------------------
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(express.json());
 //-------------------- ROUTE REGISTER --------------------
 
 app.use('/api/auth', auth_route)
+app.use('/api/user',user_route)
 
 // -------------------- SUPABASE --------------------
 const supabaseUrl = "https://aywktugruubporzskjdt.supabase.co";
@@ -34,7 +36,7 @@ const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://exora-livid.vercel.app/"],
     credentials: true,
   },
 });

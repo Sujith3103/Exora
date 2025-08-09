@@ -3,15 +3,15 @@ import SideBar from '../../navbar/sidebar/sidebar'
 import { Link, Outlet } from "react-router-dom"
 import { Card, CardFooter } from '@/components/ui/card'
 
-import { useSelector } from "react-redux";
-import type { RootState } from "../../../store";
+// import { useSelector } from "react-redux";
+// import type { RootState } from "../../../store";
 
 
 
 
 const ProfileLayout = () => {
 
-  const user = useSelector((state: RootState) => state.auth.user);
+  // const user = useSelector((state: RootState) => state.auth.user);
 
   return (
     <div className="min-w-screen min-h-screen flex bg-amber-100">

@@ -2,20 +2,31 @@ import { Button } from '@/components/ui/button'
 import { Bell, CircleUser, GraduationCap, ShoppingCart } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import { useSelector } from "react-redux";
-import type { RootState } from "../../../store";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../../store";
+import server from '@/api/axiosinstance';
+import { updateUserRole } from '@/store/authSlice';
 
 
 
 const StudentNavbar = () => {
 
+    const dispatch = useDispatch<AppDispatch>()
+
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
     const user = useSelector((state: RootState) => state.auth.user)
-    console.log("user : ",user)
+    console.log("user : ", user)
+
+    const handleClick_ChangeRole = async () => {
+        const response = await server.put('/user/change-role')
+        if (response.data.success) {
+            dispatch(updateUserRole("INSTRUCTOR"))
+        }
+    }
 
     return (
         <div className='flex items-center p-3 justify-between'>
-            
+
             <Link to={'/'} className='flex items-center gap-2'>
                 <GraduationCap />
                 <h1 className='text-2xl font-bold'>Exora</h1>
@@ -24,7 +35,13 @@ const StudentNavbar = () => {
             <div className='flex items-center gap-5 cursor-pointer'>
                 <Link to={'/'} className='font-semibold'>Home</Link>
                 <Link to={'/'} className='font-semibold'>Explore</Link>
-                <Link to={'/'} className='font-semibold'>Teach on Exora</Link>
+                {
+                    user?.role === "INSTRUCTOR" ? 
+                    <Button className='font-semibold'>Instructor</Button>
+                    : 
+                    <Button  onClick={handleClick_ChangeRole} className='bg-gray-300 hover:bg-gray-200 text-black'>Teach on Exora</Button>
+                }
+
                 <ShoppingCart />
                 {isAuthenticated ?
                     <div className='flex items-center gap-5'>

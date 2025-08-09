@@ -13,7 +13,7 @@ interface AuthState {
     isAuthenticated: boolean
     loading: boolean
     error: string | null
-} 
+}
 
 const initialState: AuthState = {
     user: null,
@@ -48,10 +48,15 @@ const authSlice = createSlice({
             state.isAuthenticated = false;
             state.loading = false;
             state.error = null;
+        },
+        updateUserRole(state, action: PayloadAction<string>) {
+            if (state.user) {
+                state.user.role = action.payload; // update only the role
+            }
         }
     }
 })
 
 
-export const { loginStart, loginSuccess, loginFailure, logout } = authSlice.actions;
+export const { loginStart, loginSuccess, loginFailure, logout,updateUserRole } = authSlice.actions;
 export default authSlice.reducer;
