@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const server = axios.create({
-  baseURL: "http://localhost:8800/api",
+  // baseURL: "http://localhost:8800/api",
+  baseURL:"https://exora-giu2.onrender.com/"
 });
 
 server.interceptors.request.use(config => {
