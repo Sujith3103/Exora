@@ -1,6 +1,6 @@
 import { UserCircleIcon } from "lucide-react";
 
-import banner_img from '../../assets/subtle-img.jpeg'
+import banner_img from '../../assets-static/subtle-img.jpeg'
 
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
