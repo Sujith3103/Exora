@@ -10,6 +10,7 @@ import { loginSuccess } from "./store/authSlice"
 import server from "./api/axiosinstance"
 import ProfileLayout from "./components/layout/profile-layout"
 import OverView from "./components/overview"
+import RouteGuard from "./components/routeguard"
 
 
 function App() {
@@ -40,16 +41,16 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<NavBarLayout />}>
-          <Route path="" element={<StudentViewHomePage />} />
+        <Route path="/" element={<RouteGuard element={<NavBarLayout />} />}>
+          <Route path=""  element={<StudentViewHomePage />} />
         </Route>
-        <Route path="/" element={<NavBarLayout />}>
+        <Route path="/"  element={<RouteGuard element={<NavBarLayout />}/>} >
           <Route path="auth" element={<AuthPage />}>
             <Route path="login" element={<AuthPage />} />
             <Route path="signup" element={<AuthPage />} />
           </Route>
         </Route>
-        <Route path="/profile/:id" element={<ProfileLayout />}>
+        <Route path="/profile/:id"  element={<RouteGuard element={<ProfileLayout />} />} >
           <Route path="overview" element={<OverView />} />
         </Route>
       </Routes>

@@ -2,6 +2,10 @@ import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import jwt from 'jsonwebtoken'
+import { Queue } from 'bullmq';
+import { QueueConnection } from '../connection';
+import { addLoginJob } from "../producers/userTasks.producer";
+
 
 const prisma = new PrismaClient();
 
@@ -107,12 +111,12 @@ export const loginUser = async (req: any, res: any) => {
             process.env.JWT_SECRET,
             { expiresIn: '30min' }
         );
-
+       addLoginJob(userData.id)
         res.status(200).json({
             success: true,
             message: "Login Successful",
             userData,
-            token : accessToken
+            token: accessToken
         })
 
     }

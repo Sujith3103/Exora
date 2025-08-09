@@ -70,7 +70,7 @@ const AuthPage = () => {
                 setIsError("Invalid Username or Password")
             }
             else {
-                setIsError("User already exists")
+                setIsError("Username or email already exists")
             }
         }
         setIsLoading(false)
