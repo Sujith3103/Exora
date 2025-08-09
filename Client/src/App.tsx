@@ -8,6 +8,9 @@ import { useDispatch } from "react-redux"
 import { type AppDispatch } from "./store"
 import { loginSuccess } from "./store/authSlice"
 import server from "./api/axiosinstance"
+import ProfileLayout from "./components/layout/profile-layout"
+import OverView from "./components/overview"
+
 
 function App() {
 
@@ -22,10 +25,10 @@ function App() {
           dispatch(loginSuccess({
             token: accesstoken,
             user: {
-              id: response.data.data.id,
-              name: response.data.data.name,
-              email: response.data.data.email,
-              role: response.data.data.role,
+              id: response.data.data.user.id,
+              name: response.data.data.user.name,
+              email: response.data.data.user.email,
+              role: response.data.data.user.role,
             }
           }))
         }
@@ -45,6 +48,9 @@ function App() {
             <Route path="login" element={<AuthPage />} />
             <Route path="signup" element={<AuthPage />} />
           </Route>
+        </Route>
+        <Route path="/profile/:id" element={<ProfileLayout />}>
+          <Route path="overview" element={<OverView />} />
         </Route>
       </Routes>
 

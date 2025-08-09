@@ -13,7 +13,7 @@ interface AuthState {
     isAuthenticated: boolean
     loading: boolean
     error: string | null
-}
+} 
 
 const initialState: AuthState = {
     user: null,

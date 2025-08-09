@@ -1,15 +1,17 @@
 import server from "@/api/axiosinstance"
+import { type AppDispatch } from "@/store"
+import { loginFailure, loginSuccess } from "@/store/authSlice"
+import { useEffect, useState } from "react"
+import { useDispatch } from "react-redux"
+import { Link, useLocation, useNavigate } from "react-router-dom"
+
+//SHADCN COMPONENTS
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs } from "@/components/ui/tabs"
-import { type AppDispatch } from "@/store"
-import { loginFailure, loginSuccess } from "@/store/authSlice"
-import { useEffect, useState } from "react"
-import { useDispatch } from "react-redux"
-import { Link, useLocation, useNavigate } from "react-router-dom"
 
 const AuthPage = () => {
 
@@ -18,7 +20,7 @@ const AuthPage = () => {
     const navigate = useNavigate()
 
     const [activeTab, setActiveTab] = useState("")
-    const [isError, setIsError] = useState(false)
+    const [isError, setIsError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [formValue, setFormValue] = useState({
         name: "",
@@ -28,10 +30,9 @@ const AuthPage = () => {
     })
 
 
-
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setIsError(false)
+        setIsError('')
         setIsLoading(true)
         try {
             const form = e.currentTarget;
@@ -41,6 +42,13 @@ const AuthPage = () => {
 
             if (activeTab === "signup") {
                 response = await server.post('/auth/register', jsonData);
+                if(response.data.success){
+                    navigate('/auth/login')
+                    window.location.reload()
+                }
+                else{
+                    setIsError("User already exists")
+                }
             } else if (activeTab === 'login') {
                 const updatedjson = { ...jsonData, rememberMe: formValue.checkbox };
                 response = await server.post('/auth/login', updatedjson);
@@ -56,11 +64,11 @@ const AuthPage = () => {
                 }
             }
         } catch (error: any) {
-            setIsError(true)
-            if (error.response) {
-                console.error("Server error:", error.response.data);
-            } else {
-                console.error("Request failed:", error.message || error);
+            if(activeTab === 'login'){
+                setIsError("Invalid Username or Password")
+            }
+            else{
+                setIsError("User already exists")
             }
         }
         setIsLoading(false)
@@ -121,7 +129,7 @@ const AuthPage = () => {
                         </form>
                         {
                             isError &&
-                            <p className="text-red-500 animate-shake mt-3"><i>Invalid UserName or Password</i></p>
+                            <p className="text-red-500 animate-shake mt-3"><i>{isError}</i></p>
                         }
                     </Tabs>
 
