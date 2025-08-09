@@ -1,11 +1,11 @@
 import { FileText, House, MenuIcon, MessageCircle } from 'lucide-react'
-// import { useSelector } from "react-redux";
-// import type { RootState } from "../../../store";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../../store";
 import { Link } from 'react-router-dom';
 
 const SideBar = () => {
 
-    // const user = useSelector((state: RootState) => state.auth.user);
+    const user = useSelector((state: RootState) => state.auth.user);
 
 
     const Instructor_sideBarItems = [
@@ -52,6 +52,7 @@ const SideBar = () => {
                     ))
                 }
                 {
+                    user?.role === "INSTRUCTOR"?
                     Instructor_sideBarItems.map((items, index) => (
                         <Link key={index} className='flex items-center gap-2 mt-4' to={`${items.link}`}>
 
@@ -59,7 +60,7 @@ const SideBar = () => {
                             <p>{items.title}</p>
 
                         </Link>
-                    ))
+                    )):null
                 }
             </div>
 

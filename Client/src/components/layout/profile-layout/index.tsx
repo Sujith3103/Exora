@@ -1,7 +1,10 @@
 import { LogOut } from 'lucide-react'
 import SideBar from '../../navbar/sidebar/sidebar'
-import { Link, Outlet } from "react-router-dom"
+import { Link, Outlet, useNavigate } from "react-router-dom"
 import { Card, CardFooter } from '@/components/ui/card'
+import { useDispatch } from 'react-redux'
+import type { AppDispatch } from '@/store'
+import { logout } from '@/store/authSlice'
 
 // import { useSelector } from "react-redux";
 // import type { RootState } from "../../../store";
@@ -11,8 +14,17 @@ import { Card, CardFooter } from '@/components/ui/card'
 
 const ProfileLayout = () => {
 
+  const navigate = useNavigate()
+
   // const user = useSelector((state: RootState) => state.auth.user);
 
+  const dispatch = useDispatch<AppDispatch>()
+
+  const handleClick_logout = () => {
+    dispatch(logout())
+    navigate('/')
+  }
+  
   return (
     <div className="min-w-screen min-h-screen flex bg-amber-100">
 
@@ -38,7 +50,7 @@ const ProfileLayout = () => {
 
         <div className="mt-auto w-full">
           <hr className="border-t border-black mb-3" />
-          <CardFooter className="flex items-center gap-2 cursor-pointer hover:text-red-500">
+          <CardFooter className="flex items-center gap-2 cursor-pointer hover:text-red-500" onClick={handleClick_logout}>
             <LogOut />
             <span>Log Out</span>
           </CardFooter>
@@ -46,8 +58,8 @@ const ProfileLayout = () => {
       </Card>
 
       {/* Main content */}
-      <section className="flex-1 p-4">
-        <Outlet />
+      <section className="flex-1">
+        <Outlet />  
       </section>
     </div>
   )

@@ -19,15 +19,17 @@ const AuthPage = () => {
     const dispatch = useDispatch<AppDispatch>()
     const navigate = useNavigate()
 
-    const [activeTab, setActiveTab] = useState("")
-    const [isError, setIsError] = useState('')
-    const [isLoading, setIsLoading] = useState(false)
-    const [formValue, setFormValue] = useState({
+    const initialFormValue = {
         name: "",
         email: "",
         password: "",
         checkbox: false,
-    })
+    };
+
+    const [activeTab, setActiveTab] = useState("")
+    const [isError, setIsError] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
+    const [formValue, setFormValue] = useState(initialFormValue)
 
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -42,11 +44,11 @@ const AuthPage = () => {
 
             if (activeTab === "signup") {
                 response = await server.post('/auth/register', jsonData);
-                if(response.data.success){
+                if (response.data.success) {
+                    setFormValue(initialFormValue)
                     navigate('/auth/login')
-                    window.location.reload()
                 }
-                else{
+                else {
                     setIsError("User already exists")
                 }
             } else if (activeTab === 'login') {
@@ -64,10 +66,10 @@ const AuthPage = () => {
                 }
             }
         } catch (error: any) {
-            if(activeTab === 'login'){
+            if (activeTab === 'login') {
                 setIsError("Invalid Username or Password")
             }
-            else{
+            else {
                 setIsError("User already exists")
             }
         }

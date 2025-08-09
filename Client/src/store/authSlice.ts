@@ -43,6 +43,7 @@ const authSlice = createSlice({
             state.error = action.payload
         },
         logout(state) {
+            sessionStorage.removeItem('token');
             state.user = null;
             state.token = null;
             state.isAuthenticated = false;
