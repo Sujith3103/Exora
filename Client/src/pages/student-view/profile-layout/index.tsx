@@ -1,5 +1,5 @@
 import { LogOut } from 'lucide-react'
-import SideBar from '../../navbar/sidebar/sidebar'
+import SideBar from '../../../components/navbar/sidebar/sidebar'
 import { Link, Outlet, useNavigate } from "react-router-dom"
 import { Card, CardFooter } from '@/components/ui/card'
 import { useDispatch } from 'react-redux'
@@ -13,11 +13,7 @@ import { logout } from '@/store/authSlice'
 
 
 const ProfileLayout = () => {
-
   const navigate = useNavigate()
-
-  // const user = useSelector((state: RootState) => state.auth.user);
-
   const dispatch = useDispatch<AppDispatch>()
 
   const handleClick_logout = () => {
@@ -26,11 +22,9 @@ const ProfileLayout = () => {
   }
   
   return (
-    <div className="min-w-screen min-h-screen flex bg-amber-100">
-
+    <div className="max-w-screen min-h-screen flex bg-amber-100 overflow-x-hidden" >
       {/* Sidebar Card */}
-      <Card className="w-1/6 bg-blue-200 p-3 flex flex-col h-screen rounded-none">
-
+      <Card className="w-1/6 bg-blue-200 p-3 flex flex-col h-screen rounded-none fixed z-1">
         {/* Top section (Profile + Sidebar) */}
         <div>
           {/* Profile link */}
@@ -47,10 +41,12 @@ const ProfileLayout = () => {
         </div>
 
         {/* Logout footer fixed at bottom */}
-
         <div className="mt-auto w-full">
           <hr className="border-t border-black mb-3" />
-          <CardFooter className="flex items-center gap-2 cursor-pointer hover:text-red-500" onClick={handleClick_logout}>
+          <CardFooter
+            className="flex items-center gap-2 cursor-pointer hover:text-red-500"
+            onClick={handleClick_logout}
+          >
             <LogOut />
             <span>Log Out</span>
           </CardFooter>
@@ -58,7 +54,7 @@ const ProfileLayout = () => {
       </Card>
 
       {/* Main content */}
-      <section className="flex-1">
+      <section className="flex-1 ml-[16.6667%] overflow-x-hidden">
         <Outlet />  
       </section>
     </div>
@@ -66,3 +62,4 @@ const ProfileLayout = () => {
 }
 
 export default ProfileLayout
+

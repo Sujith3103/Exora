@@ -21,13 +21,46 @@ enum Role {
   USER
 }
 
+enum Gender{
+  Male
+  Female
+}
 model User {
-  id         String   @id @default(uuid())
+  id         String       @id @default(uuid())
   name       String
-  email      String   @unique
+  email      String       @unique
   password   String
-  role       Role     @default(USER)
-  rememberMe Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  role       Role         @default(USER)
+  rememberMe Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  profile    UserProfile?
+  security UserSecurity?
+}
+
+model UserProfile {
+  id            String   @id @default(uuid())
+  contact       String?   @unique
+  about         String?
+  dob           DateTime?
+  gender        Gender?
+  profileimg    String?
+  profilebanner String?
+  profession    String?
+
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+model UserSecurity {
+
+  id String @id @default(uuid())
+  twoStepVerification Boolean?
+  lastPasswordChange DateTime?
+  recoveryEmail String?
+  recoveryPhone String?
+  loginAlertsEnabled Boolean?
+
+  user User @relation(fields: [userId], references: [id])
+  userId String @unique
 }

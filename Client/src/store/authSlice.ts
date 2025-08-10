@@ -12,14 +12,14 @@ interface AuthState {
     token: string | null
     isAuthenticated: boolean
     loading: boolean
-    error: string | null
+    error: string | null    
 }
 
 const initialState: AuthState = {
     user: null,
     token: null,
     isAuthenticated: false,
-    loading: false,
+    loading: true,
     error: null
 }
 
@@ -30,6 +30,9 @@ const authSlice = createSlice({
         loginStart(state) {
             state.loading = true
             state.error = null
+        },
+        isloading(state,action: PayloadAction<boolean>){
+            state.loading = action.payload
         },
         loginSuccess(state, action: PayloadAction<{ user: User; token: string }>) {
             state.user = action.payload.user
@@ -59,5 +62,5 @@ const authSlice = createSlice({
 })
 
 
-export const { loginStart, loginSuccess, loginFailure, logout,updateUserRole } = authSlice.actions;
+export const { loginStart, loginSuccess, loginFailure, logout,updateUserRole,isloading } = authSlice.actions;
 export default authSlice.reducer;
