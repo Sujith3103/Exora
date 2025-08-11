@@ -1,6 +1,7 @@
 import { PrismaClient, Role } from "@prisma/client";
 import { Request, Response } from "express";
 import { client } from "../utils/redis";
+import { format } from 'date-fns';
 
 const prisma = new PrismaClient();
 
@@ -49,7 +50,6 @@ export const EditUserProfile = async (req: Request, res: Response) => {
 
     const userProfileKey = `user:profile:${user?.id}`;
 
-    console.log("id : ", user?.id)
     try {
         // 1. Update DB
         const createdProfile = await prisma.userProfile.upsert({
@@ -72,7 +72,7 @@ export const EditUserProfile = async (req: Request, res: Response) => {
                 }
             }
         });
-
+        
         console.log("DB profile created:", createdProfile);
 
         // 2. Update cache (Write-through strategy)
@@ -86,11 +86,18 @@ export const EditUserProfile = async (req: Request, res: Response) => {
         // 3. Set TTL (10 mins)
         await client.expire(userProfileKey, 600);
 
-        // 4. Respond once
+        // 4. Respond once - format DOB for user-friendly display
         return res.status(200).json({
             success: true,
-            message: "User profile was updated successfully"
+            message: "User profile was updated successfully",
+            createdProfile: {
+                ...createdProfile,
+                dob: createdProfile.dob
+                    ? format(new Date(createdProfile.dob), 'dd MMM yyyy') // → "06 Aug 2025"
+                    : ''
+            }
         });
+
 
     } catch (err) {
         console.error("Error updating profile:", err);
@@ -146,7 +153,8 @@ export const EditUserSecurity = async (req: Request, res: Response) => {
         // 4. Respond once
         return res.status(200).json({
             success: true,
-            message: "User security was updated successfully"
+            message: "User security was updated successfully",
+            createdSecurityData
         });
 
     } catch (err) {
@@ -183,6 +191,7 @@ export const getUserProfileData = async (req: Request, res: Response) => {
                 gender: profileData?.gender || '',
                 profession: profileData?.profession || '',
             })
+            await client.expire(userProfileKey, 600);
 
             return res.status(200).json({
                 success: true,
@@ -190,6 +199,7 @@ export const getUserProfileData = async (req: Request, res: Response) => {
                 profileData
             })
         }
+        await client.expire(userProfileKey, 600);
 
         return res.status(200).json({
             success: true,
@@ -228,6 +238,7 @@ export const getUserSecurityData = async (req: Request, res: Response) => {
                 recoveryPhone: securityData?.recoveryPhone?.trim() || "",
                 loginAlertsEnabled: String(securityData?.loginAlertsEnabled ?? "")
             })
+            await client.expire(userProfileKey, 600);
 
             return res.status(200).json({
                 success: true,
@@ -235,6 +246,7 @@ export const getUserSecurityData = async (req: Request, res: Response) => {
                 securityData
             })
         }
+        await client.expire(userProfileKey, 600);
 
         return res.status(200).json({
             success: true,

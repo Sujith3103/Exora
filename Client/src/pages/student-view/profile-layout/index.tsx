@@ -6,10 +6,11 @@ import { useDispatch } from 'react-redux'
 import type { AppDispatch } from '@/store'
 import { logout } from '@/store/authSlice'
 import { useEffect } from 'react'
-import { FetchUserSecurityData } from '@/services/userService'
+import { FetchUserProfileData, FetchUserSecurityData } from '@/services/userService'
 
-// import { useSelector } from "react-redux";
-// import type { RootState } from "../../../store";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../../store";
+import { setProfile, setSecurity } from '@/store/profileSlice'
 
 
 
@@ -17,6 +18,8 @@ import { FetchUserSecurityData } from '@/services/userService'
 const ProfileLayout = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch<AppDispatch>()
+  const profile = useSelector((state: RootState) => state.profile.data)
+  const security = useSelector((state: RootState) => state.profile.security)
 
   const handleClick_logout = () => {
     dispatch(logout())
@@ -24,18 +27,24 @@ const ProfileLayout = () => {
   }
 
   const handle_fetchprofile = async () => {
-    const response = await FetchUserSecurityData()
-    if (response) {
-      console.log("profile : ", response)
+    const response = await FetchUserProfileData()
+    if (response.data.success) {
+      dispatch(setProfile(response.data.cachedData ? response.data.cachedData : response.data.profileData))
     }
   }
+
   const handle_fetchsecurity = async () => {
 
     const response = await FetchUserSecurityData()
-    if (response) {
-      console.log("profile : ", response)
+    if (response.data.success) {
+      dispatch(setSecurity(response.data.cachedData ? response.data.cachedData : response.data.securityData))
     }
   }
+
+  // useEffect(() => {
+  //   console.log("Updated profile:", profile)
+  //   console.log("Updated profile:", security)
+  // }, [profile,security])
 
   useEffect(() => {
     console.log("useeffect in profile")

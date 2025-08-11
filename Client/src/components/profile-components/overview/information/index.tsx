@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
-import { useSelector } from "react-redux";
-import type { RootState } from "@/store";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store";
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import server from '@/api/axiosinstance';
+import { setProfile, setSecurity } from '@/store/profileSlice';
 
 interface DisplayField {
     label: string;
@@ -16,6 +17,7 @@ interface DisplayField {
 }
 
 const OverViewUserInformation = () => {
+    const dispatch = useDispatch<AppDispatch>()
     const user = useSelector((state: RootState) => state.auth.user)
     const profile = useSelector((state: RootState) => state.profile.data)
     const security = useSelector((state: RootState) => state.profile.security)
@@ -46,13 +48,11 @@ const OverViewUserInformation = () => {
         const jsonData = Object.fromEntries(formData.entries());
 
         const updatedjsonData = {
-            ...jsonData,
-            gender: jsonData.gender === "enabled" ? 'Male' : "Female"
-        }
+            ...jsonData,        }
         console.log(updatedjsonData)
         const response = await server.post('/user/edit-profile', updatedjsonData)
         if (response) {
-            //respone
+            dispatch(setProfile(response.data.createdProfile))
         }
 
         setIsEdit_Info(false)
@@ -74,8 +74,8 @@ const OverViewUserInformation = () => {
         };
 
         const response = await server.post('/user/edit-security', updatedjsonData)
-        if (response) {
-            //respone
+        if (response.data.success) {
+            dispatch(setSecurity(response.data.createdSecurityData))
         }
 
 
@@ -94,8 +94,8 @@ const OverViewUserInformation = () => {
                     defaultValue={field.value}
                     className="border rounded p-2 flex-1 cursor-pointer"
                 >
-                    <option value="enabled">Male</option>
-                    <option value="disabled">Female</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
                 </select>
 
             )
@@ -162,7 +162,11 @@ const OverViewUserInformation = () => {
                                             renderFieldInput(field)
                                         ) : (
                                             <div className="flex-1">{field.value || "none"}</div>
+                                            
                                         )}
+                                        <>
+                                        {console.log("field : ",field.value)}
+                                        </>
                                     </div>
                                 ))}
                             </Card>

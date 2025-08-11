@@ -1,13 +1,13 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface Profile {
-    id: string,
+    id?: string,
     contact: string,
-    about: string,
+    about?: string,
     dob: string,
     gender: string,
-    profileImg: string,
-    profileBanner: string,
+    profileImg?: string,
+    profileBanner?: string,
     profession: string,
     loading: boolean,
     error: boolean
@@ -15,7 +15,7 @@ interface Profile {
 
 interface Security {
     twoStepVerification: boolean,
-    lastPasswordChange: string,
+    lastPasswordChange?: string,
     recoveryEmail: string,
     recoveryPhone: string,
     loginAlertsEnabled: boolean
@@ -42,10 +42,16 @@ const profileSlice = createSlice({
     reducers: {
         setProfile(state, action: PayloadAction<Profile>) {
             state.data = action.payload,
-                state.loading = false
+            state.loading = false
+            state.error = false
+        },
+        setSecurity(state, action: PayloadAction<Security>){
+            state.security = action.payload
+            state.loading = false
+            state.error = false
         }
     }
 })
 
-export const { setProfile } = profileSlice.actions
+export const { setProfile,setSecurity } = profileSlice.actions
 export default profileSlice.reducer
