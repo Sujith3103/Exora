@@ -46,7 +46,7 @@ const StudentNavbar = () => {
                 {isAuthenticated ?
                     <div className='flex items-center gap-5'>
                         <Bell />
-                        <Link to={`/profile/:${user?.id}/overview`}><CircleUser /></Link>
+                        <Link to={`/profile/overview`}><CircleUser /></Link>
                     </div>
                     :
                     <div className='flex items-center gap-3'>

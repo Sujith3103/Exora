@@ -11,13 +11,17 @@ const RouteGuard = ({element}:any) => {
     const location = useLocation()
 
     if(isloading){
-        console.log("yes")
+        console.log("loading")
         return element
     }
 
     if(!isAuthenticated && location.pathname.includes('profile')){
-        console.log("s",isAuthenticated)
+        console.log("includes profile - routeguard",isAuthenticated)
         return <Navigate to={'/'}/>
+    }
+
+    if(isAuthenticated && location.pathname.includes('auth')){
+        return <Navigate to={'/'} />
     }
 
   return element

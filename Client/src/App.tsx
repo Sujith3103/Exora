@@ -73,7 +73,7 @@ function App() {
             <Route path="signup" element={<AuthPage />} />
           </Route>
         </Route>
-        <Route path="/profile/:id" element={<RouteGuard element={<ProfileLayout />} />} >
+        <Route path="/profile" element={<RouteGuard element={<ProfileLayout />} />} >
           <Route path="overview" element={<OverView />} />
         </Route>
       </Routes>
