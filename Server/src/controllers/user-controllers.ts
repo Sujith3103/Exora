@@ -1,4 +1,6 @@
 import { PrismaClient, Role } from "@prisma/client";
+import { Request, Response } from "express";
+import { client } from "../utils/redis";
 
 const prisma = new PrismaClient();
 
@@ -24,7 +26,7 @@ export const ChangeRole = async (req: any, res: any) => {
             data: { role: Role.INSTRUCTOR },
         });
 
-        console.log("updated: ",updatedUser)
+        console.log("updated: ", updatedUser)
         return res.status(200).json({
             success: true,
             message: "User role updated to INSTRUCTOR",
@@ -39,3 +41,64 @@ export const ChangeRole = async (req: any, res: any) => {
         });
     }
 };
+
+
+export const EditUserProfile = async (req: Request, res: Response) => {
+    const userData = req.body;
+    const user = req.user
+
+    const userProfileKey = `user:profile:${user?.id}`;
+
+    console.log("id : ", user?.id)
+    try {
+        // 1. Update DB
+        const createdProfile = await prisma.userProfile.upsert({
+            where: { userId: user?.id }, // match existing
+            update: {
+                ...userData,
+                contact: userData.contact?.trim() || null,
+                dob: userData.dob ? new Date(userData.dob) : null
+            },
+            create: {
+                ...userData,
+                contact: userData.contact?.trim() || null,
+                dob: userData.dob ? new Date(userData.dob) : null,
+                user: {
+                    connect: { id: user?.id }
+                }
+            }
+        });
+
+        console.log("DB profile created:", createdProfile);
+
+        // 2. Update cache (Write-through strategy)
+        await client.hSet(userProfileKey, {
+            contact: userData.contact || '',
+            dob: userData.dob ? new Date(userData.dob).toISOString() : '',
+            gender: userData.gender || '',
+            profession: userData.profession || '',
+        });
+
+        // 3. Set TTL (10 mins)
+        await client.expire(userProfileKey, 600);
+
+        // 4. Respond once
+        return res.status(200).json({
+            success: true,
+            message: "User profile was updated successfully"
+        });
+
+    } catch (err) {
+        console.error("Error updating profile:", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed updating the profile"
+        });
+    }
+};
+
+
+export const EditUserSecurity = async (req: Request, res: Response) => {
+    console.log(req.body)
+}

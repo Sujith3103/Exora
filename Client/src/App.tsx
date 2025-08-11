@@ -25,7 +25,7 @@ function App() {
 
         // if no token, logout immediately
         if (!accesstoken) {
-          dispatch(logout()); // you need to create this in your slice
+          dispatch(logout()); 
           dispatch(isloading(false));
           return;
         }

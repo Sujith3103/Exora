@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import server from '@/api/axiosinstance';
 
 interface DisplayField {
     label: string;
@@ -23,8 +24,6 @@ const OverViewUserInformation = () => {
     const [isEdit_Security, setIsEdit_Security] = useState(false)
 
     const fields: DisplayField[] = [
-        { label: "Name", name: 'name', type: 'text', value: user?.name },
-        { label: "Email", name: 'email', type: 'email', value: user?.email },
         { label: "Contact", name: 'contact', type: 'number', value: profile?.contact },
         { label: "Date of Birth", name: 'dob', type: 'date', value: profile?.dob },
         { label: "Gender", name: 'gender', type: 'select', value: profile?.gender },
@@ -39,7 +38,7 @@ const OverViewUserInformation = () => {
         { label: "LoginAlertsEnabled", name: 'loginAlertsEnabled', type: 'select', value: security?.loginAlertsEnabled ? 'enabled' : 'disabled' },
     ]
 
-    const handleSubmit_userInfo = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit_userInfo = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         const form = e.currentTarget;
@@ -48,14 +47,15 @@ const OverViewUserInformation = () => {
 
         const updatedjsonData = {
             ...jsonData,
-            gender:jsonData.gender === "enabled"? 'Male' : "Female"
+            gender: jsonData.gender === "enabled" ? 'Male' : "Female"
         }
-        console.log(updatedjsonData);
+        console.log(updatedjsonData)
+        const response = await server.post('/user/edit-profile', updatedjsonData)
 
         setIsEdit_Info(false)
     }
 
-    const handleSubmit_securityInfo = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit_securityInfo = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         const form = e.currentTarget;
@@ -64,12 +64,13 @@ const OverViewUserInformation = () => {
 
         const updatedjsonData = {
             ...jsonData,
+            id: profile?.id,
             loginAlertsEnabled: jsonData.loginAlertsEnabled === 'enabled' ? true : false,
             twoStepVerification: jsonData.twoStepVerification === 'enabled' ? true : false,
 
         };
 
-        console.log(updatedjsonData);
+        const response = await server.post('/user/edit-security', updatedjsonData)
 
         setIsEdit_Security(false);
     };
@@ -123,6 +124,14 @@ const OverViewUserInformation = () => {
                         <span className="font-bold mb-10">Basic-Information</span>
                         <form onSubmit={handleSubmit_userInfo}>
                             <Card className="w-full p-5 flex relative group">
+                                <div className={`flex gap-3 p-[3px] w-full`}>
+                                    <Label className="w-40">Name</Label>
+                                    <p className='flex-1'>{user?.name}</p>
+                                </div>
+                                <div className={`flex gap-3 p-[3px] w-full`}>
+                                    <Label className="w-40">Email</Label>
+                                    <p className='flex-1'>{user?.email}</p>
+                                </div>
                                 {!isEdit_Info ? (
                                     <Edit
                                         size={20}
@@ -180,7 +189,7 @@ const OverViewUserInformation = () => {
                                         {isEdit_Security ? (
                                             renderFieldInput(field)
                                         ) : (
-                                            <div className="">{field.value || "none"}</div>
+                                            <div className="flex-1">{field.value || "none"}</div>
                                         )}
                                     </div>
                                 ))}
