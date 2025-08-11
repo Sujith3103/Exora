@@ -51,6 +51,9 @@ const OverViewUserInformation = () => {
         }
         console.log(updatedjsonData)
         const response = await server.post('/user/edit-profile', updatedjsonData)
+        if (response) {
+            //respone
+        }
 
         setIsEdit_Info(false)
     }
@@ -71,6 +74,10 @@ const OverViewUserInformation = () => {
         };
 
         const response = await server.post('/user/edit-security', updatedjsonData)
+        if (response) {
+            //respone
+        }
+
 
         setIsEdit_Security(false);
     };

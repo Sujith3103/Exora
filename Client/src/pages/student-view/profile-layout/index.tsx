@@ -5,6 +5,8 @@ import { Card, CardFooter } from '@/components/ui/card'
 import { useDispatch } from 'react-redux'
 import type { AppDispatch } from '@/store'
 import { logout } from '@/store/authSlice'
+import { useEffect } from 'react'
+import { FetchUserSecurityData } from '@/services/userService'
 
 // import { useSelector } from "react-redux";
 // import type { RootState } from "../../../store";
@@ -20,7 +22,27 @@ const ProfileLayout = () => {
     dispatch(logout())
     navigate('/')
   }
-  
+
+  const handle_fetchprofile = async () => {
+    const response = await FetchUserSecurityData()
+    if (response) {
+      console.log("profile : ", response)
+    }
+  }
+  const handle_fetchsecurity = async () => {
+
+    const response = await FetchUserSecurityData()
+    if (response) {
+      console.log("profile : ", response)
+    }
+  }
+
+  useEffect(() => {
+    console.log("useeffect in profile")
+    handle_fetchprofile()
+    handle_fetchsecurity()
+  }, [])
+
   return (
     <div className="max-w-screen min-h-screen flex bg-amber-100 overflow-x-hidden" >
       {/* Sidebar Card */}
@@ -55,7 +77,7 @@ const ProfileLayout = () => {
 
       {/* Main content */}
       <section className="flex-1 ml-[16.6667%] overflow-x-hidden">
-        <Outlet />  
+        <Outlet />
       </section>
     </div>
   )

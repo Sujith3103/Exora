@@ -4,9 +4,7 @@ import banner_img from '../../../assets-static/subtle-img.jpeg'
 
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+
 import OverViewUserInformation from "./information";
 
 
@@ -14,7 +12,7 @@ import OverViewUserInformation from "./information";
 const OverView = () => {
 
   const user = useSelector((state: RootState) => state.auth.user)
-  const profile = useSelector((state: RootState) => state.profile.data)
+  // const profile = useSelector((state: RootState) => state.profile.data)
 
 
   return (
