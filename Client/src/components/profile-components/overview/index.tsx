@@ -7,11 +7,8 @@ import type { RootState } from "@/store";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import OverViewUserInformation from "./information";
 
-interface DisplayField {
-  label: string;
-  value: string | undefined;
-}
 
 
 const OverView = () => {
@@ -19,16 +16,6 @@ const OverView = () => {
   const user = useSelector((state: RootState) => state.auth.user)
   const profile = useSelector((state: RootState) => state.profile.data)
 
-  const fields: DisplayField[] = [
-    { label: "Name", value: user?.name },
-    { label: "Email", value: user?.email },
-
-    { label: "Contact", value: profile?.contact },
-    { label: "About", value: profile?.about },
-    { label: "Date of Birth", value: profile?.dob },
-    { label: "Gender", value: profile?.gender },
-    { label: "Profession", value: profile?.profession },
-  ];
 
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-md w-full mx-auto">
@@ -58,30 +45,8 @@ const OverView = () => {
         <p className="font-thin">settings here</p>
       </div>
 
-      <div className="max-w-screen px-20 py-10 flex justify-between items-center">
-        <div className="flex w-full gap-10">
-          <div className="w-full">
-            <span className="font-bold mb-10">Basic-Information</span>
-            <Card className="w-full p-5">
-              {
-                fields.map(field => (
-                  <div className="flex flex-col gap-3">
-                    <Label>{field.label}</Label>
-                    <Input />
-                  </div>
-                ))
-              }
-            </Card>
-          </div>
+      <OverViewUserInformation />
 
-          <div className="w-full h-full">
-            <span className="font-bold">Security Details</span>
-            <Card className="w-full p-5">
-              Security details
-            </Card>
-          </div>
-        </div>
-      </div>
       {/* about me for instructors */}
       <div>
 
