@@ -24,7 +24,7 @@ const OverView = () => {
       </div>
 
       {/* Profile icon overlapping header */}
-      <div className="flex flex-col items-center md:w-1/4 w-full -mt-16 z-1">
+      <div className="flex flex-col items-center md:w-1/4 w-1/2  -mt-16 z-1">
         <UserCircleIcon
           strokeWidth={0.5}
           size={120}

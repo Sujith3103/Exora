@@ -72,7 +72,7 @@ export const EditUserProfile = async (req: Request, res: Response) => {
                 }
             }
         });
-        
+
         console.log("DB profile created:", createdProfile);
 
         // 2. Update cache (Write-through strategy)
@@ -81,6 +81,7 @@ export const EditUserProfile = async (req: Request, res: Response) => {
             dob: userData.dob ? new Date(userData.dob).toISOString() : '',
             gender: userData.gender || '',
             profession: userData.profession || '',
+            about: userData.about || '',
         });
 
         // 3. Set TTL (10 mins)
@@ -190,6 +191,7 @@ export const getUserProfileData = async (req: Request, res: Response) => {
                 dob: profileData?.dob ? new Date(profileData?.dob).toISOString() : '',
                 gender: profileData?.gender || '',
                 profession: profileData?.profession || '',
+                about: profileData?.about || '',
             })
             await client.expire(userProfileKey, 600);
 

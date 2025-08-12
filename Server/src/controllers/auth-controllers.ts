@@ -111,7 +111,7 @@ export const loginUser = async (req: any, res: any) => {
             process.env.JWT_SECRET,
             { expiresIn: '30min' }
         );
-       addLoginJob(userData.id)
+    //    addLoginJob(userData.id)
         res.status(200).json({
             success: true,
             message: "Login Successful",

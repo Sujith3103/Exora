@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
 import { Card } from '@/components/ui/card';
@@ -11,9 +11,9 @@ import { setProfile, setSecurity } from '@/store/profileSlice';
 
 interface DisplayField {
     label: string;
-    name: String;
+    name: string;
     value: string | undefined;
-    type: 'text' | 'email' | 'number' | 'date' | 'select'
+    type: 'text' | 'email' | 'number' | 'date' | 'select' | 'description'
 }
 
 const OverViewUserInformation = () => {
@@ -24,43 +24,51 @@ const OverViewUserInformation = () => {
 
     const [isEdit_Info, setIsEdit_Info] = useState(false)
     const [isEdit_Security, setIsEdit_Security] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
-    const fields: DisplayField[] = [
-        { label: "Contact", name: 'contact', type: 'number', value: profile?.contact },
-        { label: "Date of Birth", name: 'dob', type: 'date', value: profile?.dob },
-        { label: "Gender", name: 'gender', type: 'select', value: profile?.gender },
-        { label: "Profession", name: 'profession', type: 'text', value: profile?.profession },
-    ];
+    const fields = useMemo<DisplayField[]>(() => {
+        const baseFields: DisplayField[] = [
+            { label: "Contact", name: 'contact', type: 'number' as const, value: profile?.contact?.toString() ?? undefined },
+            { label: "Date of Birth", name: 'dob', type: 'date' as const, value: profile?.dob ?? undefined },
+            { label: "Gender", name: 'gender', type: 'select' as const, value: profile?.gender ?? undefined },
+            { label: "Profession", name: 'profession', type: 'text' as const, value: profile?.profession ?? undefined },
+        ];
+        if (user?.role === "INSTRUCTOR") {
+            baseFields.push({ label: "About", name: 'about', type: 'description' as const, value: profile?.about ?? undefined });
+        }
+        return baseFields;
+    }, [profile, user?.role]);
 
-    const securityFields: DisplayField[] = [
+
+    const securityFields = useMemo<DisplayField[]>(() => [
         { label: "TwoStepVerification", name: 'twoStepVerification', type: 'select', value: security?.twoStepVerification ? 'enabled' : 'disabled' },
-        // { label: "LastPasswordChange", name: 'lastPasswordChange', value: security?.lastPasswordChange },
         { label: "RecoveryEmail", name: 'recoveryEmail', type: 'email', value: security?.recoveryEmail },
         { label: "RecoveryPhone", name: 'recoveryPhone', type: 'number', value: security?.recoveryPhone },
         { label: "LoginAlertsEnabled", name: 'loginAlertsEnabled', type: 'select', value: security?.loginAlertsEnabled ? 'enabled' : 'disabled' },
-    ]
+    ], [security]);
 
     const handleSubmit_userInfo = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
+        setIsLoading(true)
         const form = e.currentTarget;
         const formData = new FormData(form);
         const jsonData = Object.fromEntries(formData.entries());
 
         const updatedjsonData = {
-            ...jsonData,        }
+            ...jsonData,
+        }
         console.log(updatedjsonData)
         const response = await server.post('/user/edit-profile', updatedjsonData)
         if (response) {
             dispatch(setProfile(response.data.createdProfile))
         }
-
+        setIsLoading(false)
         setIsEdit_Info(false)
     }
 
     const handleSubmit_securityInfo = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
+        setIsLoading(true)
         const form = e.currentTarget;
         const formData = new FormData(form);
         const jsonData = Object.fromEntries(formData.entries());
@@ -78,7 +86,7 @@ const OverViewUserInformation = () => {
             dispatch(setSecurity(response.data.createdSecurityData))
         }
 
-
+        setIsLoading(false)
         setIsEdit_Security(false);
     };
 
@@ -118,25 +126,35 @@ const OverViewUserInformation = () => {
             return field.value
         }
 
+        if (field.type === 'description') {
+            return <textarea
+                id={`${field.name}`}
+                name={`${field.name}`}
+                rows={4}  // controls height
+                placeholder="Enter a detailed description..."
+                defaultValue={field.value}
+            ></textarea>
+        }
+
         return <Input id={`${field.name}`} name={`${field.name}`} type={field.type} defaultValue={field.value} className="flex-1" />;
     };
 
     return (
-        <div>
-            <div className="max-w-screen px-20 py-10 flex justify-between items-center">
-                <div className="flex w-full gap-10">
+        <div className={`${isLoading ? 'cursor-progress' : null}`}>
+            <div className="max-w-screen xl:px-20 px-10 py-10 flex flex-wrap justify-between items-center">
+                <div className="flex sm:flex-row flex-col w-full gap-10">
 
                     {/* Basic Information */}
-                    <div className="w-full">
+                    <div className="sm:w-1/2 w-full">
                         <span className="font-bold mb-10">Basic-Information</span>
                         <form onSubmit={handleSubmit_userInfo}>
                             <Card className="w-full p-5 flex relative group">
-                                <div className={`flex gap-3 p-[3px] w-full`}>
-                                    <Label className="w-40">Name</Label>
+                                <div className={`flex  gap-3 p-[3px] flex-wrap w-full`}>
+                                    <Label className="w-40 flex-shrink-0">Name</Label>
                                     <p className='flex-1'>{user?.name}</p>
                                 </div>
-                                <div className={`flex gap-3 p-[3px] w-full`}>
-                                    <Label className="w-40">Email</Label>
+                                <div className={`flex  gap-3 p-[3px] flex-wrap w-full`}>
+                                    <Label className="w-40 flex-shrink-0">Email</Label>
                                     <p className='flex-1'>{user?.email}</p>
                                 </div>
                                 {!isEdit_Info ? (
@@ -144,10 +162,11 @@ const OverViewUserInformation = () => {
                                         size={20}
                                         onClick={() => setIsEdit_Info(true)}
                                         strokeWidth={1}
-                                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                                        className="absolute top-3 right-3 cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200"
                                     />
                                 ) : (
                                     <Button
+                                        disabled={isLoading}
                                         type='submit'
                                         className="absolute w-20 h-7 bg-blue-400 hover:bg-blue-400 top-3 right-3 transition-opacity duration-200 cursor-pointer"
                                     >
@@ -156,25 +175,24 @@ const OverViewUserInformation = () => {
                                 )}
 
                                 {fields.map(field => (
-                                    <div key={field.label} className={`flex ${isEdit_Info ? "flex-col" : "items-center"} gap-3 p-[3px] w-full`}>
+                                    <div key={field.label} className={`flex ${isEdit_Info ? "flex-col" : "items-center"} gap-3 p-[3px] flex-wrap w-full`}>
                                         <Label htmlFor={`${field.name}`} className="w-40">{field.label}</Label>
                                         {isEdit_Info ? (
                                             renderFieldInput(field)
                                         ) : (
                                             <div className="flex-1">{field.value || "none"}</div>
-                                            
+
                                         )}
-                                        <>
-                                        {console.log("field : ",field.value)}
-                                        </>
                                     </div>
                                 ))}
+
+
                             </Card>
                         </form>
                     </div>
 
                     {/* Security Details */}
-                    <div className="w-full h-full">
+                    <div className="sm:w-1/2 h-full w-full">
                         <span className="font-bold">Security Details</span>
                         <form onSubmit={handleSubmit_securityInfo}>
                             <Card className="w-full p-5 relative group">
@@ -183,10 +201,11 @@ const OverViewUserInformation = () => {
                                         size={20}
                                         onClick={() => setIsEdit_Security(true)}
                                         strokeWidth={1}
-                                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                                        className="absolute top-3 right-3 cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200"
                                     />
                                 ) : (
                                     <Button
+                                        disabled={isLoading}
                                         type='submit'
                                         className="absolute w-20 h-7 bg-blue-400 hover:bg-blue-400 top-3 right-3 transition-opacity duration-200 cursor-pointer"
                                     >
@@ -195,8 +214,17 @@ const OverViewUserInformation = () => {
                                 )}
 
                                 {securityFields.map(field => (
-                                    <div key={field.label} className={`flex ${isEdit_Security ? "flex-col gap-2" : "items-center "} p-2 w-full`}>
-                                        <Label htmlFor={`${field.name}`} className="w-1/2">{field.label}</Label>
+                                    <div
+                                        key={field.label}
+                                        className={`flex ${isEdit_Security ? "flex-col" : "items-center"} gap-3 p-[3px] flex-wrap w-full`}
+                                    >
+                                        <Label
+                                            htmlFor={`${field.name}`}
+                                            className="w-40 flex-shrink-0"
+                                        >
+                                            {field.label}
+                                        </Label>
+
                                         {isEdit_Security ? (
                                             renderFieldInput(field)
                                         ) : (
@@ -204,9 +232,12 @@ const OverViewUserInformation = () => {
                                         )}
                                     </div>
                                 ))}
-                                <div className={`flex  p-2 w-full`}>
-                                    <Label className="w-1/2">LastPasswordChange</Label>
-                                    <p>none</p>
+
+
+
+                                <div className={`flex  gap-3 p-[3px] flex-wrap w-full`}>
+                                    <Label className="w-40 flex-shrink-0">LastPasswordChange</Label>
+                                    <p className='flex-1'>none</p>
                                 </div>
                             </Card>
                         </form>
