@@ -20,11 +20,13 @@ const ProfileLayout = () => {
   }
 
   const handle_fetchprofile = async () => {
+    console.log("fetching profile")
     dispatch(profileSliceLoadinStart())
     const response = await FetchUserProfileData()
     if (response.data.success) {
       console.log(response.data)
       dispatch(setProfile(response.data.cachedData ?? response.data.profileData))
+      console.log("fetched profile")
     }
     dispatch(profileSliceLoadinStop())
 

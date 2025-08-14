@@ -12,10 +12,12 @@
   "description": "",
   "dependencies": {
     "bullmq": "^5.56.9",
-    "dotenv": "^17.2.1"
+    "dotenv": "^17.2.1",
+    "nodemailer": "^7.0.5"
   },
   "devDependencies": {
     "@types/node": "^24.2.1",
+    "@types/nodemailer": "^6.4.17",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   }

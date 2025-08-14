@@ -8,6 +8,7 @@ import { Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import server from '@/api/axiosinstance';
 import { setProfile, setSecurity } from '@/store/profileSlice';
+import InformationSkeleton from './informationSkeleton';
 
 interface DisplayField {
     label: string;
@@ -138,6 +139,10 @@ const OverViewUserInformation = () => {
 
         return <Input id={`${field.name}`} name={`${field.name}`} type={field.type} defaultValue={field.value} className="flex-1" />;
     };
+    
+    if (!profile || !security) {
+        return <InformationSkeleton />; // or skeleton
+    }
 
     return (
         <div className={`${isLoading ? 'cursor-progress' : null}`}>
