@@ -40,18 +40,30 @@ const profileSlice = createSlice({
     name: "profile",
     initialState,
     reducers: {
+        profileSliceLoadinStart(state) {
+            state.loading = true
+        },
         setProfile(state, action: PayloadAction<Profile>) {
             state.data = action.payload,
-            state.loading = false
+                state.loading = false
             state.error = false
         },
-        setSecurity(state, action: PayloadAction<Security>){
+        setSecurity(state, action: PayloadAction<Security>) {
             state.security = action.payload
             state.loading = false
             state.error = false
-        }
+        },
+        updateProfileImage(state, action: PayloadAction<string>) {
+            if (state.data) {
+                state.data.profileImg = action.payload;
+            }
+        },
+        profileSliceLoadinStop(state) {
+            state.loading = false
+        },
+
     }
 })
 
-export const { setProfile,setSecurity } = profileSlice.actions
+export const { setProfile, setSecurity, updateProfileImage, profileSliceLoadinStart, profileSliceLoadinStop } = profileSlice.actions
 export default profileSlice.reducer

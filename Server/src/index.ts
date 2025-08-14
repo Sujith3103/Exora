@@ -30,12 +30,11 @@ declare module 'express-serve-static-core' {
 //routes 
 import auth_route from './routes/auth_route';
 import user_route from './routes/user_route';
-
+import media_route from './routes/media_route'
 // -------------------- CONFIG --------------------
 dotenv.config();
 const app = express();
 const upload = multer();
-app.use(upload.none());
 
 app.use(cors());
 app.use(express.json());
@@ -44,6 +43,7 @@ app.use(express.json());
 
 app.use('/api/auth', auth_route);
 app.use('/api/user', user_route);
+app.use('/api/media', media_route);
 
 // -------------------- SUPABASE --------------------
 const supabaseUrl = "https://aywktugruubporzskjdt.supabase.co";
@@ -57,8 +57,10 @@ const io = new Server(httpServer, {
   cors: {
     origin: ["http://localhost:5173", "https://exora-livid.vercel.app/"],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
   },
 });
+
 
 // -------------------- START SERVER --------------------
 const PORT = process.env.PORT || 8800;

@@ -13,7 +13,7 @@ dist/
 .prisma/
 coverage/
 *.log
-
+uploads/
 
 # Ignore Docker files
 Dockerfile

@@ -45,7 +45,9 @@ model UserProfile {
   dob           DateTime?
   gender        Gender?
   profileimg    String?
+  profileimgId    String?
   profilebanner String?
+  profilebannerId String?
   profession    String?
 
   userId        String   @unique

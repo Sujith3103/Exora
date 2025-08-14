@@ -82,6 +82,7 @@ export const EditUserProfile = async (req: Request, res: Response) => {
             gender: userData.gender || '',
             profession: userData.profession || '',
             about: userData.about || '',
+            profileImg: userData.profileimg || '',
         });
 
         // 3. Set TTL (10 mins)
@@ -192,6 +193,7 @@ export const getUserProfileData = async (req: Request, res: Response) => {
                 gender: profileData?.gender || '',
                 profession: profileData?.profession || '',
                 about: profileData?.about || '',
+                profileImg: profileData?.profileimg || '',
             })
             await client.expire(userProfileKey, 600);
 

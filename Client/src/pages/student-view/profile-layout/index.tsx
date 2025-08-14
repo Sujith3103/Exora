@@ -7,7 +7,7 @@ import type { AppDispatch } from '@/store'
 import { logout } from '@/store/authSlice'
 import { useEffect, useState } from 'react'
 import { FetchUserProfileData, FetchUserSecurityData } from '@/services/userService'
-import { setProfile, setSecurity } from '@/store/profileSlice'
+import { profileSliceLoadinStart, profileSliceLoadinStop, setProfile, setSecurity } from '@/store/profileSlice'
 
 const ProfileLayout = () => {
   const navigate = useNavigate()
@@ -20,18 +20,23 @@ const ProfileLayout = () => {
   }
 
   const handle_fetchprofile = async () => {
+    dispatch(profileSliceLoadinStart())
     const response = await FetchUserProfileData()
     if (response.data.success) {
       console.log(response.data)
       dispatch(setProfile(response.data.cachedData ?? response.data.profileData))
     }
+    dispatch(profileSliceLoadinStop())
+
   }
 
   const handle_fetchsecurity = async () => {
+    dispatch(profileSliceLoadinStart())
     const response = await FetchUserSecurityData()
     if (response.data.success) {
       dispatch(setSecurity(response.data.cachedData ?? response.data.securityData))
     }
+    dispatch(profileSliceLoadinStop())
   }
 
   useEffect(() => {
@@ -51,7 +56,7 @@ const ProfileLayout = () => {
 
       {/* Sidebar */}
       <Card
-        className={`bg-blue-200 p-3 flex-col ${sidebarOpen? 'h-screen' : null} rounded-none z-10 transform transition-transform duration-300 
+        className={`bg-blue-200 p-3 flex-col ${sidebarOpen ? 'h-screen' : null} rounded-none z-10 transform transition-transform duration-300 
         fixed lg:static top-0 left-0 w-64
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"} 
         lg:flex`}
