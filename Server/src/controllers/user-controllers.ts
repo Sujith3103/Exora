@@ -152,11 +152,18 @@ export const EditUserSecurity = async (req: Request, res: Response) => {
         // 3. Set TTL (10 mins)
         await client.expire(userProfileKey, 600);
 
+        const updatedSecurityData = {
+            ...createdSecurityData,
+            twoStepVerification: String(userData.twoStepVerification),
+            loginAlertsEnabled: String(userData.loginAlertsEnabled),
+        }
+        console.log("updated :",updatedSecurityData)
+
         // 4. Respond once
         return res.status(200).json({
             success: true,
             message: "User security was updated successfully",
-            createdSecurityData
+            updatedSecurityData
         });
 
     } catch (err) {

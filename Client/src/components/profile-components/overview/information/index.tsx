@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
 import { Card } from '@/components/ui/card';
@@ -22,6 +22,7 @@ const OverViewUserInformation = () => {
     const user = useSelector((state: RootState) => state.auth.user)
     const profile = useSelector((state: RootState) => state.profile.data)
     const security = useSelector((state: RootState) => state.profile.security)
+    const loading = useSelector((state: RootState) => state.profile.loading)
 
     const [isEdit_Info, setIsEdit_Info] = useState(false)
     const [isEdit_Security, setIsEdit_Security] = useState(false)
@@ -42,10 +43,10 @@ const OverViewUserInformation = () => {
 
 
     const securityFields = useMemo<DisplayField[]>(() => [
-        { label: "TwoStepVerification", name: 'twoStepVerification', type: 'select', value: security?.twoStepVerification ? 'enabled' : 'disabled' },
+        { label: "TwoStepVerification", name: 'twoStepVerification', type: 'select', value: security?.twoStepVerification === 'true' ? 'enabled' : 'disabled' },
         { label: "RecoveryEmail", name: 'recoveryEmail', type: 'email', value: security?.recoveryEmail },
         { label: "RecoveryPhone", name: 'recoveryPhone', type: 'number', value: security?.recoveryPhone },
-        { label: "LoginAlertsEnabled", name: 'loginAlertsEnabled', type: 'select', value: security?.loginAlertsEnabled ? 'enabled' : 'disabled' },
+        { label: "LoginAlertsEnabled", name: 'loginAlertsEnabled', type: 'select', value: security?.loginAlertsEnabled === 'true' ? 'enabled' : 'disabled' },
     ], [security]);
 
     const handleSubmit_userInfo = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -84,7 +85,7 @@ const OverViewUserInformation = () => {
 
         const response = await server.post('/user/edit-security', updatedjsonData)
         if (response.data.success) {
-            dispatch(setSecurity(response.data.createdSecurityData))
+            dispatch(setSecurity(response.data.updatedSecurityData))
         }
 
         setIsLoading(false)
@@ -95,7 +96,6 @@ const OverViewUserInformation = () => {
     const renderFieldInput = (field: DisplayField) => {
         const isToggleField = field.value === "enabled" || field.value === "disabled";
         const gender = field.label === "Gender"
-
         if (gender) {
             return (
                 <select
@@ -139,8 +139,12 @@ const OverViewUserInformation = () => {
 
         return <Input id={`${field.name}`} name={`${field.name}`} type={field.type} defaultValue={field.value} className="flex-1" />;
     };
-    
-    if (!profile || !security) {
+
+    useEffect(() => {
+        console.log("sec : ", security)
+    }, [security])
+
+    if (loading) {
         return <InformationSkeleton />; // or skeleton
     }
 
@@ -233,7 +237,10 @@ const OverViewUserInformation = () => {
                                         {isEdit_Security ? (
                                             renderFieldInput(field)
                                         ) : (
-                                            <div className="flex-1">{field.value || "none"}</div>
+                                            <>
+                                                {console.log("val : ", field.name, field.value)}
+                                                <div className="flex-1">{field.value || "none"}</div>
+                                            </>
                                         )}
                                     </div>
                                 ))}

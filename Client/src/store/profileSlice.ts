@@ -14,11 +14,11 @@ interface Profile {
 }
 
 interface Security {
-    twoStepVerification: boolean,
+    twoStepVerification: string,
     lastPasswordChange?: string,
     recoveryEmail: string,
     recoveryPhone: string,
-    loginAlertsEnabled: boolean
+    loginAlertsEnabled: string
 
 }
 
@@ -45,12 +45,11 @@ const profileSlice = createSlice({
         },
         setProfile(state, action: PayloadAction<Profile>) {
             state.data = action.payload,
-                state.loading = false
             state.error = false
         },
         setSecurity(state, action: PayloadAction<Security>) {
+            console.log("payload : ",action.payload)
             state.security = action.payload
-            state.loading = false
             state.error = false
         },
         updateProfileImage(state, action: PayloadAction<string>) {

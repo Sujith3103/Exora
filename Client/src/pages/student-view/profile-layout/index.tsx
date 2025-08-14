@@ -28,7 +28,6 @@ const ProfileLayout = () => {
       dispatch(setProfile(response.data.cachedData ?? response.data.profileData))
       console.log("fetched profile")
     }
-    dispatch(profileSliceLoadinStop())
 
   }
 
@@ -36,6 +35,7 @@ const ProfileLayout = () => {
     dispatch(profileSliceLoadinStart())
     const response = await FetchUserSecurityData()
     if (response.data.success) {
+      console.log("security :",response.data)
       dispatch(setSecurity(response.data.cachedData ?? response.data.securityData))
     }
     dispatch(profileSliceLoadinStop())
