@@ -20,7 +20,7 @@ interface Security {
     recoveryPhone: string,
     loginAlertsEnabled: string
 
-}
+}   
 
 interface ProfileState {
     data: Profile | null,

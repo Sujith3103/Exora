@@ -47,9 +47,9 @@ const ProfileLayout = () => {
   }, [])
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-amber-100">
+    <div className="flex flex-col lg:flex-row min-h-screen ">
       {/* Mobile top bar */}
-      <div className="flex items-center justify-between  bg-blue-200 p-3 lg:hidden">
+      <div className="flex items-center justify-between  bg-blue- 200 p-3 lg:hidden">
         <button onClick={() => setSidebarOpen(!sidebarOpen)}>
           <Menu size={24} />
         </button>
@@ -58,19 +58,19 @@ const ProfileLayout = () => {
 
       {/* Sidebar */}
       <Card
-        className={`bg-blue-200 p-3 flex-col ${sidebarOpen ? 'h-screen' : null} rounded-none z-10 transform transition-transform duration-300 
-        fixed lg:static top-0 left-0 w-64
+        className={`bg-gray-200 p-3 flex-col ${sidebarOpen ? 'h-screen' : null} rounded-none z-10 transform transition-transform duration-300 
+        fixed lg:static top-0 left-0 w-58
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"} 
         lg:flex`}
       >
         {/* Top section */}
         <div className="flex-1">
-          <div className="bg-blue-100 w-full text-center py-2">
+          <div className="bg-blue-400 w-full text-center py-2">
             <Link to="overview" className="font-semibold block" onClick={() => setSidebarOpen(false)}>
               Profile
             </Link>
           </div>
-          <div className="bg-amber-50 p-2">
+          <div className=" p-2">
             <SideBar />
           </div>
         </div>

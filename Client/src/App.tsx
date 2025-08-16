@@ -11,6 +11,7 @@ import server from "./api/axiosinstance"
 import ProfileLayout from "./pages/student-view/profile-layout"
 import OverView from "./components/profile-components/overview"
 import RouteGuard from "./components/routeguard"
+import InstructorCourses from "./pages/instructor-view/courses"
 
 
 function App() {
@@ -75,6 +76,7 @@ function App() {
         </Route>
         <Route path="/profile" element={<RouteGuard element={<ProfileLayout />} />} >
           <Route path="overview" element={<OverView />} />
+          <Route path="courses" element={<InstructorCourses />} />
         </Route>
       </Routes>
 

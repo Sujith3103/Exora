@@ -24,6 +24,7 @@ export const AuthenticateMiddleware = (
       process.env.JWT_SECRET!
     ) as AuthUserPayload; // type assertion
     req.user = payload;
+    console.log("user: ",payload)
     next();
   } catch {
     return res.status(401).json({
