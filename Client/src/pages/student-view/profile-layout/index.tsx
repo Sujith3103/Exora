@@ -65,7 +65,7 @@ const ProfileLayout = () => {
       >
         {/* Top section */}
         <div className="flex-1">
-          <div className="bg-blue-400 w-full text-center py-2">
+          <div className="bg-sky-400 w-full text-center py-2">
             <Link to="overview" className="font-semibold block" onClick={() => setSidebarOpen(false)}>
               Profile
             </Link>
