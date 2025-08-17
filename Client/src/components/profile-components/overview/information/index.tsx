@@ -59,7 +59,6 @@ const OverViewUserInformation = () => {
         const updatedjsonData = {
             ...jsonData,
         }
-        console.log(updatedjsonData)
         const response = await server.post('/user/edit-profile', updatedjsonData)
         if (response) {
             dispatch(setProfile(response.data.createdProfile))
@@ -140,9 +139,9 @@ const OverViewUserInformation = () => {
         return <Input id={`${field.name}`} name={`${field.name}`} type={field.type} defaultValue={field.value} className="flex-1" />;
     };
 
-    useEffect(() => {
-        console.log("sec : ", security)
-    }, [security])
+    // useEffect(() => {
+    //     console.log("sec : ", security)
+    // }, [security])
 
     if (loading) {
         return <InformationSkeleton />; // or skeleton
@@ -238,7 +237,6 @@ const OverViewUserInformation = () => {
                                             renderFieldInput(field)
                                         ) : (
                                             <>
-                                                {console.log("val : ", field.name, field.value)}
                                                 <div className="flex-1">{field.value || "none"}</div>
                                             </>
                                         )}

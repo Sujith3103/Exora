@@ -48,7 +48,7 @@ const profileSlice = createSlice({
             state.error = false
         },
         setSecurity(state, action: PayloadAction<Security>) {
-            console.log("payload : ",action.payload)
+            // console.log("payload : ",action.payload)
             state.security = action.payload
             state.error = false
         },

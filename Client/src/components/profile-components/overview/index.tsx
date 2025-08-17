@@ -6,10 +6,11 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
 
 import OverViewUserInformation from "./information";
-import { useRef, } from "react";
+import { useEffect, useRef, } from "react";
 import { Input } from "@/components/ui/input";
 import server from "@/api/axiosinstance";
-import { updateProfileImage } from "@/store/profileSlice";
+import { profileSliceLoadinStart, profileSliceLoadinStop, setProfile, setSecurity, updateProfileImage } from "@/store/profileSlice";
+import { FetchUserProfileData, FetchUserSecurityData } from "@/services/userService";
 
 
 
@@ -58,6 +59,32 @@ const OverView = () => {
     <div className="w-24 h-24 rounded-full bg-gray-200 animate-pulse border-2 border-white shadow-md" />
   );
 
+  const handle_fetchprofile = async () => {
+    console.log("fetching profile")
+    dispatch(profileSliceLoadinStart())
+    const response = await FetchUserProfileData()
+    if (response.data.success) {
+      console.log(response.data)
+      dispatch(setProfile(response.data.cachedData ?? response.data.profileData))
+      console.log("fetched profile")
+    }
+
+  }
+
+  const handle_fetchsecurity = async () => {
+    dispatch(profileSliceLoadinStart())
+    const response = await FetchUserSecurityData()
+    if (response.data.success) {
+      console.log("security :", response.data)
+      dispatch(setSecurity(response.data.cachedData ?? response.data.securityData))
+    }
+    dispatch(profileSliceLoadinStop())
+  }
+
+  useEffect(() => {
+    handle_fetchprofile()
+    handle_fetchsecurity()
+  }, [])
 
   // useEffect(() => {
   //   console.log(profile)

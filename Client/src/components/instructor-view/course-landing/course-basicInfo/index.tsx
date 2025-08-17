@@ -1,28 +1,30 @@
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { courseCategories, courseLevelOptions, languageOptions } from '@/config/config'
+import type { AppDispatch, RootState } from '@/store'
+import { setCourseBasicInfo } from '@/store/courseSlice'
 import { CircleQuestionMark } from 'lucide-react'
-import React from 'react'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 
 const basicInfo = [
     {
-        id: 'languageOptions',
-        name: 'languageOptions',
+        id: 'primaryLanguage',
+        name: 'primaryLanguage',
         label: "",
         placeholder: "--Language--",
         value: languageOptions
-
     },
     {
-        id: 'courseLevelOptions',
-        name: 'courseLevelOptions',
+        id: 'level',
+        name: 'Level',
         label: "",
         placeholder: "--Select Level--",
         value: courseLevelOptions
     },
     {
-        id: 'courseCategories',
-        name: 'courseCategories',
+        id: 'category',
+        name: 'Category',
         label: "",
         placeholder: "--Select Category--",
         value: courseCategories
@@ -30,22 +32,36 @@ const basicInfo = [
     },
 ]
 
-
 const CourseBasicInfo = () => {
+
+    const dispatch = useDispatch<AppDispatch>()
+
+    const basicinfoData = useSelector((state: RootState) => state.course.courseBasicInfo)
+
+    useEffect(() => {
+        console.log(basicinfoData)
+    }, [basicinfoData])
+
     return (
         <>
             <div className="flex sm:flex-row flex-col sm:justify-evenly gap-5">
                 {/* basic info */}
                 {
                     basicInfo.map(field => (
-                        <Select>
+                        <Select
+                            value={basicinfoData[field.id] || ""}
+                            key={field.id}
+                            onValueChange={(val) =>
+                                dispatch(setCourseBasicInfo({ key: field.id, value: val }))
+                            }
+                        >
                             <SelectTrigger className="sm:w-1/3 w-full rounded-sm border-gray-400">
                                 <SelectValue placeholder={field.placeholder} />
                             </SelectTrigger>
                             <SelectContent>
                                 {
                                     field.value.map(item => (
-                                        <SelectItem value={item.id}>{item.label}</SelectItem>
+                                        <SelectItem key={item.id} value={item.id}>{item.label}</SelectItem>
                                     ))
                                 }
                             </SelectContent>

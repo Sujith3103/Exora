@@ -1,11 +1,18 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/card'
+import type { AppDispatch, RootState } from '@/store'
+import { removeCourseRequirement, setCourseRequirements } from '@/store/courseSlice'
 import { X } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 
 const CourseRequirements = () => {
-  const [requirements, setRequirements] = useState<string[]>([])
+
+    const dispatch = useDispatch<AppDispatch>()
+
+    const requirements = useSelector((state: RootState) => state.course.courseRequirements)
+
+//   const [requirements, setRequirements] = useState<string[]>([])
   const [inputVal, setInputVal] = useState('')
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -14,14 +21,20 @@ const CourseRequirements = () => {
 
   const handleAdd = () => {
     if (inputVal.trim()) {
-      setRequirements(prev => [...prev, inputVal.trim()])
+        dispatch(setCourseRequirements(inputVal))
+    //   setRequirements(prev => [...prev, inputVal.trim()])
       setInputVal("")
     }
   }
 
   const handleRemove = (index: number) => {
-    setRequirements(prev => prev.filter((_, i) => i !== index))
+    dispatch(removeCourseRequirement(index))
+    // setRequirements(prev => prev.filter((_, i) => i !== index))
   }
+
+  useEffect(() => {
+    console.log("req : ",requirements)
+  },[requirements])
 
   return (
     <div className="w-full max-w-lg mx-0 ">
