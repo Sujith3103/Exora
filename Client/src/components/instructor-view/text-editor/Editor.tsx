@@ -14,32 +14,65 @@ import type { EditorState } from "lexical";
 
 // --- Load content plugin (for rehydration) ---
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store";
+import { setCourseLandingDescription } from "@/store/courseSlice";
+
 function LoadContentPlugin() {
     const [editor] = useLexicalComposerContext();
+    const courseLandingState = useSelector((state: RootState) => state.course.CourseLanding);
 
     useEffect(() => {
-        const saved = localStorage.getItem("editorContent");
-        if (saved) {
-            const editorState = editor.parseEditorState(JSON.parse(saved));
+        if (courseLandingState?.description) {
+            // Parse the JSON string
+            const json = JSON.parse(courseLandingState.description);
+
+            // Use editor.parseEditorState() to convert JSON to EditorState
+            const editorState = editor.parseEditorState(json);
+
+            // Set the editor state
             editor.setEditorState(editorState);
         }
-    }, [editor]);
+    }, [editor, courseLandingState?.description]);
 
     return null;
 }
 
+
+
 // --- Handle changes (saving) ---
-function onChange(editorState: EditorState) {
-    const json = editorState.toJSON();
-    localStorage.setItem("editorContent", JSON.stringify(json));
-    console.log("Saved in DB:", json);
-}
+
 
 type EditorProps = {
-  placeholder: string;
+    placeholder: string;
 };
 
-export default function Editor({placeholder} : EditorProps) {
+export default function Editor({ placeholder }: EditorProps) {
+
+    const dispatch = useDispatch<AppDispatch>()
+    const courseLandingState = useSelector((state: RootState) => state.course.CourseLanding)
+    function onChange(editorState: EditorState) {
+        const json = editorState.toJSON();
+
+        const rootNode = json.root.children[0];
+
+        const isEmpty =
+            json.root.children.length === 1 &&
+            rootNode.type === "paragraph" &&
+            "children" in rootNode &&
+            Array.isArray(rootNode.children) &&
+            rootNode.children.length === 0;
+
+        if (isEmpty) {
+            // localStorage.removeItem("editorContent");
+            dispatch(setCourseLandingDescription({ description: null }));
+        } else {
+            // localStorage.setItem("editorContent", JSON.stringify(json));
+            dispatch(setCourseLandingDescription({ description: JSON.stringify(json) }));
+        }
+    }
+
+
     const initialConfig = {
         namespace: "MyEditor",
         theme: {
@@ -51,6 +84,11 @@ export default function Editor({placeholder} : EditorProps) {
         nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode],
     };
 
+
+    // useEffect(() => {
+    //     console.log(courseLandingState?.description)
+    // }, [courseLandingState?.description])
+
     return (
         <LexicalComposer initialConfig={initialConfig}>
             <div className="border p-3 rounded-lg bg-white border-gray-300 shadow-md">
@@ -60,7 +98,9 @@ export default function Editor({placeholder} : EditorProps) {
                             <ContentEditable className="outline-none min-h-[100px] w-full p-2" />
                             {/* Custom placeholder inside the same relative wrapper */}
                             <div className="absolute top-2 left-2 text-gray-400 pointer-events-none">
-                               {placeholder}
+                                {
+                                    !courseLandingState?.description && placeholder
+                                }
                             </div>
                         </div>
                     }

@@ -1,6 +1,6 @@
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {$getSelection, $isRangeSelection, FORMAT_TEXT_COMMAND} from 'lexical';
-import {Bold, Italic, Underline, Link, List, Quote} from "lucide-react";
+import { FORMAT_TEXT_COMMAND} from 'lexical';
+import {Bold, Italic, List} from "lucide-react";
 import {Button} from "@/components/ui/button"; // if using shadcn
 
 export default function ToolbarPlugin() {

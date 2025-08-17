@@ -27,7 +27,7 @@ interface CourseBasicInfo {
 interface CourseLandingData {
     title?: string,
     subtitle?: string,
-    description?: string,
+    description?: string | null,
     searchKey?: string,
     courseImg?: string
 }
@@ -69,6 +69,16 @@ const courseSlice = createSlice({
         ) {
             state.courseBasicInfo[action.payload.key] = action.payload.value;
         },
+        setCourseLandingDescription(
+            state: courseState,
+            action: PayloadAction<{ description: string | null }>
+        ) {
+            if (!state.CourseLanding) {
+                state.CourseLanding = {}; // initialize if null
+            }
+            state.CourseLanding.description = action.payload.description;
+        }
+        ,
         removeCourseRequirement(state: courseState, action: PayloadAction<number>) {
             state.courseRequirements = state.courseRequirements.filter(
                 (_, index) => index !== action.payload
@@ -82,6 +92,7 @@ const courseSlice = createSlice({
 
 
 export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo,
+    setCourseLandingDescription,
 
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

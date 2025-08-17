@@ -5,9 +5,7 @@ import { Card, CardFooter } from '@/components/ui/card'
 import { useDispatch } from 'react-redux'
 import type { AppDispatch } from '@/store'
 import { logout } from '@/store/authSlice'
-import { useEffect, useState } from 'react'
-import { FetchUserProfileData, FetchUserSecurityData } from '@/services/userService'
-import { profileSliceLoadinStart, profileSliceLoadinStop, setProfile, setSecurity } from '@/store/profileSlice'
+import {  useState } from 'react'
 
 const ProfileLayout = () => {
   const navigate = useNavigate()
@@ -25,7 +23,7 @@ const ProfileLayout = () => {
 
     const [sidebarOpen, setSidebarOpen] = useState(() => {
 
-      return window.innerWidth > 1024; // true if below lg
+      return window.innerWidth < 1024; // true if below lg
 
     });
 
@@ -35,32 +33,6 @@ const ProfileLayout = () => {
 
   }
 
-  const handle_fetchprofile = async () => {
-    console.log("fetching profile")
-    dispatch(profileSliceLoadinStart())
-    const response = await FetchUserProfileData()
-    if (response.data.success) {
-      console.log(response.data)
-      dispatch(setProfile(response.data.cachedData ?? response.data.profileData))
-      console.log("fetched profile")
-    }
-
-  }
-
-  const handle_fetchsecurity = async () => {
-    dispatch(profileSliceLoadinStart())
-    const response = await FetchUserSecurityData()
-    if (response.data.success) {
-      console.log("security :", response.data)
-      dispatch(setSecurity(response.data.cachedData ?? response.data.securityData))
-    }
-    dispatch(profileSliceLoadinStop())
-  }
-
-  useEffect(() => {
-    handle_fetchprofile()
-    handle_fetchsecurity()
-  }, [])
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen ">

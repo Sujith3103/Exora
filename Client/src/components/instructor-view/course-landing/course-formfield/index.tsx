@@ -1,5 +1,4 @@
 import { Label } from '@/components/ui/label';
-import React from 'react'
 import Editor from '../../text-editor/Editor';
 import { Input } from '@/components/ui/input';
 
@@ -40,7 +39,7 @@ const CourseFormField = () => {
         <>
             {
                 courseFormFields.map(field => (
-                    <div className="mt-2">
+                    <div className="mt-2" key={field.id}>
                         <Label className="font-bold text-[15px]">{field.label}</Label>
                         {
                             field.type === "editor" ? (

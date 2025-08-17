@@ -1,10 +1,5 @@
-import { Label } from "@/components/ui/label"
-import Editor from "../text-editor/Editor"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { courseCategories, courseLevelOptions, languageOptions } from "@/config/config"
-import { CircleQuestionMark } from "lucide-react"
 import CourseFormField from "./course-formfield"
 import CourseBasicInfo from "./course-basicInfo"
 
@@ -19,9 +14,9 @@ const CourseLanding = () => {
 
 
 
-  const renderInput = () => {
+  // const renderInput = () => {
 
-  }
+  // }
 
   return (
     <Card className="p-10 flex flex-col rounded-none">
@@ -29,7 +24,7 @@ const CourseLanding = () => {
       <CourseFormField />
 
 
-      <h3 className="text-md font-semibold ">Baic Info</h3>
+      <h3 className="text-md font-semibold ">Basic Info</h3>
       <CourseBasicInfo />
 
     <CourseRequirements />
