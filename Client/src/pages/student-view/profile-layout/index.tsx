@@ -1,4 +1,4 @@
-import { LogOut, Menu } from 'lucide-react'
+import { LogOut, Menu, X } from 'lucide-react'
 import SideBar from '../../../components/navbar/sidebar/sidebar'
 import { Link, Outlet, useNavigate } from "react-router-dom"
 import { Card, CardFooter } from '@/components/ui/card'
@@ -12,11 +12,27 @@ import { profileSliceLoadinStart, profileSliceLoadinStop, setProfile, setSecurit
 const ProfileLayout = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch<AppDispatch>()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useSidebarInitial();
 
   const handleClick_logout = () => {
     dispatch(logout())
     navigate('/')
+  }
+
+  function useSidebarInitial() {
+
+    // run only once on mount → initial state depends on width
+
+    const [sidebarOpen, setSidebarOpen] = useState(() => {
+
+      return window.innerWidth > 1024; // true if below lg
+
+    });
+
+
+
+    return [sidebarOpen, setSidebarOpen] as const;
+
   }
 
   const handle_fetchprofile = async () => {
@@ -35,7 +51,7 @@ const ProfileLayout = () => {
     dispatch(profileSliceLoadinStart())
     const response = await FetchUserSecurityData()
     if (response.data.success) {
-      console.log("security :",response.data)
+      console.log("security :", response.data)
       dispatch(setSecurity(response.data.cachedData ?? response.data.securityData))
     }
     dispatch(profileSliceLoadinStop())
@@ -57,36 +73,40 @@ const ProfileLayout = () => {
       </div>
 
       {/* Sidebar */}
-      <Card
-        className={`bg-gray-200 p-3 flex-col ${sidebarOpen ? 'h-screen' : null} rounded-none z-10 transform transition-transform duration-300 
-        fixed lg:static top-0 left-0 w-58
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"} 
-        lg:flex`}
-      >
-        {/* Top section */}
-        <div className="flex-1">
-          <div className="bg-sky-400 w-full text-center py-2">
-            <Link to="overview" className="font-semibold block" onClick={() => setSidebarOpen(false)}>
-              Profile
-            </Link>
+      <div className='relative w-[232px] '>
+        <Card
+          className={`fixed top-0 left-0 bottom-0 z-10  w-[232px] bg-gray-200 p-3
+           flex flex-col           
+           transform transition-transform duration-300
+            ${!sidebarOpen ? '-translate-x-full lg:translate-x-0' : ''}
+          `}
+        >
+          {/* Top section */}
+          <div className="w-50 fixed">
+            <div className="bg-gray-300 w-full text-center py-2 flex">
+              <Link to="overview" className="font-semibold block ml-15" onClick={() => setSidebarOpen(false)}>
+                Profile
+              </Link>
+              {sidebarOpen && <X onClick={() => setSidebarOpen(false)} className='ml-auto' />}
+            </div>
+            <div className=" p-2">
+              <SideBar />
+            </div>
           </div>
-          <div className=" p-2">
-            <SideBar />
-          </div>
-        </div>
 
-        {/* Logout footer */}
-        <div className="mt-auto w-full">
-          <hr className="border-t border-black mb-3" />
-          <CardFooter
-            className="flex items-center gap-2 cursor-pointer hover:text-red-500"
-            onClick={handleClick_logout}
-          >
-            <LogOut />
-            <span>Log Out</span>
-          </CardFooter>
-        </div>
-      </Card>
+          {/* Logout footer */}
+          <div className="mt-auto w-full">
+            <hr className="border-t border-black mb-3" />
+            <CardFooter
+              className="flex items-center gap-2 cursor-pointer hover:text-red-500"
+              onClick={handleClick_logout}
+            >
+              <LogOut />
+              <span>Log Out</span>
+            </CardFooter>
+          </div>
+        </Card>
+      </div>
 
       {/* Main content */}
       <section className="flex-1 overflow-x-hidden lg:ml-0">
