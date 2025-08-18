@@ -21,48 +21,84 @@ enum Role {
   USER
 }
 
-enum Gender{
+enum Gender {
   Male
   Female
 }
+
 model User {
-  id         String       @id @default(uuid())
+  id         String        @id @default(uuid())
   name       String
-  email      String       @unique
+  email      String        @unique
   password   String
-  role       Role         @default(USER)
-  rememberMe Boolean      @default(false)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  role       Role          @default(USER)
+  rememberMe Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
   profile    UserProfile?
-  security UserSecurity?
+  security   UserSecurity?
+
+  // Relation to courses (instructor)
+  courses Course[]
 }
 
 model UserProfile {
-  id            String   @id @default(uuid())
-  contact       String?   @unique
-  about         String?
-  dob           DateTime?
-  gender        Gender?
-  profileimg    String?
+  id              String    @id @default(uuid())
+  contact         String?   @unique
+  about           String?
+  dob             DateTime?
+  gender          Gender?
+  profileimg      String?
   profileimgId    String?
-  profilebanner String?
+  profilebanner   String?
   profilebannerId String?
-  profession    String?
+  profession      String?
 
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id])
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 model UserSecurity {
-
-  id String @id @default(uuid())
+  id                  String    @id @default(uuid())
   twoStepVerification Boolean?
-  lastPasswordChange DateTime?
-  recoveryEmail String?
-  recoveryPhone String?
-  loginAlertsEnabled Boolean?
+  lastPasswordChange  DateTime?
+  recoveryEmail       String?
+  recoveryPhone       String?
+  loginAlertsEnabled  Boolean?
 
-  user User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
   userId String @unique
+}
+
+model Course {
+  id              String       @id @default(uuid())
+  title           String
+  category        String
+  level           String
+  primaryLanguage String
+  subtitle        String
+  language        String
+  description     String
+  pricing         Float
+  objectives      String
+  welcomeMessage  String
+  image           String
+  requirements    Json
+  searchkey       String
+  slug            String       @unique
+  createdAt       DateTime     @default(now())
+  lengthNum       Int
+  lengthStr       String
+  status          CourseStatus
+
+  // Relation to User
+  instructor   User   @relation(fields: [instructorId], references: [id])
+  instructorId String
+
+  @@map("courses")
+}
+
+enum CourseStatus {
+  published
+  drafted
 }

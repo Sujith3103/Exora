@@ -1,8 +1,15 @@
 import { Label } from '@/components/ui/label';
 import Editor from '../../text-editor/Editor';
 import { Input } from '@/components/ui/input';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '@/store';
+import { setCousreLanding } from '@/store/courseSlice';
+import { useEffect } from 'react';
 
 const CourseFormField = () => {
+
+    const courseLandingState = useSelector((state: RootState) => state.course.CourseLanding)
+    const dispatch = useDispatch<AppDispatch>()
 
     const courseFormFields = [
         {
@@ -16,7 +23,7 @@ const CourseFormField = () => {
             minLength: 10,
         },
         {
-            id: "course-subtitle",
+            id: "subtitle",
             name: "courseubStitle",
             label: "Course Subtitle",
             type: "input",
@@ -35,6 +42,11 @@ const CourseFormField = () => {
             minWords: 200,
         }
     ];
+
+    const handleChange = (e: any, field: any) => {
+        dispatch(setCousreLanding({ key: field.id, value: e.target.value }))
+    }
+
     return (
         <>
             {
@@ -47,10 +59,12 @@ const CourseFormField = () => {
                             ) : (
                                 <div className="relative mt-2">
                                     <Input
+                                        value={field.id && courseLandingState ? courseLandingState[field.id as keyof typeof courseLandingState] || '' : ''}
                                         name={field.name}
                                         className="w-full pr-16 border-gray-400"
                                         placeholder={field.placeholder}
                                         maxLength={field.maxLength}
+                                        onChange={(e) => handleChange(e, field)}
                                     />
                                     <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
                                         Max: {field.maxLength}

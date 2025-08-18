@@ -24,17 +24,13 @@ function LoadContentPlugin() {
 
     useEffect(() => {
         if (courseLandingState?.description) {
-            // Parse the JSON string
             const json = JSON.parse(courseLandingState.description);
-
-            // Use editor.parseEditorState() to convert JSON to EditorState
             const editorState = editor.parseEditorState(json);
-
-            // Set the editor state
             editor.setEditorState(editorState);
         }
-    }, [editor, courseLandingState?.description]);
-
+        // ⚠ only run once on mount, not when Redux state changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editor]);
     return null;
 }
 

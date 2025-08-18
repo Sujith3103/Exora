@@ -39,6 +39,10 @@ const InstructorCourses = () => {
 
     const navigate = useNavigate()
 
+    const handleClick_AddNewCourse = async() => {
+        const repsonse = await server.post('')
+    }   
+
     useEffect(() => {
 
         async function fetchData() {
@@ -57,7 +61,7 @@ const InstructorCourses = () => {
             <div className="w-full mt-10 p-2 flex items-center">
                 <p>Total Courses: {courseList.length}</p>
                 <Button className="ml-auto bg-blue-500 hover:bg-blue-400 rounded-sm" onClick={() => navigate('/profile/courses/new-course')}>
-                    <Plus /> New
+                    <Plus onClick={handleClick_AddNewCourse}/> New
                 </Button>
             </div>
 

@@ -23,6 +23,10 @@ interface CourseBasicInfo {
     primaryLanguage?: CourseLanguage
 }
 
+interface UploadState {
+    file: File | {};
+}
+
 
 interface CourseLandingData {
     title?: string,
@@ -37,6 +41,7 @@ interface courseState {
     courseBasicInfo: Record<string, string>
     courseRequirements: string[]
     CourseLanding: CourseLandingData | null
+    courseImgUpload: UploadState | null
     loading: boolean,
     error: boolean
 }
@@ -46,6 +51,7 @@ const initialState: courseState = {
     courseBasicInfo: {},
     courseRequirements: [],
     CourseLanding: null,
+    courseImgUpload: null,
     loading: false,
     error: false
 }
@@ -69,6 +75,12 @@ const courseSlice = createSlice({
         ) {
             state.courseBasicInfo[action.payload.key] = action.payload.value;
         },
+        setCousreLanding(state: courseState, action: PayloadAction<{ key: keyof CourseLandingData, value: string }>) {
+            if (state.CourseLanding) {
+                state.CourseLanding[action.payload.key] = action.payload.value
+            }
+        }
+        ,
         setCourseLandingDescription(
             state: courseState,
             action: PayloadAction<{ description: string | null }>
@@ -77,8 +89,14 @@ const courseSlice = createSlice({
                 state.CourseLanding = {}; // initialize if null
             }
             state.CourseLanding.description = action.payload.description;
-        }
-        ,
+        },
+        uploadCourseImage(state: courseState, action: PayloadAction<File>) {
+            if (!state.courseImgUpload) {
+                state.courseImgUpload = { file: action.payload };
+            } else {
+                state.courseImgUpload.file = action.payload;
+            }
+        },
         removeCourseRequirement(state: courseState, action: PayloadAction<number>) {
             state.courseRequirements = state.courseRequirements.filter(
                 (_, index) => index !== action.payload
@@ -92,7 +110,7 @@ const courseSlice = createSlice({
 
 
 export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo,
-    setCourseLandingDescription,
+    setCourseLandingDescription, setCousreLanding,
 
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

@@ -31,6 +31,7 @@ declare module 'express-serve-static-core' {
 import auth_route from './routes/auth_route';
 import user_route from './routes/user_route';
 import media_route from './routes/media_route'
+import course_route from './routes/course_route'
 // -------------------- CONFIG --------------------
 dotenv.config();
 const app = express();
@@ -44,6 +45,7 @@ app.use(express.json());
 app.use('/api/auth', auth_route);
 app.use('/api/user', user_route);
 app.use('/api/media', media_route);
+app.use('/api/course', course_route)
 
 // -------------------- SUPABASE --------------------
 const supabaseUrl = "https://aywktugruubporzskjdt.supabase.co";
