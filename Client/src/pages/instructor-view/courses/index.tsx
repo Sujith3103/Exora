@@ -1,67 +1,96 @@
 import server from "@/api/axiosinstance";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCaption, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
-import { Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+    Table,
+    TableBody,
+    TableCaption,
+    TableHead,
+    TableHeader,
+    TableRow,
+    TableCell,
+} from "@/components/ui/table";
+import type { AppDispatch, RootState } from "@/store";
+import { setCourseDetails } from "@/store/courseSlice";
+import { Edit, Plus, Trash } from "lucide-react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-interface CourseDesc {
-    CourseImg: string;
-    title: string;
-    category: string;
-    duration: string;
-    price: string; // better as string/number
-    level: "beginner" | "intermediate" | "advanced";
-    status: "published" | "drafted";
-}
-
 const InstructorCourses = () => {
-    const [courseList, setCourseList] = useState<CourseDesc[]>([
-        {
-            CourseImg: "https://via.placeholder.com/100",
-            title: "React for Beginners course 2025",
-            category: "Web Development",
-            duration: "10h",
-            price: "$49",
-            level: "beginner",
-            status: "published",
-        },
-        {
-            CourseImg: "https://via.placeholder.com/100",
-            title: "Advanced Node.js",
-            category: "Backend",
-            duration: "15h",
-            price: "$79",
-            level: "advanced",
-            status: "drafted",
-        },
-    ]);
+    const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
 
-    const navigate = useNavigate()
+    const courseData = useSelector(
+        (state: RootState) => state.course.courseData
+    );
 
-    const handleClick_AddNewCourse = async() => {
-        const repsonse = await server.post('')
-    }   
+    // Placeholder image for empty courses
+    const PLACEHOLDER_IMAGE = "/images/placeholder.png";
+
+    const handleClick_EditCourse = (courseid: string) => {
+        console.log("courseif : ", courseid)
+        navigate(`/profile/courses/edit/:${courseid}`)
+    }
+
+    const handleClick_AddNewCourse = async () => {
+        try {
+            const response = await server.post("/course/create-new");
+            if (response.data.success) {
+                console.log("created course: ", response.data);
+
+                // Update Redux state with the new course
+                dispatch(setCourseDetails(response.data.instructorCourses.flat()));
+            }
+        } catch (error) {
+            console.error("Failed to create course:", error);
+        }
+    };
 
     useEffect(() => {
-
         async function fetchData() {
-            const response = await server.get('')
+            try {
+                const response = await server.get("/course/get-all-courses");
+                if (response.data.success) {
+                    console.log("all course: ", response.data);
+                    // Update Redux state with the new course
+                    dispatch(setCourseDetails(response.data.instructorCourses.flat()));
+                }
+            } catch (error) {
+                console.error("Failed to fetch courses:", error);
+            }
         }
+        fetchData();
+    }, [dispatch]);
 
-        fetchData()
+    useEffect(() => {
+        console.log("dat : ", courseData)
+    }, [courseData])
 
-    }, [])
-
+    // Show either actual courses or placeholder rows if empty
+    //   const displayCourses =
+    //     courseData && courseData.length > 0
+    //       ? courseData
+    //       : Array(5).fill({
+    //           title: "",
+    //           courseImg: "",
+    //           category: "",
+    //           duration: "",
+    //           price: "",
+    //           level: "beginner",
+    //           status: "drafted",
+    //         });
 
     return (
         <div className="w-full h-full p-5 flex flex-col">
             <h1 className="text-3xl font-semibold">My Courses</h1>
 
             <div className="w-full mt-10 p-2 flex items-center">
-                <p>Total Courses: {courseList.length}</p>
-                <Button className="ml-auto bg-blue-500 hover:bg-blue-400 rounded-sm" onClick={() => navigate('/profile/courses/new-course')}>
-                    <Plus onClick={handleClick_AddNewCourse}/> New
+                <p>Total Courses: {courseData?.length || 0}</p>
+                <Button
+                    className="ml-auto bg-blue-500 hover:bg-blue-400 rounded-sm"
+                    onClick={handleClick_AddNewCourse}
+                >
+                    <Plus /> New
                 </Button>
             </div>
 
@@ -76,33 +105,54 @@ const InstructorCourses = () => {
                             <TableHead className="text-center">Price</TableHead>
                             <TableHead className="text-center">Level</TableHead>
                             <TableHead className="text-center">Status</TableHead>
+                            <TableHead className="text-center">Config</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {courseList.map((course, index) => (
-                            <TableRow key={index}>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <img
-                                            src={course.CourseImg}
-                                            alt={course.title}
-                                            className="w-12 h-12 object-cover rounded"
+                        {courseData.map((course, index) => {
+                            console.log("cousre :", course); // logs each course object
+                            return (
+                                <TableRow key={course.id}>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <img
+                                                src={course.courseImg || PLACEHOLDER_IMAGE}
+                                                alt={course.title || "Course Image"}
+                                                className="w-12 h-12 object-cover rounded"
+                                            />
+                                            <span className="whitespace-nowrap truncate max-w-[200px]">
+                                                {course.title || "please enter a title"}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        {course.category || "none"}
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        {course.duration || "none"}
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        {course.pricing || "0"}
+                                    </TableCell>
+                                    <TableCell className="text-center capitalize">
+                                        {course.level || "none"}
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        {course.status || "drafted"}
+                                    </TableCell>
+                                    <TableCell className="flex justify-center text-center gap-3">
+                                        <Edit
+                                            className="text-gray-500"
+                                            onClick={() => handleClick_EditCourse(course.id)}
                                         />
-                                        <span className="whitespace-nowrap truncate max-w-[200px]">
-                                            {course.title}
-                                        </span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-center">{course.category}</TableCell>
-                                <TableCell className="text-center">{course.duration}</TableCell>
-                                <TableCell className="text-center">{course.price}</TableCell>
-                                <TableCell className="text-center capitalize">{course.level}</TableCell>
-                                <TableCell className="text-center">{course.status}</TableCell>
-                            </TableRow>
-                        ))}
+                                        <Trash className="text-red-500" />
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
+
                     </TableBody>
                 </Table>
-
             </div>
         </div>
     );

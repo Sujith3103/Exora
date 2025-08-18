@@ -80,6 +80,7 @@ function App() {
           <Route path="courses" element={<InstructorCourses />}>
           </Route>
           <Route path="courses/new-course" element={<NewCourse />} />
+          <Route path="courses/edit/:id" element={<NewCourse />} />
         </Route>
       </Routes>
 

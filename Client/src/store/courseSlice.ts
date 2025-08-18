@@ -9,10 +9,12 @@ type CourseLevel = "beginner" | "intermediate" | "advanced" | string;
 type CourseLanguage = | "english" | "spanish" | "french" | "german" | "chinese" | "japanese" | "korean" | "portuguese" | "arabic" | "russian" | string;
 
 interface CourseDetails {
+    id:string
+    title: string;
     courseImg?: string;
     category: CourseCategory; // 👈 category restricted
     duration: string;
-    price: string;
+    pricing: number;
     level: "beginner" | "intermediate" | "advanced";
     status: "published" | "drafted";
 }
@@ -37,7 +39,7 @@ interface CourseLandingData {
 }
 
 interface courseState {
-    courseData: CourseDetails | null,
+    courseData: CourseDetails[] | [],
     courseBasicInfo: Record<string, string>
     courseRequirements: string[]
     CourseLanding: CourseLandingData | null
@@ -47,7 +49,7 @@ interface courseState {
 }
 
 const initialState: courseState = {
-    courseData: null,
+    courseData: [],
     courseBasicInfo: {},
     courseRequirements: [],
     CourseLanding: null,
@@ -63,8 +65,9 @@ const courseSlice = createSlice({
         courseSliceLoadingStart(state: courseState) {
             state.loading = true
         },
-        setCourseDetails(state: courseState, action: PayloadAction<CourseDetails>) {
-            state.courseData = action.payload
+        setCourseDetails(state: courseState, action: PayloadAction<CourseDetails[]>) {
+            console.log("details ",action.payload)
+            state.courseData = [...action.payload]
         },
         setCourseRequirements(state: courseState, action: PayloadAction<string>) {
             state.courseRequirements = [...state.courseRequirements, action.payload]

@@ -192,7 +192,6 @@ export const getUserProfileData = async (req: Request, res: Response) => {
             const profileData = await prisma.userProfile.findUnique({
                 where: { userId: userId }
             })
-            console.log("profileData data : ", profileData)
 
             await client.hSet(userProfileKey, {
                 contact: profileData?.contact || '',
@@ -241,7 +240,6 @@ export const getUserSecurityData = async (req: Request, res: Response) => {
             const securityData = await prisma.userSecurity.findUnique({
                 where: { userId: userId }
             })
-            console.log("security data : ", securityData)
 
             await client.hSet(userProfileKey, {
                 twoStepVerification: String(securityData?.twoStepVerification ?? ""),
