@@ -91,9 +91,12 @@ model Course {
   lengthStr       String
   status          CourseStatus
 
-  // Relation to User
+  // Relation to User (Instructor)
   instructor   User   @relation(fields: [instructorId], references: [id])
   instructorId String
+
+  // Relations
+  sections Section[]  // A course has many sections
 
   @@map("courses")
 }
@@ -102,3 +105,35 @@ enum CourseStatus {
   published
   drafted
 }
+
+model Section {
+  id        String     @id @default(uuid())
+  title     String
+  createdAt DateTime   @default(now())
+
+  // Relations
+  courseId  String
+  course    Course     @relation(fields: [courseId], references: [id])
+
+  lectures  Lecture[]  // one-to-many
+  order     Int        // for drag-and-drop ordering
+}
+
+model Lecture {
+  id         String   @id @default(uuid())
+  title      String
+  videoUrl   String   // URL to CDN (Cloudinary, S3, etc.)
+  freePreview Boolean @default(false)
+  publicId   String   // Cloudinary/S3 object key for management
+  lengthNum  Int      // length in seconds
+  lengthStr  String   // e.g. "12:34"
+  createdAt  DateTime @default(now())
+
+  // Relations
+  sectionId  String
+  section    Section  @relation(fields: [sectionId], references: [id])
+
+  order      Int      // position within the section
+}
+
+

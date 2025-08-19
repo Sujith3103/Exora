@@ -29,7 +29,7 @@ const InstructorCourses = () => {
 
     const handleClick_EditCourse = (courseid: string) => {
         console.log("courseif : ", courseid)
-        navigate(`/profile/courses/edit/:${courseid}`)
+        navigate(`/profile/courses/edit/${courseid}`)
     }
 
     const handleClick_AddNewCourse = async () => {
@@ -49,9 +49,8 @@ const InstructorCourses = () => {
     useEffect(() => {
         async function fetchData() {
             try {
-                const response = await server.get("/course/get-all-courses");
+                const response = await server.get(`/course/get-all-courses`);
                 if (response.data.success) {
-                    console.log("all course: ", response.data);
                     // Update Redux state with the new course
                     dispatch(setCourseDetails(response.data.instructorCourses.flat()));
                 }
@@ -62,9 +61,6 @@ const InstructorCourses = () => {
         fetchData();
     }, [dispatch]);
 
-    useEffect(() => {
-        console.log("dat : ", courseData)
-    }, [courseData])
 
     // Show either actual courses or placeholder rows if empty
     //   const displayCourses =
@@ -110,7 +106,6 @@ const InstructorCourses = () => {
                     </TableHeader>
                     <TableBody>
                         {courseData.map((course, index) => {
-                            console.log("cousre :", course); // logs each course object
                             return (
                                 <TableRow key={course.id}>
                                     <TableCell>

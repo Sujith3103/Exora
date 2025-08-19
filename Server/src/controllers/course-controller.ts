@@ -32,7 +32,7 @@ export const AddNewCourse = async (req: Request, res: Response) => {
                 image: "",
                 requirements: [],          // empty array for Json
                 searchkey: "",
-                slug:  `temp-slug-${Date.now()}`,         // must be unique
+                slug: `temp-slug-${Date.now()}`,         // must be unique
                 lengthNum: 0,
                 lengthStr: "",
                 status: "drafted",         // default enum value
@@ -59,6 +59,7 @@ export const AddNewCourse = async (req: Request, res: Response) => {
     }
 
 }
+
 export const GetAllCourses = async (req: Request, res: Response) => {
 
     const userId = req.user?.id as string
@@ -69,8 +70,8 @@ export const GetAllCourses = async (req: Request, res: Response) => {
         // Get all courses by an instructor
         const instructorCourses = await prisma.course.findMany({
             where: { instructorId: userId },
-            select:{
-                id:true,
+            select: {
+                id: true,
                 title: true,
                 level: true,
                 category: true,
@@ -81,13 +82,13 @@ export const GetAllCourses = async (req: Request, res: Response) => {
             }
         });
 
-        if(!instructorCourses) return res.status(404).json({success :false, message: "courses not found"})
+        if (!instructorCourses) return res.status(404).json({ success: false, message: "courses not found" })
 
-        console.log("instructor courses : ", instructorCourses)
+        // console.log("instructor courses : ", instructorCourses)
 
         return res.status(200).json({
-            success : true,
-            message:"fetched instructor courses",
+            success: true,
+            message: "fetched instructor courses",
             instructorCourses: instructorCourses
         })
 
@@ -99,5 +100,76 @@ export const GetAllCourses = async (req: Request, res: Response) => {
             message: "failed fetching courses"
         })
     }
+
+}
+
+// helper to get the next section order
+const getNextSectionOrder = async (courseId: string) => {
+    const lastSection = await prisma.section.findFirst({
+        where: { courseId },
+        orderBy: { order: "desc" },
+    });
+    return lastSection ? lastSection.order + 1 : 1;
+};
+
+export const CreateSection = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id as string;
+        const courseId = req.params.id; // 👈 extract param from URL
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        const { title } = req.body;
+
+        if (!title || !courseId) {
+            return res.status(400).json({ success: false, message: "Title and courseId are required" });
+        }
+
+        const createdSection = await prisma.section.create({
+            data: {
+                title,
+                courseId, // assuming a section belongs to a course
+                order: await getNextSectionOrder(courseId), // 👈 helper to keep sections ordered
+            },
+        });
+
+        console.log("created section : ",createdSection)
+
+        return res.status(201).json({ success: true, section: createdSection });
+    } catch (error) {
+        console.error("Error creating section:", error);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+export const GetAllSections = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id as string;
+
+        const courseId = req.params.id; // 👈 extract param from URL
+        console.log("Course ID:", courseId);
+
+        const sections = await prisma.section.findMany({
+            where: { courseId: courseId }
+        })
+
+        if(sections.length === 0) return res.status(404).json({success: false,message: "No sections found"})
+
+        return res.status(200).json({
+            success: true,
+            message: "fetched course-sections successfully",
+            sections
+        })
+    }catch(err){
+        console.log(err)
+        return res.status(500).json({
+            successs : false,
+            message : "failed to retrive course-sections"
+        })
+    }
+
+    
 
 }

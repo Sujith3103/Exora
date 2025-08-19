@@ -9,7 +9,7 @@ type CourseLevel = "beginner" | "intermediate" | "advanced" | string;
 type CourseLanguage = | "english" | "spanish" | "french" | "german" | "chinese" | "japanese" | "korean" | "portuguese" | "arabic" | "russian" | string;
 
 interface CourseDetails {
-    id:string
+    id: string
     title: string;
     courseImg?: string;
     category: CourseCategory; // 👈 category restricted
@@ -29,6 +29,15 @@ interface UploadState {
     file: File | {};
 }
 
+interface Lectures {
+    id: string,
+    title: string,
+    videoUrl: string,   // URL to CDN (Cloudinary, S3, etc.)
+    freePreview: boolean,
+    lengthNum?: number,    // length in seconds
+    lengthStr?: string,// e.g. "12:34"
+    order : number
+}
 
 interface CourseLandingData {
     title?: string,
@@ -38,11 +47,20 @@ interface CourseLandingData {
     courseImg?: string
 }
 
+interface Section {
+    id?:string,
+    title: string,
+    order: number,
+
+    Lectures?:Lectures[]
+}
+
 interface courseState {
     courseData: CourseDetails[] | [],
     courseBasicInfo: Record<string, string>
     courseRequirements: string[]
     CourseLanding: CourseLandingData | null
+    sections: Section[]
     courseImgUpload: UploadState | null
     loading: boolean,
     error: boolean
@@ -54,6 +72,7 @@ const initialState: courseState = {
     courseRequirements: [],
     CourseLanding: null,
     courseImgUpload: null,
+    sections: [],
     loading: false,
     error: false
 }
@@ -66,9 +85,11 @@ const courseSlice = createSlice({
             state.loading = true
         },
         setCourseDetails(state: courseState, action: PayloadAction<CourseDetails[]>) {
-            console.log("details ",action.payload)
             state.courseData = [...action.payload]
         },
+
+        //------------------------------------------------------------Course Landing------------------------------------------------------------------
+       
         setCourseRequirements(state: courseState, action: PayloadAction<string>) {
             state.courseRequirements = [...state.courseRequirements, action.payload]
         },
@@ -100,6 +121,14 @@ const courseSlice = createSlice({
                 state.courseImgUpload.file = action.payload;
             }
         },
+
+        //-------------------------------------------------Course Curriculum----------------------------------------------------------------------
+
+        setCourseSection(state: courseState, action: PayloadAction<Section[]>){
+            state.sections = [...state.sections,...action.payload]
+        },
+
+
         removeCourseRequirement(state: courseState, action: PayloadAction<number>) {
             state.courseRequirements = state.courseRequirements.filter(
                 (_, index) => index !== action.payload
@@ -113,7 +142,7 @@ const courseSlice = createSlice({
 
 
 export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo,
-    setCourseLandingDescription, setCousreLanding,
+    setCourseLandingDescription, setCousreLanding,setCourseSection,
 
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

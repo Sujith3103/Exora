@@ -1,0 +1,78 @@
+import server from '@/api/axiosinstance'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import type { AppDispatch, RootState } from '@/store'
+import { setCourseSection } from '@/store/courseSlice'
+import { Label } from '@radix-ui/react-label'
+import React, { useRef } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useParams } from 'react-router-dom'
+
+const NewSection = () => {
+    type Section = {
+        sectionTitle: string
+        order: number
+    }
+
+      const { id } = useParams<{ id: string }>();
+
+
+    const initalInputRef = useRef<HTMLInputElement>(null)
+
+    const sections = useSelector((state: RootState) => state.course.sections)
+    const dispatch = useDispatch<AppDispatch>()
+
+    // const handleClick_AddNewSection = () => {
+    //     const newSection: Section = {
+    //         sectionTitle: '',
+    //         order: sections.length + 1,
+    //     }
+    //     dispatch(setCourseSection(newSection))
+    // }
+
+    const handleClick_AddSection = async() => {
+        if (initalInputRef.current) {
+            const value = initalInputRef.current.value.trim()
+            if (!value) return
+
+            const newSection: Section = {
+                sectionTitle: value,
+                order: sections.length + 1,
+            }
+
+            const response = await server.post(`/course/create-section/${id}`,{title : value})
+            dispatch(setCourseSection(response.data.section))
+            console.log(response.data)
+
+            initalInputRef.current.value = "" // reset input
+        }
+    }
+
+    return (
+        <Card className="p-5 border border-gray-300 rounded-md">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <Label
+                    htmlFor="section"
+                    className="whitespace-nowrap font-medium text-gray-700"
+                >
+                    New Section:
+                </Label>
+                <Input
+                    ref={initalInputRef}
+                    name="section"
+                    placeholder="Enter section title"
+                    className="flex-1 border border-gray-400"
+                />
+            </div>
+            <Button
+                className="w-full sm:w-auto bg-purple-700 hover:bg-purple-600 mt-4 ml-auto"
+                onClick={handleClick_AddSection}
+            >
+                Add Section
+            </Button>
+        </Card>
+    )
+}
+
+export default NewSection
