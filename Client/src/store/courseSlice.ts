@@ -31,13 +31,13 @@ interface UploadState {
 
 interface Lectures {
     id: string,
-    sectionId : string,
+    sectionId: string,
     title: string,
     videoUrl: string,   // URL to CDN (Cloudinary, S3, etc.)
     freePreview: boolean,
     lengthNum?: number,    // length in seconds
     lengthStr?: string,// e.g. "12:34"
-    order : number
+    order: number
 
 }
 
@@ -50,11 +50,11 @@ interface CourseLandingData {
 }
 
 interface Section {
-    id?:string,
+    id?: string,
     title: string,
     order: number,
 
-    Lectures?:Lectures[]
+    lectures?: Lectures[]
 }
 
 interface courseState {
@@ -91,7 +91,7 @@ const courseSlice = createSlice({
         },
 
         //------------------------------------------------------------Course Landing------------------------------------------------------------------
-       
+
         setCourseRequirements(state: courseState, action: PayloadAction<string>) {
             state.courseRequirements = [...state.courseRequirements, action.payload]
         },
@@ -126,12 +126,25 @@ const courseSlice = createSlice({
 
         //-------------------------------------------------Course Curriculum----------------------------------------------------------------------
 
-        setCourseSection(state: courseState, action: PayloadAction<Section[]>){
+        setCourseSection(state: courseState, action: PayloadAction<Section[]>) {
             state.sections = [...action.payload]
         },
-        updateCourseSection(state: courseState, action: PayloadAction<Section>){
-            state.sections = [...state.sections,action.payload]
+        updateCourseSection(state: courseState, action: PayloadAction<Section>) {
+            state.sections = [...state.sections, action.payload]
         },
+        updateCourseLecture(state: courseState, action: PayloadAction<Lectures>) {
+            const newLecture = action.payload;
+
+            // find the correct section
+            const section = state.sections.find(sec => sec.id === newLecture.sectionId);
+            if (section) {
+                if (!section.lectures) {
+                    section.lectures = [];
+                }
+                section.lectures.push(newLecture);
+            }
+        },
+
 
 
         removeCourseRequirement(state: courseState, action: PayloadAction<number>) {
@@ -146,8 +159,8 @@ const courseSlice = createSlice({
 })
 
 
-export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo,
-    setCourseLandingDescription, setCousreLanding,setCourseSection,updateCourseSection,
+export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo,updateCourseLecture,
+    setCourseLandingDescription, setCousreLanding, setCourseSection, updateCourseSection,
 
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

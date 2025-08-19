@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Card, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { AppDispatch, RootState } from "@/store"
 import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseSection } from "@/store/courseSlice"
-import { Edit, Edit2, FileTextIcon, Plus, Trash2Icon, X } from "lucide-react"
+import { CircleCheck, CirclePlay, Edit, Edit2, FileTextIcon, Lectern, Plus, Trash2Icon, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import NewSection from "./section"
@@ -13,10 +13,15 @@ import server from "@/api/axiosinstance"
 import { isloading } from "@/store/authSlice"
 import CurriculumSkeleton from "./curriculumSkeleton"
 import NewLecture from "./lecture"
+import Content from "./content"
 
 type AddingLectureState = {
   sectionId: string | null;
   addingLecture: boolean;
+};
+type AddingContentState = {
+  LectureId: string | null;
+  addingContent: boolean;
 };
 type Section = {
   sectionTitle: string
@@ -34,26 +39,16 @@ const CourseCurriculum = () => {
   const initalInputRef = useRef<HTMLInputElement>(null)
 
   const [isAddingSection, setIsAddingSection] = useState(false)
+  // const [isAddingContent, setIsAddingContent] = useState(false)
+  const [isAddingContent, setIsAddingContent] = useState<AddingContentState>({
+    LectureId: null,
+    addingContent: false
+  })
   const [isAddingLecture, setIsAddingLecture] = useState<AddingLectureState>({
     sectionId: null,
     addingLecture: false,
   });
   const [isEditTitle, setIsEditTitle] = useState(false)
-
-  // const handleClick_AddSection = () => {
-  //   if (initalInputRef.current) {
-  //     const value = initalInputRef.current.value.trim()
-  //     if (!value) return
-
-  //     const newSection: Section = {
-  //       sectionTitle: value,
-  //       order: sections.length + 1,
-  //     }
-
-  //     dispatch(setCourseSection(newSection))
-  //     initalInputRef.current.value = "" // reset input
-  //   }
-  // }
 
   const handleClick_AddNewLecture = (sectionId: any) => {
     setIsAddingLecture((prev) => ({
@@ -62,23 +57,25 @@ const CourseCurriculum = () => {
     }));
   };
 
-  const handleClick_AddNewSection = () => {
-    setIsAddingSection(true)
-
-
-  }
   const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
 
     async function FetchSections() {
+      console.log("fetching sections")
+
       dispatch(courseSliceLoadingStart())
       const response = await server.get(`/course/get-all-sections/${id}`)
       if (response.data.success) {
+        console.log("fetched sections", response.data)
+
         dispatch(setCourseSection(response.data.sections))
       }
       dispatch(courseSliceLoadingStop())
     }
+    // if ( sections.length === 0) {
+    //   FetchSections();
+    // }
     FetchSections()
 
   }, [])
@@ -88,10 +85,13 @@ const CourseCurriculum = () => {
   }
 
   return (
-    <div className="px-10 ">
-      <Card className="p-10 px-15 rounded-lg shadow-md mt-5 border border-gray-200">
+    <div className="md:px-10 overflow-x-auto">
+      <Card className="md:p-10 p-5 md:px-15 rounded-lg shadow-md mt-5 border border-gray-200 overflow-x-auto">
         {sections && sections.length > 0 ? (
           <div className="space-y-10">
+            <>
+              {/* {console.log("sections : ",sections,sections.length )} */}
+            </>
             {sections.map((section) => {
               if (!section.id) {
                 return <NewSection setIsAddingSection={setIsAddingSection} key={section.id} />
@@ -100,7 +100,7 @@ const CourseCurriculum = () => {
               return (
                 <Card
                   key={section.id}
-                  className="p-5 border border-gray-200 rounded-md shadow-sm"
+                  className="p-5 border border-gray-200 rounded-md shadow-sm overflow-x-auto"
                 >
                   <div className="flex flex-col sm:flex-col gap-3">
                     <div className="flex items-center gap-3 group">
@@ -123,17 +123,72 @@ const CourseCurriculum = () => {
                         <Trash2Icon size={15} strokeWidth={1} className="text-red-700" />
                       </div>
                     </div>
+                    <div className="flex flex-col gap-3 sm:ml-10">
+                      {section.lectures?.map((lecture, index) => (
+                        <Card
+                          key={lecture.id || index}
+                          className="flex flex-col mt-0 mb-0 pt-0 pb-0 rounded-none p-3 gap-0 "
+                        >
+                          <div className="flex flex-row items-center gap-2">
+                            <CircleCheck size={15} strokeWidth={1} />
+                            <p className="whitespace-nowrap">Lecture {lecture.order}:</p>
+
+                            <div className="flex items-center gap-1 ml-4">
+                              <FileTextIcon size={15} strokeWidth={1} />
+                              <p className="whitespace-nowrap">{lecture.title}</p>
+                            </div>
+
+                            <Button
+                              variant="outline"
+                              onClick={() =>
+                                setIsAddingContent(prev => ({
+                                  addingContent: prev.LectureId === lecture.id ? !prev.addingContent : true,
+                                  LectureId: lecture.id,
+                                }))
+                              }
+                              className="flex items-center justify-center ml-auto rounded-none text-purple-600 border-purple-500 hover:bg-purple-100 w-35 relative overflow-hidden h-9"
+                            >
+                              {/* Cancel text */}
+                              <span
+                                className={`absolute left-0 right-0 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id
+                                    ? "opacity-100 translate-y-0"
+                                    : "opacity-0 -translate-y-2"
+                                  }`}
+                              >
+                                × Cancel
+                              </span>
+
+                              {/* Plus Content text */}
+                              <span
+                                className={`absolute left-0 right-0 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id
+                                    ? "opacity-0 translate-y-2"
+                                    : "opacity-100 translate-y-0"
+                                  }`}
+                              >
+                                <Plus /> Content
+                              </span>
+                            </Button>
+                          </div>
+                          {/* Extra card immediately below the button */}
+                          {isAddingContent.addingContent && lecture.id === isAddingContent.LectureId && (
+                            <Content />
+                          )}
+                        </Card>
+                      ))}
+                    </div>
+
                     <Button
                       variant="outline"
                       onClick={() => handleClick_AddNewLecture(section.id)}
                       className="flex items-center gap-1 ml-10 rounded-none mt-3 text-purple-600 border-purple-500 hover:bg-purple-100 w-35"
                     >
+
                       <Plus size={16} /> Add Lecture
                     </Button>
                     {
-                      isAddingLecture.addingLecture && isAddingLecture.sectionId === section.id && <NewLecture setIsAddingLecture={setIsAddingLecture}/>
+                      isAddingLecture.addingLecture && isAddingLecture.sectionId === section.id && <NewLecture setIsAddingLecture={setIsAddingLecture} sectionId={section.id} />
                     }
-                  </div>  
+                  </div>
                 </Card>
               )
             })}

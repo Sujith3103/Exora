@@ -128,6 +128,7 @@ model Lecture {
   lengthNum  Int      // length in seconds
   lengthStr  String   // e.g. "12:34"
   createdAt  DateTime @default(now())
+  
 
   // Relations
   sectionId  String

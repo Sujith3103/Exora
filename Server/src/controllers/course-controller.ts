@@ -135,7 +135,7 @@ export const CreateSection = async (req: Request, res: Response) => {
             },
         });
 
-        console.log("created section : ",createdSection)
+        console.log("created section : ", createdSection)
 
         return res.status(201).json({ success: true, section: createdSection });
     } catch (error) {
@@ -149,27 +149,102 @@ export const GetAllSections = async (req: Request, res: Response) => {
         const userId = req.user?.id as string;
 
         const courseId = req.params.id; // 👈 extract param from URL
-        console.log("Course ID:", courseId);
 
         const sections = await prisma.section.findMany({
-            where: { courseId: courseId }
+            where: { courseId },
+            include: {
+                lectures: true
+            },
+            orderBy: { order: "asc" }
         })
-
-        if(sections.length === 0) return res.status(404).json({success: false,message: "No sections found"})
 
         return res.status(200).json({
             success: true,
             message: "fetched course-sections successfully",
             sections
         })
-    }catch(err){
+    } catch (err) {
         console.log(err)
         return res.status(500).json({
-            successs : false,
-            message : "failed to retrive course-sections"
+            successs: false,
+            message: "failed to retrive course-sections"
         })
     }
 
-    
+
 
 }
+
+const getNextLectureOrder = async (sectionId: string) => {
+    const lastLecture = await prisma.lecture.findFirst({
+        where: { sectionId },
+        orderBy: { order: "desc" },
+    });
+    return lastLecture ? lastLecture.order + 1 : 1;
+}
+
+export const CreateLecture = async (req: Request, res: Response) => {
+
+    try {
+        const userId = req.user?.id as string;
+
+        const { sectionId, title } = req.body
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        const createdLecture = await prisma.lecture.create({
+            data: {
+                title: title,
+                videoUrl: '',
+                freePreview: false,
+                publicId: '',
+                lengthNum: 0,
+                lengthStr: '',
+                sectionId: sectionId,
+                order: await getNextLectureOrder(sectionId)
+            }
+        })
+
+        console.log("created lecture :", createdLecture)
+
+        return res.status(200).json({
+            success: true,
+            message: "created lecture successfully",
+            createdLecture
+        })
+
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({
+            success: false,
+            message: "failed creating a lecture"
+        })
+    }
+}
+
+// export const GetAllLecture = async (req: Request, res: Response) => {
+//     try {
+//         const userId = req.user?.id as string;
+//         const courseId = req.params.id; // 👈 extract param from URL
+
+//         if (!userId) {
+//             return res.status(401).json({ success: false, message: "Unauthorized" });
+//         }
+
+//         await prisma.course.findFirst({
+//             where:{
+//                 id: courseId
+//             },
+//             select:{
+//                 lectures:
+//             }
+//         })
+
+//     } catch (err) {
+//         console.log(err)
+//         return res.status(500).json({
+//             success: false,
+//             message: "failed to fetch lectures"
+//         })
+//     }

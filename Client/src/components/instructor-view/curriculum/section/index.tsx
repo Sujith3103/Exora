@@ -70,7 +70,8 @@ const NewSection: React.FC<NewSectionProps> = ({setIsAddingSection,}) => {
                     ref={initalInputRef}
                     name="section"
                     placeholder="Enter section title"
-                    className="flex-1 border border-gray-400"
+                    className="flex-1 border border-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0 
+                     focus:border-purple-500 "
                 />
             </div>
             <Button
