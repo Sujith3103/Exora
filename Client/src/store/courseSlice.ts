@@ -31,12 +31,14 @@ interface UploadState {
 
 interface Lectures {
     id: string,
+    sectionId : string,
     title: string,
     videoUrl: string,   // URL to CDN (Cloudinary, S3, etc.)
     freePreview: boolean,
     lengthNum?: number,    // length in seconds
     lengthStr?: string,// e.g. "12:34"
     order : number
+
 }
 
 interface CourseLandingData {
@@ -125,7 +127,10 @@ const courseSlice = createSlice({
         //-------------------------------------------------Course Curriculum----------------------------------------------------------------------
 
         setCourseSection(state: courseState, action: PayloadAction<Section[]>){
-            state.sections = [...state.sections,...action.payload]
+            state.sections = [...action.payload]
+        },
+        updateCourseSection(state: courseState, action: PayloadAction<Section>){
+            state.sections = [...state.sections,action.payload]
         },
 
 
@@ -142,7 +147,7 @@ const courseSlice = createSlice({
 
 
 export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo,
-    setCourseLandingDescription, setCousreLanding,setCourseSection,
+    setCourseLandingDescription, setCousreLanding,setCourseSection,updateCourseSection,
 
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer
