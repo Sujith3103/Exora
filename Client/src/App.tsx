@@ -13,6 +13,9 @@ import OverView from "./components/profile-components/overview"
 import RouteGuard from "./components/routeguard"
 import InstructorCourses from "./pages/instructor-view/courses"
 import NewCourse from "./pages/instructor-view/new-course"
+import CourseLanding from "./components/instructor-view/course-landing"
+import CourseCurriculum from "./components/instructor-view/curriculum"
+import CourseMessage from "./components/instructor-view/course-messages"
 
 
 function App() {
@@ -80,7 +83,11 @@ function App() {
           <Route path="courses" element={<InstructorCourses />}>
           </Route>
           <Route path="courses/new-course" element={<NewCourse />} />
-          <Route path="courses/edit/:id" element={<NewCourse />} />
+          <Route path="courses/edit" element={<NewCourse />}>
+              <Route path="course-landing/:id" element={<CourseLanding />}/>
+              <Route path="course-curriculum/:id" element={<CourseCurriculum />}/>
+              <Route path="course-message/:id" element={<CourseMessage />}/>
+          </Route>
         </Route>
       </Routes>
 

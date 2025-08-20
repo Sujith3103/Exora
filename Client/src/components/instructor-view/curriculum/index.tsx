@@ -10,8 +10,9 @@ import NewSection from "./section"
 import { useParams } from "react-router-dom"
 import server from "@/api/axiosinstance"
 import CurriculumSkeleton from "./curriculumSkeleton"
-import NewLecture from "./lecture"
-import Content from "./content"
+import NewLecture from "./lecture/new-lecture"
+import Content from "./content/new-content"
+import Lecture from "./lecture"
 
 type AddingLectureState = {
   sectionId: string | null;
@@ -42,6 +43,7 @@ const CourseCurriculum = () => {
     LectureId: null,
     addingContent: false
   })
+
   const [isAddingLecture, setIsAddingLecture] = useState<AddingLectureState>({
     sectionId: null,
     addingLecture: false,
@@ -49,7 +51,7 @@ const CourseCurriculum = () => {
   const [isEditTitle, setIsEditTitle] = useState(false)
 
 
-const a = 0
+  const a = 0
   const handleClick_AddNewLecture = (sectionId: any) => {
     setIsAddingLecture((prev) => ({
       sectionId,
@@ -60,29 +62,29 @@ const a = 0
 
   const { id } = useParams<{ id: string }>();
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    async function FetchSections() {
-      console.log("fetching sections")
+  //   async function FetchSections() {
+  //     console.log("fetching sections")
 
-      dispatch(courseSliceLoadingStart())
-      const response = await server.get(`/course/get-all-sections/${id}`)
-      if (response.data.success) {
-        console.log("fetched sections", response.data)
+  //     dispatch(courseSliceLoadingStart())
+  //     const response = await server.get(`/course/get-all-sections/${id}`)
+  //     if (response.data.success) {
+  //       console.log("fetched sections", response.data)
 
-        dispatch(setCourseSection(response.data.sections))
-      }
-      if(a){
-        setIsEditTitle(false)
-      }
-      dispatch(courseSliceLoadingStop())
-    }
-    // if ( sections.length === 0) {
-    //   FetchSections();
-    // }
-    FetchSections()
+  //       dispatch(setCourseSection(response.data.sections))
+  //     }
+  //     if (a) {
+  //       setIsEditTitle(false)
+  //     }
+  //     dispatch(courseSliceLoadingStop())
+  //   }
+  //   // if ( sections.length === 0) {
+  //   //   FetchSections();
+  //   // }
+  //   FetchSections()
 
-  }, [])
+  // }, [])
 
   if (isLoading) {
     return <CurriculumSkeleton />
@@ -128,56 +130,11 @@ const a = 0
                       </div>
                     </div>
                     <div className="flex flex-col gap-3 sm:ml-10">
+
+                      {/* -------------------------------------------------Lecture---------------------------------------------------------------------- */}
+                      
                       {section.lectures?.map((lecture, index) => (
-                        <Card
-                          key={lecture.id || index}
-                          className="flex flex-col mt-0 mb-0 pt-0 pb-0 rounded-none p-3 gap-0 "
-                        >
-                          <div className="flex flex-row items-center gap-2">
-                            <CircleCheck size={15} strokeWidth={1} />
-                            <p className="whitespace-nowrap">Lecture {lecture.order}:</p>
-
-                            <div className="flex items-center gap-1 ml-4">
-                              <FileTextIcon size={15} strokeWidth={1} />
-                              <p className="whitespace-nowrap">{lecture.title}</p>
-                            </div>
-
-                            <Button
-                              variant="outline"
-                              onClick={() =>
-                                setIsAddingContent(prev => ({
-                                  addingContent: prev.LectureId === lecture.id ? !prev.addingContent : true,
-                                  LectureId: lecture.id,
-                                }))
-                              }
-                              className="flex items-center justify-center ml-auto rounded-none text-purple-600 border-purple-500 hover:bg-purple-100 w-35 relative overflow-hidden h-9"
-                            >
-                              {/* Cancel text */}
-                              <span
-                                className={`absolute left-0 right-0 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id
-                                    ? "opacity-100 translate-y-0"
-                                    : "opacity-0 -translate-y-2"
-                                  }`}
-                              >
-                                × Cancel
-                              </span>
-
-                              {/* Plus Content text */}
-                              <span
-                                className={`absolute left-0 right-0 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id
-                                    ? "opacity-0 translate-y-2"
-                                    : "opacity-100 translate-y-0"
-                                  }`}
-                              >
-                                <Plus /> Content
-                              </span>
-                            </Button>
-                          </div>
-                          {/* Extra card immediately below the button */}
-                          {isAddingContent.addingContent && lecture.id === isAddingContent.LectureId && (
-                            <Content />
-                          )}
-                        </Card>
+                        <Lecture key={lecture.id} lecture={lecture} index={index} setIsAddingContent={setIsAddingContent} isAddingContent={isAddingContent} />
                       ))}
                     </div>
 

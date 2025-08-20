@@ -10,11 +10,11 @@ import {
     TableCell,
 } from "@/components/ui/table";
 import type { AppDispatch, RootState } from "@/store";
-import { setCourseDetails } from "@/store/courseSlice";
+import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseDetails, setCourseSection } from "@/store/courseSlice";
 import { Edit, Plus, Trash } from "lucide-react";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const InstructorCourses = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -29,7 +29,7 @@ const InstructorCourses = () => {
 
     const handleClick_EditCourse = (courseid: string) => {
         console.log("courseif : ", courseid)
-        navigate(`/profile/courses/edit/${courseid}`)
+        navigate(`/profile/courses/edit/course-landing/${courseid}`)
     }
 
     const handleClick_AddNewCourse = async () => {
@@ -60,6 +60,8 @@ const InstructorCourses = () => {
         }
         fetchData();
     }, [dispatch]);
+
+
 
 
     // Show either actual courses or placeholder rows if empty

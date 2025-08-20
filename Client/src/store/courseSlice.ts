@@ -24,6 +24,13 @@ interface UploadState {
     file: File | {};
 }
 
+interface Resources {
+    id?: string,
+    title: string,
+    link: string,
+    lectureId?: string,
+}
+
 interface Lectures {
     id: string,
     sectionId: string,
@@ -33,7 +40,7 @@ interface Lectures {
     lengthNum?: number,    // length in seconds
     lengthStr?: string,// e.g. "12:34"
     order: number
-
+    resources?: Resources[]    
 }
 
 interface CourseLandingData {
@@ -70,7 +77,7 @@ const initialState: courseState = {
     CourseLanding: null,
     courseImgUpload: null,
     sections: [],
-    loading: false,
+    loading: true,
     error: false
 }
 

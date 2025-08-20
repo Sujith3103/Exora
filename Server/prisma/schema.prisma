@@ -96,7 +96,7 @@ model Course {
   instructorId String
 
   // Relations
-  sections Section[]  // A course has many sections
+  sections Section[] // A course has many sections
 
   @@map("courses")
 }
@@ -107,34 +107,41 @@ enum CourseStatus {
 }
 
 model Section {
-  id        String     @id @default(uuid())
+  id        String   @id @default(uuid())
   title     String
-  createdAt DateTime   @default(now())
+  createdAt DateTime @default(now())
 
   // Relations
-  courseId  String
-  course    Course     @relation(fields: [courseId], references: [id])
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
 
-  lectures  Lecture[]  // one-to-many
-  order     Int        // for drag-and-drop ordering
+  lectures Lecture[] // one-to-many
+  order    Int // for drag-and-drop ordering
+}
+
+model Resource {
+  id    String @id @default(uuid())
+  title String
+  link String
+
+  lectureId String
+  lecture Lecture @relation(fields: [lectureId],references: [id])
 }
 
 model Lecture {
-  id         String   @id @default(uuid())
-  title      String
-  videoUrl   String   // URL to CDN (Cloudinary, S3, etc.)
-  freePreview Boolean @default(false)
-  publicId   String   // Cloudinary/S3 object key for management
-  lengthNum  Int      // length in seconds
-  lengthStr  String   // e.g. "12:34"
-  createdAt  DateTime @default(now())
-  
+  id          String   @id @default(uuid())
+  title       String
+  videoUrl    String // URL to CDN (Cloudinary, S3, etc.)
+  freePreview Boolean  @default(false)
+  publicId    String // Cloudinary/S3 object key for management
+  lengthNum   Int // length in seconds
+  lengthStr   String // e.g. "12:34"
+  createdAt   DateTime @default(now())
 
+  resource Resource[]
   // Relations
-  sectionId  String
-  section    Section  @relation(fields: [sectionId], references: [id])
+  sectionId String
+  section   Section @relation(fields: [sectionId], references: [id])
 
-  order      Int      // position within the section
+  order Int // position within the section
 }
-
-
