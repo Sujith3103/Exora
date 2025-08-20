@@ -22,9 +22,6 @@ router.post('/set-profile-img', upload.single("profileImage"), AuthenticateMiddl
     try {
 
         if (req.file?.path) {
-
-            const userId = req.user?.id as string
-            if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" })
             const result = await uploadMediaToCloudinary(req.file?.path)
 
             const user = await prisma.userProfile.upsert({
@@ -72,5 +69,34 @@ router.post('/set-profile-img', upload.single("profileImage"), AuthenticateMiddl
         })
     }
 })
+
+router.post('/lecture/:lectureId/assets', upload.single("file"), AuthenticateMiddleware, async (req, res) => {
+    console.log("file : ", req.file)
+
+    const { title, type } = req.body
+
+    const userId = req.user?.id as string
+    const { lectureId } = req.params;
+
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" })
+    if (!req.file?.path) return res.status(404).json({ success: false, message: "file not found" })
+
+    const filePath = req.file.path
+    console.log("file path : ", filePath)
+    const createdLectureAsset = await prisma.lectureAsset.create({
+        data: {
+            title: title,
+            type: type,
+            publicId: '',
+            url: '',
+            lectureId: '',
+            status: 'pending',
+        }
+    })
+
+    
+
+
+});
 
 export default router

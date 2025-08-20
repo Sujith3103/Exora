@@ -122,26 +122,51 @@ model Section {
 model Resource {
   id    String @id @default(uuid())
   title String
-  link String
+  link  String
 
   lectureId String
-  lecture Lecture @relation(fields: [lectureId],references: [id])
+  lecture   Lecture @relation(fields: [lectureId], references: [id])
 }
 
 model Lecture {
   id          String   @id @default(uuid())
   title       String
-  videoUrl    String // URL to CDN (Cloudinary, S3, etc.)
   freePreview Boolean  @default(false)
-  publicId    String // Cloudinary/S3 object key for management
-  lengthNum   Int // length in seconds
-  lengthStr   String // e.g. "12:34"
   createdAt   DateTime @default(now())
 
-  resource Resource[]
+  lengthNum Int? // optional, since PDFs won’t have length
+  lengthStr String? // optional, same reason
+
   // Relations
   sectionId String
   section   Section @relation(fields: [sectionId], references: [id])
+  order     Int // position within the section
 
-  order Int // position within the section
+  // Link to assets
+  assets   LectureAsset[]
+  Resource Resource[]
+}
+
+enum LectureAssetStatus {
+  published
+  pending
+}
+
+model LectureAsset {
+  id        String    @id @default(uuid())
+  title     String
+  url       String // Cloudinary/S3 CDN link
+  publicId  String // object key for deletion/management
+  type      AssetType
+  createdAt DateTime  @default(now())
+  status LectureAssetStatus @default(pending)
+
+  // Relation
+  lectureId String
+  lecture   Lecture @relation(fields: [lectureId], references: [id])
+}
+
+enum AssetType {
+  VIDEO
+  PDF
 }

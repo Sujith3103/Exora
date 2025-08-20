@@ -196,9 +196,7 @@ export const CreateLecture = async (req: Request, res: Response) => {
         const createdLecture = await prisma.lecture.create({
             data: {
                 title: title,
-                videoUrl: '',
                 freePreview: false,
-                publicId: '',
                 lengthNum: 0,
                 lengthStr: '',
                 sectionId: sectionId,
