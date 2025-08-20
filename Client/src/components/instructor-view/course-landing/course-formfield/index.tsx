@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/store';
 import { setCousreLanding } from '@/store/courseSlice';
-import { useEffect } from 'react';
 
 const CourseFormField = () => {
 

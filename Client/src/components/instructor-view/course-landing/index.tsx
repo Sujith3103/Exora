@@ -7,14 +7,14 @@ import UploadImage from '../../../assets-static/placeholderuploadimage.webp'
 import { Button } from "@/components/ui/button"
 import { useRef } from "react"
 import CourseRequirements from "./course-requirements"
-import { useDispatch, useSelector } from "react-redux"
-import type { AppDispatch, RootState } from "@/store"
+import {  useSelector } from "react-redux"
+import type {  RootState } from "@/store"
 
 const CourseLanding = () => {
 
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const dispatch = useDispatch<AppDispatch>()
+  // const dispatch = useDispatch<AppDispatch>()
   const CourselandingState = useSelector((state:RootState) => state.course.CourseLanding)
 
   const handleChange_ImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

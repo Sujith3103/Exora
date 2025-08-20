@@ -1,16 +1,14 @@
 import { Button } from "@/components/ui/button"
-import { Card, CardFooter, CardHeader } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import type { AppDispatch, RootState } from "@/store"
 import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseSection } from "@/store/courseSlice"
-import { CircleCheck, CirclePlay, Edit, Edit2, FileTextIcon, Lectern, Plus, Trash2Icon, X } from "lucide-react"
+import { CircleCheck, Edit2, FileTextIcon, Plus, Trash2Icon, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import NewSection from "./section"
 import { useParams } from "react-router-dom"
 import server from "@/api/axiosinstance"
-import { isloading } from "@/store/authSlice"
 import CurriculumSkeleton from "./curriculumSkeleton"
 import NewLecture from "./lecture"
 import Content from "./content"
@@ -23,10 +21,10 @@ type AddingContentState = {
   LectureId: string | null;
   addingContent: boolean;
 };
-type Section = {
-  sectionTitle: string
-  order: number
-}
+// type Section = {
+//   sectionTitle: string
+//   order: number
+// }
 
 
 
@@ -50,11 +48,14 @@ const CourseCurriculum = () => {
   });
   const [isEditTitle, setIsEditTitle] = useState(false)
 
+
+const a = 0
   const handleClick_AddNewLecture = (sectionId: any) => {
     setIsAddingLecture((prev) => ({
       sectionId,
       addingLecture: prev.sectionId === sectionId ? !prev.addingLecture : true,
     }));
+
   };
 
   const { id } = useParams<{ id: string }>();
@@ -70,6 +71,9 @@ const CourseCurriculum = () => {
         console.log("fetched sections", response.data)
 
         dispatch(setCourseSection(response.data.sections))
+      }
+      if(a){
+        setIsEditTitle(false)
       }
       dispatch(courseSliceLoadingStop())
     }

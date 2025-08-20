@@ -3,10 +3,10 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 // ✅ Define a union type for categories
 type CourseCategory = | "web-development" | "backend-development" | "data-science" | "machine-learning" | "artificial-intelligence" | "cloud-computing" | "cyber-security" | "mobile-development" | "game-development" | "software-engineering" | string;
 
-type CourseLevel = "beginner" | "intermediate" | "advanced" | string;
+// type CourseLevel = "beginner" | "intermediate" | "advanced" | string;
 
 // 🔹 Language options
-type CourseLanguage = | "english" | "spanish" | "french" | "german" | "chinese" | "japanese" | "korean" | "portuguese" | "arabic" | "russian" | string;
+// type CourseLanguage = | "english" | "spanish" | "french" | "german" | "chinese" | "japanese" | "korean" | "portuguese" | "arabic" | "russian" | string;
 
 interface CourseDetails {
     id: string
@@ -19,11 +19,6 @@ interface CourseDetails {
     status: "published" | "drafted";
 }
 
-interface CourseBasicInfo {
-    category?: CourseCategory; // 👈 same restriction here
-    level?: CourseLevel
-    primaryLanguage?: CourseLanguage
-}
 
 interface UploadState {
     file: File | {};

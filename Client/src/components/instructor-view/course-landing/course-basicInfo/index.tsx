@@ -4,7 +4,6 @@ import { courseCategories, courseLevelOptions, languageOptions } from '@/config/
 import type { AppDispatch, RootState } from '@/store'
 import { setCourseBasicInfo, setCousreLanding } from '@/store/courseSlice'
 import { CircleQuestionMark } from 'lucide-react'
-import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 const basicInfo = [

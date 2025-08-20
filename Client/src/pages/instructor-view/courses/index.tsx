@@ -105,7 +105,7 @@ const InstructorCourses = () => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {courseData.map((course, index) => {
+                        {courseData.map((course) => {
                             return (
                                 <TableRow key={course.id}>
                                     <TableCell>

@@ -2,11 +2,11 @@ import server from '@/api/axiosinstance'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import type { AppDispatch, RootState } from '@/store'
-import { setCourseSection, updateCourseSection } from '@/store/courseSlice'
+import type { AppDispatch } from '@/store'
+import { updateCourseSection } from '@/store/courseSlice'
 import { Label } from '@radix-ui/react-label'
 import React, { useEffect, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 type NewSectionProps = {
     // isAddingSection: boolean;
@@ -14,16 +14,11 @@ type NewSectionProps = {
 };
 
 const NewSection: React.FC<NewSectionProps> = ({setIsAddingSection,}) => {
-    type Section = {sectionTitle: string
-        order: number
-    }
 
     const { id } = useParams<{ id: string }>();
 
 
     const initalInputRef = useRef<HTMLInputElement>(null)
-
-    const sections = useSelector((state: RootState) => state.course.sections)
     const dispatch = useDispatch<AppDispatch>()
 
     // const handleClick_AddNewSection = () => {
@@ -38,11 +33,6 @@ const NewSection: React.FC<NewSectionProps> = ({setIsAddingSection,}) => {
         if (initalInputRef.current) {
             const value = initalInputRef.current.value.trim()
             if (!value) return
-
-            const newSection: Section = {
-                sectionTitle: value,
-                order: sections.length + 1,
-            }
 
             const response = await server.post(`/course/create-section/${id}`, { title: value })
             if (response.data.success) {
