@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from "react-redux"
 
 type NewContentProps = {
     lectureId: string
-    lectureData : Lectures
+    lectureData: Lectures
     isUploading: boolean,
     setIsUploading: React.Dispatch<React.SetStateAction<boolean>>
 }
@@ -35,7 +35,7 @@ const NewContent = ({ lectureId, isUploading, setIsUploading, lectureData }: New
     const inputRefPdf = useRef<HTMLInputElement>(null)
 
     const dispatch = useDispatch<AppDispatch>()
-    // const lectureAssetData = useSelector((state:RootState) => state.course)
+    // const lectureAssetData = useSelector((state:RootState) => state.course.)
 
     let lectureAsset: LectureAsset = {
         title: '',
@@ -69,28 +69,81 @@ const NewContent = ({ lectureId, isUploading, setIsUploading, lectureData }: New
             dispatch(setLectureAsset(lectureAsset))
 
             setIsUploading(true)
-            // const response = await server.post(
-            //     `/media/lecture/${lectureId}/assets`,
-            //     formData,
-            //     {
-            //         headers: {
-            //             "Content-Type": "multipart/form-data",
-            //         },
-            //     }
-            // );
+            const response = await server.post(
+                `/media/lecture/${lectureId}/assets`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
 
-            // console.log("Upload success:", response.data);
+            if (response.data.success) {
+                dispatch(setLectureAsset(lectureAsset))
+            }
+
+            console.log("Upload success:", response.data);
         } catch (err) {
             console.error("Upload failed:", err);
         }
     };
 
-    const handleChange_PdfElement = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = e.target.files?.[0];
-        if (selectedFile) {
+   const handleChange_PdfElement = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+    console.log(selectedFile);
 
+    try {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("type", 'PDF');          // Set type to PDF
+        formData.append("title", selectedFile.name);
+
+        // Update local lectureAsset state for uploading
+        lectureAsset = {
+            ...lectureAsset,
+            lectureId: lectureId,
+            status: 'uploading',
+            type: 'PDF',
+            title: selectedFile.name
+        };
+
+        dispatch(setLectureAsset(lectureAsset));
+        setIsUploading(true);
+
+        const response = await server.post(
+            `/media/lecture/${lectureId}/assets`,
+            formData,
+            {
+                headers: { "Content-Type": "multipart/form-data" }
+            }
+        );
+
+        if (response.data.success) {
+            // Update the asset after successful upload
+            lectureAsset = {
+                ...lectureAsset,
+                status: 'published',
+                url: response.data.url,
+                publicId: response.data.public_id
+            };
+            dispatch(setLectureAsset(lectureAsset));
         }
+
+        console.log("PDF Upload success:", response.data);
+    } catch (err) {
+        console.error("PDF Upload failed:", err);
+
+        // Optionally mark as failed in state
+        lectureAsset = {
+            ...lectureAsset,
+            status: 'failed'
+        };
+        dispatch(setLectureAsset(lectureAsset));
     }
+};
+
 
     // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     //     const selectedFile = e.target.files?.[0];
@@ -104,25 +157,25 @@ const NewContent = ({ lectureId, isUploading, setIsUploading, lectureData }: New
         setIsVisible(true) // triggers animation after mount
     }, [])
 
-    if (isUploading) {
+    if (isUploading || lectureData.lectureAsset?.status === 'uploading') {
         return (
             <>
                 <hr className=" border border-gray-300 mt-2" />
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="text-center">FileName</TableHead>
+                            <TableHead >FileName</TableHead>
                             <TableHead className="text-center">type</TableHead>
                             <TableHead className="">Status</TableHead>
-                            <TableHead  className="text-center">Date</TableHead>
+                            <TableHead className="text-center">Date</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         <TableRow>
-                            <TableCell  className="text-center">{ lectureData.lectureAsset?.title}</TableCell>
-                            <TableCell  className="text-center">{lectureData.lectureAsset?.type}</TableCell>
+                            <TableCell >{lectureData.lectureAsset?.title}</TableCell>
+                            <TableCell className="text-center">{lectureData.lectureAsset?.type}</TableCell>
                             <TableCell>{lectureData.lectureAsset?.status}</TableCell>
-                            <TableCell  className="text-center">{lectureData.lectureAsset?.createdAt}</TableCell>
+                            <TableCell className="text-center">{lectureData.lectureAsset?.createdAt}</TableCell>
                         </TableRow>
 
                     </TableBody>

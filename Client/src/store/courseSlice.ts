@@ -33,16 +33,17 @@ export interface Resources {
 
 export interface LectureAsset {
     id?: string
-    title: String
-    url?: String
+    title: string
+    url?: string
     publicId?: String
     type: 'VIDEO' | 'PDF' | ''
     createdAt?: string
     status: 'published' | 'pending' | 'failed' | 'uploading',
-    lectureId: String
+    lectureId: string
+    thumbnailUrl?: string
 }
 
-interface Lectures {
+export interface Lectures {
     id: string,
     sectionId: string,
     title: string,
@@ -51,7 +52,7 @@ interface Lectures {
     lengthNum?: number,    // length in seconds
     lengthStr?: string,// e.g. "12:34"
     order: number
-    lectureAsset?: LectureAsset
+    lectureAssets?: LectureAsset
     resources?: Resources[]
 }
 
@@ -78,6 +79,7 @@ interface courseState {
     CourseLanding: CourseLandingData | null
     sections: Section[]
     courseImgUpload: UploadState | null
+    lectures: Lectures[] | []
     loading: boolean,
     error: boolean
 }
@@ -89,6 +91,7 @@ const initialState: courseState = {
     CourseLanding: null,
     courseImgUpload: null,
     sections: [],
+    lectures: [],
     loading: true,
     error: false
 }
@@ -142,6 +145,7 @@ const courseSlice = createSlice({
 
         setCourseSection(state: courseState, action: PayloadAction<Section[]>) {
             state.sections = [...action.payload]
+            
         },
         updateCourseSection(state: courseState, action: PayloadAction<Section>) {
             state.sections = [...state.sections, action.payload]
@@ -163,7 +167,7 @@ const courseSlice = createSlice({
                 if (!section.lectures) continue
                 const lecture = section.lectures.find(l => l.id === action.payload.lectureId);
                 if (lecture) {
-                    lecture.lectureAsset = action.payload
+                    lecture.lectureAssets = action.payload
                 }
             }
         },

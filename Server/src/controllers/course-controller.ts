@@ -153,7 +153,13 @@ export const GetAllSections = async (req: Request, res: Response) => {
         const sections = await prisma.section.findMany({
             where: { courseId },
             include: {
-                lectures: true
+                lectures: {
+                    include:{
+                        lectureAssets: true,
+                        Resource: true,
+                    }
+                }
+                        
             },
             orderBy: { order: "asc" }
         })

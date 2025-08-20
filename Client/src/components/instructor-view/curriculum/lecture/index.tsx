@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ArrowDown, ChevronDown, ChevronUp, CircleCheck, FileTextIcon, Plus } from 'lucide-react'
 import React, { useState } from 'react'
-import Content from '../content/new-content'
+import Content from '../content/index'
 import NewContent from '../content/new-content'
 import { Checkbox } from '@/components/ui/checkbox'
 import type { LectureAsset, Resources } from '@/store/courseSlice'
@@ -16,12 +16,12 @@ interface Lectures {
     lengthNum?: number,    // length in seconds
     lengthStr?: string,// e.g. "12:34"
     order: number
-    lectureAsset?: LectureAsset
+    lectureAssets?: LectureAsset
     resources?: Resources[]
 }
 
 type AddingContentState = {
-    LectureId: string | null;   
+    LectureId: string | null;
     addingContent: boolean;
 };
 
@@ -54,62 +54,88 @@ const Lecture = ({ lecture, index }: LectureProp) => {
                         <FileTextIcon size={15} strokeWidth={1} />
                         <p className="whitespace-nowrap">{lecture.title}</p>
                     </div>
+                    {
+                        !lecture.lectureAssets?.status &&
 
-                    <Button
-                        variant="outline"
-                        onClick={() =>
-                            setIsAddingContent(prev => ({
-                                addingContent: prev.LectureId === lecture.id ? !prev.addingContent : true,
-                                LectureId: lecture.id,
-                            }))
-                        }
-                        className="flex items-center justify-center ml-auto rounded-none text-purple-600 border-purple-500 hover:bg-purple-100 w-35 relative overflow-hidden h-9"
-                    >
-                        {/* Cancel text */}
-                        <span
-                            className={`absolute left-0 right-0 hover:text-purple-500 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id && isUploading
-                                ? "opacity-100 translate-y-0"
-                                : "opacity-0 -translate-y-2"
-                                }`}
-                        >
-                            Show Content  <ChevronUp
-                                strokeWidth={1}
-                                className="cursor-pointer ml-1"
-                                onClick={() => setShowSubContent(false)}
-                            />
-                        </span>
-                        <span
-                            className={`absolute left-0 right-0 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id && !isUploading
-                                ? "opacity-100 translate-y-0"
-                                : "opacity-0 -translate-y-2"
-                                }`}
-                        >
-                            × Cancel
-                        </span>
-                        {/* Plus Content text */}
-                        <span
-                            className={`absolute left-0 right-0 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id
-                                ? "opacity-0 translate-y-2"
-                                : "opacity-100 translate-y-0"
-                                }`}
-                        >
-                            <Plus /> Content
-                        </span>
-                    </Button>
+                        <div className='ml-auto flex items-center gap-2'>
+                            <Button
+                                variant="outline"
+                                onClick={() =>
+                                    setIsAddingContent(prev => ({
+                                        addingContent: prev.LectureId === lecture.id ? !prev.addingContent : true,
+                                        LectureId: lecture.id,
+                                    }))
+                                }
+                                className="flex items-center justify-center ml-auto rounded-none text-purple-600 border-purple-500 hover:bg-purple-100 w-35 relative overflow-hidden h-9"
+                            >
+                                {/* Cancel text */}
+                                <span
+                                    className={`absolute left-0 right-0 hover:text-purple-500 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id && isUploading
+                                        ? "opacity-100 translate-y-0"
+                                        : "opacity-0 -translate-y-2"
+                                        }`}
+                                >
+                                    Show Content  <ChevronUp
+                                        strokeWidth={1}
+                                        className="cursor-pointer ml-1"
+                                        onClick={() => setShowSubContent(false)}
+                                    />
+                                </span>
+                                <span
+                                    className={`absolute left-0 right-0 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id && !isUploading
+                                        ? "opacity-100 translate-y-0"
+                                        : "opacity-0 -translate-y-2"
+                                        }`}
+                                >
+                                    × Cancel
+                                </span>
+                                {/* Plus Content text */}
+                                <span
+                                    className={`absolute left-0 right-0 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id
+                                        ? "opacity-0 translate-y-2"
+                                        : "opacity-100 translate-y-0"
+                                        }`}
+                                >
+                                    <Plus /> Content
+                                </span>
+                            </Button>
+                            {showSubContent ? (
+                                <ChevronUp
+                                    strokeWidth={1}
+                                    className="cursor-pointer"
+                                    onClick={() => setShowSubContent(false)}
+                                />
+                            ) : (
+                                <ChevronDown
+                                    strokeWidth={1}
+                                    className="cursor-pointer"
+                                    onClick={() => setShowSubContent(true)}
+                                />
+                            )}
+                        </div>
+
+
+                    }
+                    {
+                        lecture.lectureAssets?.status &&
+                        <>
+                            {showSubContent ? (
+                                <ChevronUp
+                                    strokeWidth={1}
+                                    className="cursor-pointer ml-auto"
+                                    onClick={() => setShowSubContent(false)}
+                                />
+                            ) : (
+                                <ChevronDown
+                                    strokeWidth={1}
+                                    className="cursor-pointer ml-auto"
+                                    onClick={() => setShowSubContent(true)}
+                                />
+                            )}
+                        </>
+                    }
                     {/* Toggle Icons */}
-                    {showSubContent ? (
-                        <ChevronUp
-                            strokeWidth={1}
-                            className="cursor-pointer"
-                            onClick={() => setShowSubContent(false)}
-                        />
-                    ) : (
-                        <ChevronDown
-                            strokeWidth={1}
-                            className="cursor-pointer"
-                            onClick={() => setShowSubContent(true)}
-                        />
-                    )}
+
                 </div>
                 {
                     isAddingContent.addingContent && lecture.id === isAddingContent.LectureId && (
@@ -121,9 +147,9 @@ const Lecture = ({ lecture, index }: LectureProp) => {
                         }`}
                 >
                     {
-                        lecture.lectureAsset?.status === 'published' &&
+                        lecture.lectureAssets?.status === 'published' &&
                         <>
-                            <p>hi</p>
+                            <Content lecture={lecture} />
                         </>
                     }
                     <Card className="p-2 flex flex-row items-center justify-center rounded-none gap-30 border-2 border-dotted border-gray-300">

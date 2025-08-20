@@ -143,13 +143,15 @@ model Lecture {
   order     Int // position within the section
 
   // Link to assets
-  assets   LectureAsset[]
+  lectureAssets   LectureAsset?
   Resource Resource[]
 }
 
 enum LectureAssetStatus {
   published
   pending
+  uploading
+  failed
 }
 
 model LectureAsset {
@@ -160,10 +162,11 @@ model LectureAsset {
   type      AssetType
   createdAt DateTime  @default(now())
   status LectureAssetStatus @default(pending)
+  thumbnailUrl String?
 
   // Relation
-  lectureId String
-  lecture   Lecture @relation(fields: [lectureId], references: [id])
+  lectureId String @unique
+  lecture   Lecture @relation(fields: [lectureId], references: [id]) 
 }
 
 enum AssetType {

@@ -80,6 +80,10 @@ const CourseCurriculum = () => {
 
   // }, [])
 
+  useEffect(()=>{
+    console.log(sections)
+  },[])
+
   if (isLoading) {
     return <CurriculumSkeleton />
   }
