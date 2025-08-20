@@ -18,10 +18,7 @@ type AddingLectureState = {
   sectionId: string | null;
   addingLecture: boolean;
 };
-type AddingContentState = {
-  LectureId: string | null;
-  addingContent: boolean;
-};
+
 // type Section = {
 //   sectionTitle: string
 //   order: number
@@ -39,10 +36,7 @@ const CourseCurriculum = () => {
 
   const [isAddingSection, setIsAddingSection] = useState(false)
   // const [isAddingContent, setIsAddingContent] = useState(false)
-  const [isAddingContent, setIsAddingContent] = useState<AddingContentState>({
-    LectureId: null,
-    addingContent: false
-  })
+
 
   const [isAddingLecture, setIsAddingLecture] = useState<AddingLectureState>({
     sectionId: null,
@@ -134,7 +128,7 @@ const CourseCurriculum = () => {
                       {/* -------------------------------------------------Lecture---------------------------------------------------------------------- */}
                       
                       {section.lectures?.map((lecture, index) => (
-                        <Lecture key={lecture.id} lecture={lecture} index={index} setIsAddingContent={setIsAddingContent} isAddingContent={isAddingContent} />
+                        <Lecture key={lecture.id} lecture={lecture} index={index}  />
                       ))}
                     </div>
 

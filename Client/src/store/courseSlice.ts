@@ -24,11 +24,22 @@ interface UploadState {
     file: File | {};
 }
 
-interface Resources {
+export interface Resources {
     id?: string,
     title: string,
     link: string,
     lectureId?: string,
+}
+
+export interface LectureAsset {
+    id?: string
+    title: String
+    url?: String
+    publicId?: String
+    type: 'VIDEO' | 'PDF' | ''
+    createdAt?: string
+    status: 'published' | 'pending' | 'failed' | 'uploading',
+    lectureId: String
 }
 
 interface Lectures {
@@ -40,7 +51,8 @@ interface Lectures {
     lengthNum?: number,    // length in seconds
     lengthStr?: string,// e.g. "12:34"
     order: number
-    resources?: Resources[]    
+    lectureAsset?: LectureAsset
+    resources?: Resources[]
 }
 
 interface CourseLandingData {
@@ -146,8 +158,25 @@ const courseSlice = createSlice({
                 section.lectures.push(newLecture);
             }
         },
+        setLectureAsset(state: courseState, action: PayloadAction<LectureAsset>) {
+            for (const section of state.sections) {
+                if (!section.lectures) continue
+                const lecture = section.lectures.find(l => l.id === action.payload.lectureId);
+                if (lecture) {
+                    lecture.lectureAsset = action.payload
+                }
+            }
+        },
 
-
+        //  id: string
+        //     title: String
+        //     url: String
+        //     publicId: String
+        //     type: 'VIDEO' | 'PDF'
+        //     createdAt: string
+        //     status: 'published' | 'pending' | 'failed'
+        //     lectureId: String
+        // }
 
         removeCourseRequirement(state: courseState, action: PayloadAction<number>) {
             state.courseRequirements = state.courseRequirements.filter(
@@ -161,8 +190,8 @@ const courseSlice = createSlice({
 })
 
 
-export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo,updateCourseLecture,
+export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo, updateCourseLecture,
     setCourseLandingDescription, setCousreLanding, setCourseSection, updateCourseSection,
-
+    setLectureAsset,
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

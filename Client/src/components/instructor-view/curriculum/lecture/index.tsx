@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import Content from '../content/new-content'
 import NewContent from '../content/new-content'
 import { Checkbox } from '@/components/ui/checkbox'
+import type { LectureAsset, Resources } from '@/store/courseSlice'
 
 interface Lectures {
     id: string,
@@ -15,29 +16,29 @@ interface Lectures {
     lengthNum?: number,    // length in seconds
     lengthStr?: string,// e.g. "12:34"
     order: number
-
+    lectureAsset?: LectureAsset
+    resources?: Resources[]
 }
+
+type AddingContentState = {
+    LectureId: string | null;   
+    addingContent: boolean;
+};
 
 type LectureProp = {
     lecture: Lectures,
     index: number,
-    setIsAddingContent: React.Dispatch<
-        React.SetStateAction<{
-            LectureId: string | null,
-            addingContent: boolean
-        }>
-    >,
-    isAddingContent: {
-        LectureId: string | null,
-        addingContent: boolean
-    }
-
 
 }
 
-const Lecture = ({ lecture, index, setIsAddingContent, isAddingContent }: LectureProp) => {
+const Lecture = ({ lecture, index }: LectureProp) => {
 
+    const [isAddingContent, setIsAddingContent] = useState<AddingContentState>({
+        LectureId: null,
+        addingContent: false
+    })
     const [showSubContent, setShowSubContent] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
 
     return (
         <div>
@@ -66,14 +67,25 @@ const Lecture = ({ lecture, index, setIsAddingContent, isAddingContent }: Lectur
                     >
                         {/* Cancel text */}
                         <span
-                            className={`absolute left-0 right-0 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id
+                            className={`absolute left-0 right-0 hover:text-purple-500 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id && isUploading
+                                ? "opacity-100 translate-y-0"
+                                : "opacity-0 -translate-y-2"
+                                }`}
+                        >
+                            Show Content  <ChevronUp
+                                strokeWidth={1}
+                                className="cursor-pointer ml-1"
+                                onClick={() => setShowSubContent(false)}
+                            />
+                        </span>
+                        <span
+                            className={`absolute left-0 right-0 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id && !isUploading
                                 ? "opacity-100 translate-y-0"
                                 : "opacity-0 -translate-y-2"
                                 }`}
                         >
                             × Cancel
                         </span>
-
                         {/* Plus Content text */}
                         <span
                             className={`absolute left-0 right-0 top-0 flex items-center justify-center w-full h-full transition-all duration-300 ${isAddingContent.addingContent && isAddingContent.LectureId === lecture.id
@@ -101,13 +113,19 @@ const Lecture = ({ lecture, index, setIsAddingContent, isAddingContent }: Lectur
                 </div>
                 {
                     isAddingContent.addingContent && lecture.id === isAddingContent.LectureId && (
-                        <NewContent />
+                        <NewContent lectureData={lecture} lectureId={lecture.id} isUploading={isUploading} setIsUploading={setIsUploading} />
                     )
                 }
                 <div
                     className={`transition-all duration-300 ease-in-out overflow-hidden ${showSubContent ? "max-h-40 opacity-100 mt-2" : "max-h-0 opacity-0"
                         }`}
                 >
+                    {
+                        lecture.lectureAsset?.status === 'published' &&
+                        <>
+                            <p>hi</p>
+                        </>
+                    }
                     <Card className="p-2 flex flex-row items-center justify-center rounded-none gap-30 border-2 border-dotted border-gray-300">
                         <Button className=" w-35 gap-1 text-purple-600 border bg-white border-purple-500 rounded-sm hover:bg-purple-100 transition-all duration-300"
 
