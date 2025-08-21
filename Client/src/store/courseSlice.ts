@@ -64,11 +64,11 @@ interface CourseLandingData {
     courseImg?: string
 }
 
-interface Section {
+export interface Section {
     id?: string,
     title: string,
     order: number,
-
+    courseId: string,
     lectures?: Lectures[]
 }
 
@@ -145,7 +145,7 @@ const courseSlice = createSlice({
 
         setCourseSection(state: courseState, action: PayloadAction<Section[]>) {
             state.sections = [...action.payload]
-            
+
         },
         updateCourseSection(state: courseState, action: PayloadAction<Section>) {
             state.sections = [...state.sections, action.payload]
@@ -171,6 +171,41 @@ const courseSlice = createSlice({
                 }
             }
         },
+        updateSectionTitle: (
+            state,
+            action: PayloadAction<{ sectionId: string; title: string }>
+        ) => {
+            const section = state.sections.find(s => s.id === action.payload.sectionId);
+            if (section) {
+                section.title = action.payload.title;
+            }
+        },
+
+        updateLectureTitle: (
+            state,
+            action: PayloadAction<{ sectionId: string; lectureId: string; title: string }>
+        ) => {
+            const section = state.sections.find(s => s.id === action.payload.sectionId);
+            if (section) {
+                const lecture = section.lectures?.find(l => l.id === action.payload.lectureId);
+                if (lecture) {
+                    lecture.title = action.payload.title;
+                }
+            }
+        },
+
+        deleteLecture(state: courseState, action: PayloadAction<Lectures>){
+            const section = state.sections.find(s => s.id === action.payload.sectionId)
+
+           if(section){
+            section.lectures = section.lectures?.filter(l => l.id != action.payload.id)
+           }
+        },
+
+        deleteSection(state: courseState,action: PayloadAction<Section>){
+            state.sections = state.sections.filter(s => s.id != action.payload.id)
+        },
+
 
         //  id: string
         //     title: String
@@ -195,7 +230,7 @@ const courseSlice = createSlice({
 
 
 export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo, updateCourseLecture,
-    setCourseLandingDescription, setCousreLanding, setCourseSection, updateCourseSection,
-    setLectureAsset,
+    setCourseLandingDescription, setCousreLanding, setCourseSection, updateCourseSection,deleteLecture,deleteSection,
+    setLectureAsset,updateLectureTitle,updateSectionTitle,
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

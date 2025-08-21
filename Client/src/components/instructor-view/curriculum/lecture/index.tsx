@@ -1,11 +1,16 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {  ChevronDown, ChevronUp, CircleCheck, FileTextIcon, PlayCircleIcon, Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Check, ChevronDown, ChevronUp, CircleCheck, Edit2, FileTextIcon, PlayCircleIcon, Plus, Trash2Icon, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import Content from '../content/index'
 import NewContent from '../content/new-content'
 import { Checkbox } from '@/components/ui/checkbox'
-import type { LectureAsset, Resources } from '@/store/courseSlice'
+import { deleteLecture, updateLectureTitle, type LectureAsset, type Resources } from '@/store/courseSlice'
+import { Input } from '@/components/ui/input'
+import server from '@/api/axiosinstance'
+import { useDispatch } from 'react-redux'
+import type { AppDispatch } from '@/store'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 
 interface Lectures {
     id: string,
@@ -33,12 +38,49 @@ type ShowContent = {
 }
 
 const Lecture = ({ lecture, index }: LectureProp) => {
+
+    const dispatch = useDispatch<AppDispatch>()
+
     const [showSubContent, setShowSubContent] = useState(false)
+    const [isEditLectureTitle, setIsEditLectureTitle] = useState(false)
+    const inputRef = useRef<HTMLInputElement>(null)
+
     const [showContent, setShowContent] = useState<ShowContent>({
         uploadingContent: false,
         selectingContent: false,
         LectureId: null
     })
+
+    async function handleClick_EditTitle() {
+        try {
+            const title = inputRef.current?.value
+            const response = await server.patch(`/course/${lecture.sectionId}/lectures/${lecture.id}/title`, { title })
+            inputRef.current = null
+
+            console.log("updated title:", response.data)
+            if (response.data.success) {
+                dispatch(updateLectureTitle({ lectureId: lecture.id, sectionId: lecture.sectionId, title: response.data.lecture.title }))
+            }
+            setIsEditLectureTitle(false)
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    async function handleClick_DeleteLecture() {
+        try {
+
+            const response = await server.delete(`/course/${lecture.sectionId}/lectures/${lecture.id}`)
+
+            if (response.data.success) {
+                console.log("deleted")
+                dispatch(deleteLecture(lecture))
+            }
+
+        } catch (err) {
+            console.log(err)
+        }
+    }
 
     useEffect(() => {
         console.log("show ontent :", showContent)
@@ -48,13 +90,13 @@ const Lecture = ({ lecture, index }: LectureProp) => {
         <div>
             <Card
                 key={lecture.id || index}
-                className="flex flex-col min-h-fit mt-0 mb-0 pt-0 pb-0 rounded-none p-3 gap-0 border-gray-200 shadow-md  "
+                className="flex flex-col min-h-fit mt-0 mb-0 pt-0 pb-0 rounded-none p-3 gap-0 border-gray-200 shadow-md min-w-fit "
             >
-                <div className="flex flex-row items-center gap-2">
+                <div className="flex flex-row items-center gap-2 group">
                     <CircleCheck size={15} strokeWidth={1} />
                     <p className="whitespace-nowrap">Lecture {lecture.order}:</p>
 
-                    <div className="flex items-center gap-1 ml-4">
+                    <div className="flex items-center gap-1 ml-4 w-full">
                         {
                             lecture.lectureAssets?.type === 'VIDEO' ?
                                 <>
@@ -63,7 +105,57 @@ const Lecture = ({ lecture, index }: LectureProp) => {
 
                                 <FileTextIcon size={15} strokeWidth={1} />
                         }
-                        <p className="whitespace-nowrap">{lecture.title}</p>
+                        {
+                            isEditLectureTitle ? (
+                                <>
+                                    <Input className='ml-2 w-full' ref={inputRef} defaultValue={lecture.title} placeholder='Enter your lecture title' />
+                                </>
+                            ) : (
+                                <>
+                                    <p className="whitespace-nowrap">{lecture.title}</p>
+                                </>
+                            )
+
+                        }
+                        <div className="flex gap-1 items-center opacity-0 group-hover:opacity-100">
+                            {
+                                !isEditLectureTitle ?
+                                    <>
+                                        <Edit2 size={13}
+                                            className=' transition-transform duration-200 transform hover:scale-120  cursor-pointer'
+                                            onClick={() => setIsEditLectureTitle(true)}
+                                        />
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Trash2Icon size={15} strokeWidth={1}
+                                                    className="text-red-700 transition-transform duration-200 transform hover:scale-120  cursor-pointer"
+                                                />
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete your
+                                                        lecture and remove your data from our servers.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={handleClick_DeleteLecture}>Continue</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+
+                                    </>
+                                    :
+                                    <>
+                                        <X size={20} strokeWidth={1} className=' transition-transform duration-200 transform hover:scale-120  cursor-pointer'
+                                            onClick={() => setIsEditLectureTitle(false)} />
+                                        <Check size={20} strokeWidth={1} className=' transition-transform duration-200 transform hover:scale-120  cursor-pointer'
+                                            onClick={handleClick_EditTitle} />
+                                    </>
+                            }
+                        </div>
                     </div>
                     {
                         !lecture.lectureAssets?.status &&
@@ -129,7 +221,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
 
                                     {
                                         lecture.lectureAssets.status === 'published' && showSubContent && showContent.selectingContent && <>
-                                            <Button className='bg-purple-500 w-30 transition-all duration-300 rounded-sm hover:bg-purple-400 cursor-pointer'
+                                            <Button className='bg-purple-600 w-30 transition-all duration-300 rounded-sm hover:bg-purple-500 cursor-pointer'
                                                 onClick={() => setShowContent(prev => ({
                                                     ...prev,
                                                     selectingContent: false

@@ -1,14 +1,17 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import type {  RootState } from "@/store"
-import {  Edit2, FileTextIcon, Plus, Trash2Icon, X } from "lucide-react"
+import type { AppDispatch, RootState } from "@/store"
+import { Check, Edit2, FileTextIcon, Plus, Trash2Icon, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
-import {  useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import NewSection from "./section"
 import CurriculumSkeleton from "./curriculumSkeleton"
 import NewLecture from "./lecture/new-lecture"
 import Lecture from "./lecture"
+import server from "@/api/axiosinstance"
+import { deleteSection, updateSectionTitle, type Section } from "@/store/courseSlice"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
 type AddingLectureState = {
   sectionId: string | null;
@@ -24,6 +27,7 @@ type AddingLectureState = {
 
 const CourseCurriculum = () => {
 
+  const dispatch = useDispatch<AppDispatch>()
 
   const sections = useSelector((state: RootState) => state.course.sections)
   const isLoading = useSelector((state: RootState) => state.course.loading)
@@ -48,6 +52,36 @@ const CourseCurriculum = () => {
     }));
     setIsEditTitle(false)
   };
+
+  async function handleClick_UpdateSectionTitle(section: Section) {
+    try {
+      const response = await server.patch(`/course/${section.courseId}/sections/${section.id}/title`, { title: initalInputRef.current?.value })
+      initalInputRef.current = null
+      console.log("updated title:", response.data)
+
+      if (response.data.success) {
+        if (section.id) {
+          dispatch(updateSectionTitle({ sectionId: section.id, title: response.data.section.title }))
+        }
+      }
+      setIsEditTitle(false)
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  async function handleClick_deleteSection(section: Section) {
+    try {
+      const response = await server.delete(`/course/${section.courseId}/sections/${section.id}`)
+
+      if (response.data.success) {
+        console.log("deleted")
+        dispatch(deleteSection(section))
+      }
+    }catch(err){
+      console.log(err)
+    }
+  }
 
   // const { id } = useParams<{ id: string }>();
 
@@ -75,9 +109,9 @@ const CourseCurriculum = () => {
 
   // }, [])
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log(sections)
-  },[])
+  }, [])
 
   if (isLoading) {
     return <CurriculumSkeleton />
@@ -112,22 +146,55 @@ const CourseCurriculum = () => {
                           !isEditTitle ? (
                             <span>{section.title}</span>
                           ) : (
-                            <Input className="w-full" ref={initalInputRef} />
+                            <Input className="w-full" ref={initalInputRef} defaultValue={section.title} placeholder='Enter your section title' />
                           )
                         }
 
                       </div>
                       <div className="flex gap-1 items-center opacity-0 group-hover:opacity-100">
-                        <Edit2 size={13} />
-                        <Trash2Icon size={15} strokeWidth={1} className="text-red-700" />
+                        {
+                          !isEditTitle ?
+                            <>
+                              <Edit2 size={13}
+                                className=' transition-transform duration-200 transform hover:scale-120  cursor-pointer'
+                                onClick={() => setIsEditTitle(true)}
+                              />
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Trash2Icon size={15} strokeWidth={1} className="text-red-700 transition-transform duration-200 transform hover:scale-120  cursor-pointer"
+                                  />
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This action cannot be undone. This will permanently delete your
+                                      section and remove your data from our servers.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleClick_deleteSection(section)}>Continue</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
+                            :
+                            <>
+                              <X size={20} strokeWidth={1} className=' transition-transform duration-200 transform hover:scale-120  cursor-pointer'
+                                onClick={() => setIsEditTitle(false)} />
+                              <Check size={20} strokeWidth={1} className=' transition-transform duration-200 transform hover:scale-120  cursor-pointer'
+                                onClick={() => handleClick_UpdateSectionTitle(section)} />
+                            </>
+                        }
                       </div>
                     </div>
                     <div className="flex flex-col gap-3 sm:ml-10">
 
                       {/* -------------------------------------------------Lecture---------------------------------------------------------------------- */}
-                      
+
                       {section.lectures?.map((lecture, index) => (
-                        <Lecture key={lecture.id} lecture={lecture} index={index}  />
+                        <Lecture key={lecture.id} lecture={lecture} index={index} />
                       ))}
                     </div>
 

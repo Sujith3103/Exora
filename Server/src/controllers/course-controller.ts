@@ -154,12 +154,12 @@ export const GetAllSections = async (req: Request, res: Response) => {
             where: { courseId },
             include: {
                 lectures: {
-                    include:{
+                    include: {
                         lectureAssets: true,
                         Resource: true,
                     }
                 }
-                        
+
             },
             orderBy: { order: "asc" }
         })
@@ -226,5 +226,167 @@ export const CreateLecture = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const UpdateSectionTitle = async (req: Request, res: Response) => {
+    const userId = req.user?.id as string;
+
+    const { title } = req.body
+
+    const { sectionId } = req.params
+    const { courseId } = req.params
+
+    if (!userId) {
+        return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    try {
+
+        const updatedSection = await prisma.section.update({
+            where: {
+                id: sectionId,
+                courseId: courseId
+            },
+            data: {
+                title: title
+            }
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: "updated section title successfully",
+            section: updatedSection
+        })
+
+
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({
+            success: false,
+            message: "Failed to update section title"
+        })
+    }
+}
+export const UpdateLectureTitle = async (req: Request, res: Response) => {
+    const userId = req.user?.id as string;
+    console.log(req.body)
+    const { title } = req.body;
+    const { lectureId, sectionId } = req.params;
+
+    if (!userId) {
+        return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    try {
+        const updatedLecture = await prisma.lecture.update({
+            where: {
+                id: lectureId,
+                sectionId: sectionId
+            },
+            data: { title }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Updated lecture title successfully",
+            lecture: updatedLecture
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to update lecture title"
+        });
+    }
+};
+
+export const deleteLecture = async (req: Request, res: Response) => {
+    const userId = req.user?.id as string;
+    const { sectionId, lectureId } = req.params;
+
+    if (!userId) {
+        return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    try {
+        // ✅ Check lecture exists and belongs to section
+        const lecture = await prisma.lecture.findFirst({
+            where: {
+                id: lectureId,
+                sectionId,
+            },
+        });
+
+        if (!lecture) {
+            return res.status(404).json({ success: false, message: "Lecture not found" });
+        }
+
+        // ✅ Delete by id
+        await prisma.lecture.delete({
+            where: { id: lectureId },
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Deleted lecture",
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to delete lecture",
+        });
+    }
+};
+
+export const deleteSection = async (req: Request, res: Response) => {
+  const userId = req.user?.id as string;
+  const { courseId, sectionId } = req.params;
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  try {
+    // 🔹 Check section exists and belongs to course
+    const section = await prisma.section.findFirst({
+      where: {
+        id: sectionId,
+        courseId: courseId,
+      },
+    });
+
+    if (!section) {
+      return res.status(404).json({ success: false, message: "Section not found" });
+    }
+
+    // 🔹 Optional: Check if user owns this course (important for multi-user apps)
+    const course = await prisma.course.findFirst({
+      where: {
+        id: courseId,
+        instructorId: userId, // assuming your course has instructorId
+      },
+    });
+
+    if (!course) {
+      return res.status(403).json({ success: false, message: "Forbidden: You don't own this course" });
+    }
+
+    // 🔹 Delete the section (Prisma cascades only if you set `onDelete: Cascade` in schema)
+    await prisma.section.delete({
+      where: { id: sectionId },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Section deleted successfully",
+    });
+  } catch (err) {
+    console.error("Error deleting section:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete section",
+    });
+  }
+};
 
 
