@@ -27,8 +27,6 @@ const ProfileLayout = () => {
 
     });
 
-
-
     return [sidebarOpen, setSidebarOpen] as const;
 
   }

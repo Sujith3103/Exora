@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { AppDispatch } from "@/store"
 import { setResource, type Lectures } from "@/store/courseSlice"
+import { useState } from "react"
 import { useDispatch } from "react-redux"
 
 type NewResourceProp = {
@@ -22,9 +23,12 @@ type NewResourceProp = {
 //     })
 const NewResource = ({ lecture, setShowResource }: NewResourceProp) => {
 
+    const [isloading , setIsLoading] = useState(false)
+
     const dispatch = useDispatch<AppDispatch>()
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        setIsLoading(true)
         e.preventDefault();
 
         const formData = new FormData(e.currentTarget);
@@ -45,13 +49,15 @@ const NewResource = ({ lecture, setShowResource }: NewResourceProp) => {
                 ...prev,
                 uploadRecourse: false
             }))
+            setIsLoading(false)
         } catch (err) {
             console.error(err);
+            setIsLoading(false)
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className={`${isloading ? 'cursor-progress' : ''}`}>
             <Card className="mb-3 p-3 gap-3 border-gray-300 rounded-none border-0 border-t-1">
                 <div className="w-full shadow-md rounded-none bg-white flex p-2 gap-5">
                     <div className="flex-1">

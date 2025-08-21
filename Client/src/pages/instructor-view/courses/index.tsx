@@ -10,11 +10,12 @@ import {
     TableCell,
 } from "@/components/ui/table";
 import type { AppDispatch, RootState } from "@/store";
-import {  setCourseDetails } from "@/store/courseSlice";
+import {  addNewCourse, setCourseDetails } from "@/store/courseSlice";
 import { Edit, Plus, Trash } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import InstructorCoursesSkeleton from "./courseSkeleton";
 
 const InstructorCourses = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -23,6 +24,8 @@ const InstructorCourses = () => {
     const courseData = useSelector(
         (state: RootState) => state.course.courseData
     );
+
+    const [contentFetching,setContentFetching] = useState(false)
 
     // Placeholder image for empty courses
     const PLACEHOLDER_IMAGE = "/images/placeholder.png";
@@ -37,9 +40,9 @@ const InstructorCourses = () => {
             const response = await server.post("/course/create-new");
             if (response.data.success) {
                 console.log("created course: ", response.data);
-
                 // Update Redux state with the new course
-                dispatch(setCourseDetails(response.data.instructorCourses.flat()));
+                dispatch(addNewCourse(response.data.newCourse));
+                navigate(`/profile/courses/edit/course-landing/${response.data.newCourse.id}`)
             }
         } catch (error) {
             console.error("Failed to create course:", error);
@@ -48,35 +51,25 @@ const InstructorCourses = () => {
 
     useEffect(() => {
         async function fetchData() {
+            setContentFetching(true)
             try {
                 const response = await server.get(`/course/get-all-courses`);
                 if (response.data.success) {
                     // Update Redux state with the new course
+                    console.log("res : ",response.data)
                     dispatch(setCourseDetails(response.data.instructorCourses.flat()));
                 }
             } catch (error) {
                 console.error("Failed to fetch courses:", error);
             }
+            setContentFetching(false)
         }
         fetchData();
     }, [dispatch]);
 
-
-
-
-    // Show either actual courses or placeholder rows if empty
-    //   const displayCourses =
-    //     courseData && courseData.length > 0
-    //       ? courseData
-    //       : Array(5).fill({
-    //           title: "",
-    //           courseImg: "",
-    //           category: "",
-    //           duration: "",
-    //           price: "",
-    //           level: "beginner",
-    //           status: "drafted",
-    //         });
+    if(contentFetching){
+        return <InstructorCoursesSkeleton />
+    }
 
     return (
         <div className="w-full h-full p-5 flex flex-col">

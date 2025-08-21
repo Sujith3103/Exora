@@ -64,7 +64,7 @@ const OverView = () => {
     dispatch(profileSliceLoadinStart())
     const response = await FetchUserProfileData()
     if (response.data.success) {
-      console.log(response.data)
+      console.log("profile : ",response.data)
       dispatch(setProfile(response.data.cachedData ?? response.data.profileData))
       console.log("fetched profile")
     }
@@ -101,6 +101,8 @@ const OverView = () => {
       {/* Profile icon overlapping header */}
       <div className="flex flex-col items-center md:w-1/4 w-1/2  -mt-16 z-1 group ">
         <div className="relative group">
+          <>
+          </>
           {loading ? (
             <AvatarSkeleton />
           ) : profile?.profileImg ? (

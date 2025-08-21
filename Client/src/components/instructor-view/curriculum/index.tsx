@@ -83,32 +83,6 @@ const CourseCurriculum = () => {
     }
   }
 
-  // const { id } = useParams<{ id: string }>();
-
-  // useEffect(() => {
-
-  //   async function FetchSections() {
-  //     console.log("fetching sections")
-
-  //     dispatch(courseSliceLoadingStart())
-  //     const response = await server.get(`/course/get-all-sections/${id}`)
-  //     if (response.data.success) {
-  //       console.log("fetched sections", response.data)
-
-  //       dispatch(setCourseSection(response.data.sections))
-  //     }
-  //     if (a) {
-  //       setIsEditTitle(false)
-  //     }
-  //     dispatch(courseSliceLoadingStop())
-  //   }
-  //   // if ( sections.length === 0) {
-  //   //   FetchSections();
-  //   // }
-  //   FetchSections()
-
-  // }, [])
-
   useEffect(() => {
     console.log(sections)
   }, [])

@@ -2,6 +2,7 @@ import server from '@/api/axiosinstance'
 import type { AppDispatch } from '@/store'
 import { removeResource, type Lectures, type Resources } from '@/store/courseSlice'
 import { ArrowUpRightFromSquareIcon, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 
 type ResourceComponentProp = {
@@ -12,23 +13,29 @@ const ResourceComponent = ({ lecture }: ResourceComponentProp) => {
 
   const dispatch = useDispatch<AppDispatch>()
 
-  const handleClick_DeleteResource = async(resource:Resources) => {
+  const [isloading, setIsLoading] = useState(false)
 
-    try{
+
+  const handleClick_DeleteResource = async (resource: Resources) => {
+    setIsLoading(true)
+    try {
       const response = await server.delete(`/course/sections/${lecture.sectionId}/lectures/${lecture.id}/resources/${resource.id}`)
 
-      if(response.data.success && resource.id){
-        dispatch(removeResource({lectureId:lecture.id,resourceId:resource.id,sectionId:lecture.sectionId}))
+      if (response.data.success && resource.id) {
+        dispatch(removeResource({ lectureId: lecture.id, resourceId: resource.id, sectionId: lecture.sectionId }))
       }
-    }catch(err){
+      setIsLoading(false)
+    } catch (err) {
       console.log(err)
+      setIsLoading(false)
+
     }
   }
 
   return (
     <>
       <hr className='border-gray-300' />
-      <div className='p-2'>
+      <div className={`p-2 ${isloading ? 'cursor-progress' : null}`}>
         <p className=' font-semibold text-sm '>External Resources</p>
         {lecture.Resource?.map(resource => (
           <div
@@ -48,6 +55,7 @@ const ResourceComponent = ({ lecture }: ResourceComponentProp) => {
             <Trash2
               onClick={() => handleClick_DeleteResource(resource)}
               size={15}
+              
               className="text-red-500 cursor-pointer hover:scale-110 transition"
             />
           </div>

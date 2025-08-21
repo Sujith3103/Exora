@@ -73,7 +73,7 @@ export interface Section {
 }
 
 interface courseState {
-    courseData: CourseDetails[] | [],
+    courseData: CourseDetails[],
     courseBasicInfo: Record<string, string>
     courseRequirements: string[]
     CourseLanding: CourseLandingData | null
@@ -106,7 +106,9 @@ const courseSlice = createSlice({
         setCourseDetails(state: courseState, action: PayloadAction<CourseDetails[]>) {
             state.courseData = [...action.payload]
         },
-
+        addNewCourse(state, action: PayloadAction<CourseDetails>) {
+            state.courseData.push(action.payload);
+        },
         //------------------------------------------------------------Course Landing------------------------------------------------------------------
 
         setCourseRequirements(state: courseState, action: PayloadAction<string>) {
@@ -216,7 +218,7 @@ const courseSlice = createSlice({
         removeResource(state: courseState, action: PayloadAction<{ sectionId: string, lectureId: string, resourceId: string }>) {
             const lecture = state.sections.flatMap(s => s.lectures || []).find(l => l.id === action.payload.lectureId);
 
-            if(lecture){
+            if (lecture) {
                 lecture.Resource = lecture.Resource?.filter(r => r.id != action.payload.resourceId)
             }
         },
@@ -236,6 +238,6 @@ const courseSlice = createSlice({
 
 export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo, updateCourseLecture,
     setCourseLandingDescription, setCousreLanding, setCourseSection, updateCourseSection, deleteLecture, deleteSection,
-    setLectureAsset, updateLectureTitle, updateSectionTitle, setResource,removeResource,
+    setLectureAsset, updateLectureTitle, updateSectionTitle, setResource, removeResource,addNewCourse,
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

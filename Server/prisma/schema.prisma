@@ -48,10 +48,10 @@ model UserProfile {
   about           String?
   dob             DateTime?
   gender          Gender?
-  profileimg      String?
-  profileimgId    String?
-  profilebanner   String?
-  profilebannerId String?
+  profileImg      String?
+  profileImgId    String?
+  profileBanner   String?
+  profileBannerId String?
   profession      String?
 
   userId String @unique

@@ -28,13 +28,13 @@ router.post('/set-profile-img', upload.single("profileImage"), AuthenticateMiddl
             const user = await prisma.userProfile.upsert({
                 where: { userId: userId },
                 update: {
-                    profileimg: result.secure_url,
-                    profileimgId: result.public_id, // store Cloudinary public_id too
+                    profileImg: result.secure_url,
+                    profileImgId: result.public_id, // store Cloudinary public_id too
                 },
                 create: {
                     userId: userId,
-                    profileimg: result.secure_url,
-                    profileimgId: result.public_id,
+                    profileImg: result.secure_url,
+                    profileImgId: result.public_id,
                 }
             });
 
@@ -44,7 +44,7 @@ router.post('/set-profile-img', upload.single("profileImage"), AuthenticateMiddl
                 gender: user?.gender || '',
                 profession: user?.profession || '',
                 about: user?.about || '',
-                profileImg: user?.profileimg || '',
+                profileImg: user?.profileImg || '',
             })
             await client.expire(userProfileKey, 600);
             // fs.unlinkSync(req.file.path);

@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Check, ChevronDown, ChevronUp, CircleCheck, Edit2, FileTextIcon, PlayCircleIcon, Plus, Trash2Icon, X } from 'lucide-react'
-import {  useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import Content from '../content/index'
 import NewContent from '../content/new-content'
 import { Checkbox } from '@/components/ui/checkbox'
-import { deleteLecture, updateLectureTitle, type LectureAsset, type Lectures, type Resources } from '@/store/courseSlice'
+import { deleteLecture, updateLectureTitle, type Lectures } from '@/store/courseSlice'
 import { Input } from '@/components/ui/input'
 import server from '@/api/axiosinstance'
 import { useDispatch } from 'react-redux'
@@ -39,6 +39,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
 
     const [showSubContent, setShowSubContent] = useState(false)
     const [isEditLectureTitle, setIsEditLectureTitle] = useState(false)
+    const [isloading, setIsloading] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
 
     const [showContent, setShowContent] = useState<ShowContent>({
@@ -54,6 +55,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
     })
 
     async function handleClick_EditTitle() {
+        setIsloading(true)
         try {
             const title = inputRef.current?.value
             const response = await server.patch(`/course/${lecture.sectionId}/lectures/${lecture.id}/title`, { title })
@@ -66,10 +68,13 @@ const Lecture = ({ lecture, index }: LectureProp) => {
             setIsEditLectureTitle(false)
         } catch (err) {
             console.log(err)
+
         }
+        setIsloading(false)
     }
 
     async function handleClick_DeleteLecture() {
+        setIsloading(true)
         try {
 
             const response = await server.delete(`/course/${lecture.sectionId}/lectures/${lecture.id}`)
@@ -82,6 +87,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
         } catch (err) {
             console.log(err)
         }
+        setIsloading(false)
     }
 
     // useEffect(() => {
@@ -89,14 +95,15 @@ const Lecture = ({ lecture, index }: LectureProp) => {
     // }, [showContent])
 
     return (
-        <div>
+        <div className={isloading ? "cursor-progress pointer-events-none" : ""}>
             <Card
                 key={lecture.id || index}
-                className="flex flex-col min-h-fit mt-0 mb-0 pt-0 pb-0 rounded-none p-3 gap-0 border-gray-200 shadow-md min-w-fit "
+                className={`flex flex-col min-h-fit mt-0 mb-0 pt-0 pb-0 rounded-none p-3 gap-0 border-gray-200 shadow-md min-w-fit 
+                ${isloading ? 'cursor-progress' : ''}`}
             >
                 <div className="flex flex-row items-center gap-2 group">
                     <CircleCheck size={15} strokeWidth={1} />
-                    <p className="whitespace-nowrap">Lecture {lecture.order}:</p>
+                    <p className="whitespace-nowrap">Lecture {index+1}:</p>
 
                     <div className="flex items-center gap-1 ml-4 w-full">
                         {
@@ -265,7 +272,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
                             <Content setShowContent={setShowContent} showContent={showContent} lecture={lecture} setShowSubContent={setShowSubContent} />
                         </>
                     }
-                    {ShowResource.uploadRecourse && <NewResource lecture={lecture} setShowResource={setShowResource}/>}
+                    {ShowResource.uploadRecourse && <NewResource lecture={lecture} setShowResource={setShowResource} />}
 
                     {lecture.Resource && lecture.Resource?.length > 0 && <ResourceComponent lecture={lecture} />}
                     <>
