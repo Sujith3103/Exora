@@ -2,19 +2,27 @@ import server from "@/api/axiosinstance"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { AppDispatch, RootState } from "@/store"
+import type { AppDispatch } from "@/store"
 import { setLectureAsset, type LectureAsset, type Resources } from "@/store/courseSlice"
 import { CirclePlay, FileTextIcon } from "lucide-react"
-import { useEffect, useRef, useState, type SetStateAction } from "react"
-import { useDispatch, useSelector } from "react-redux"
+import { useEffect, useRef, useState } from "react"
+import { useDispatch } from "react-redux"
 
 type NewContentProps = {
     lectureId: string
     lectureData: Lectures
-    isUploading: boolean,
-    setIsUploading: React.Dispatch<React.SetStateAction<boolean>>
+    setShowContent: React.Dispatch<React.SetStateAction<{
+        uploadingContent: boolean,
+        selectingContent: boolean,
+        LectureId: string | null
+    }>>
+    showContent: {
+        uploadingContent: boolean,
+        selectingContent: boolean,
+        LectureId: string | null
+    }
+    setShowSubContent: React.Dispatch<React.SetStateAction<boolean>>
 }
-
 type Lectures = {
     id: string,
     sectionId: string,
@@ -24,24 +32,24 @@ type Lectures = {
     lengthNum?: number,    // length in seconds
     lengthStr?: string,// e.g. "12:34"
     order: number
-    lectureAsset?: LectureAsset
+    lectureAssets?: LectureAsset
     resources?: Resources[]
 }
 const readable = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }).format(new Date(new Date().toISOString()));
 
-const NewContent = ({ lectureId, isUploading, setIsUploading, lectureData }: NewContentProps) => {
+const NewContent = ({ lectureId, lectureData, showContent, setShowContent, setShowSubContent }: NewContentProps) => {
     const [isVisible, setIsVisible] = useState(false)
     const inputRefVideo = useRef<HTMLInputElement>(null)
     const inputRefPdf = useRef<HTMLInputElement>(null)
 
     const dispatch = useDispatch<AppDispatch>()
-    // const lectureAssetData = useSelector((state:RootState) => state.course.)
+    // const lectureAssetData = useSelector((state:RootState) => state.course.sections)
 
     let lectureAsset: LectureAsset = {
         title: '',
         type: '',
         createdAt: readable,
-        status: 'uploading',
+        status: 'pending',
         lectureId: ''
     }
 
@@ -58,6 +66,7 @@ const NewContent = ({ lectureId, isUploading, setIsUploading, lectureData }: New
             formData.append("type", 'VIDEO');
             formData.append("title", selectedFile.name);
 
+            console.log(lectureData)
             lectureAsset = {
                 ...lectureAsset,
                 lectureId: lectureId,
@@ -65,84 +74,140 @@ const NewContent = ({ lectureId, isUploading, setIsUploading, lectureData }: New
                 type: 'VIDEO',
                 title: selectedFile.name
             }
-
+            console.log("lecture asset : ", lectureAsset)
             dispatch(setLectureAsset(lectureAsset))
+            setShowContent(prev => ({
+                ...prev,
+                uploadingContent: true,
+                selectingContent: false
+            }))
 
-            setIsUploading(true)
-            const response = await server.post(
-                `/media/lecture/${lectureId}/assets`,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
+            if (lectureData.lectureAssets?.status === 'published') {
+                console.log("published")
+                const response = await server.put(
+                    `/media/lecture/${lectureId}/assets/${lectureData.lectureAssets.publicId}/edit`,
+                    formData,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
+                    }
+
+                );
+                if (response.data.success) {
+                    dispatch(setLectureAsset(response.data.asset))
+                    setShowContent(prev => ({
+                        ...prev,
+                        selectingContent: false,
+                        uploadingContent: false
+                    }))
                 }
-            );
+            }
+            else {
+                console.log("not published")
+                const response = await server.post(
+                    `/media/lecture/${lectureId}/assets`,
+                    formData,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
+                    }
+                );
+                if (response.data.success) {
+                    dispatch(setLectureAsset(response.data.asset))
+                    setShowContent(prev => ({
+                        ...prev,
+                        selectingContent: false,
+                        uploadingContent: false
+                    }))
+                    setShowSubContent(true)
 
-            if (response.data.success) {
-                dispatch(setLectureAsset(lectureAsset))
+                }
             }
 
-            console.log("Upload success:", response.data);
         } catch (err) {
             console.error("Upload failed:", err);
         }
     };
 
-   const handleChange_PdfElement = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
-    console.log(selectedFile);
+    const handleChange_PdfElement = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        if (!selectedFile) return;
 
-    try {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        formData.append("type", 'PDF');          // Set type to PDF
-        formData.append("title", selectedFile.name);
+        console.log(selectedFile);
 
-        // Update local lectureAsset state for uploading
-        lectureAsset = {
-            ...lectureAsset,
-            lectureId: lectureId,
-            status: 'uploading',
-            type: 'PDF',
-            title: selectedFile.name
-        };
+        try {
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+            formData.append("type", "PDF"); // type = PDF
+            formData.append("title", selectedFile.name);
 
-        dispatch(setLectureAsset(lectureAsset));
-        setIsUploading(true);
-
-        const response = await server.post(
-            `/media/lecture/${lectureId}/assets`,
-            formData,
-            {
-                headers: { "Content-Type": "multipart/form-data" }
-            }
-        );
-
-        if (response.data.success) {
-            // Update the asset after successful upload
+            // Optimistic local state: mark as uploading
             lectureAsset = {
                 ...lectureAsset,
-                status: 'published',
-                url: response.data.url,
-                publicId: response.data.public_id
+                lectureId: lectureId,
+                status: "uploading",
+                type: "PDF",
+                title: selectedFile.name,
+            };
+            console.log("lecture asset : ", lectureAsset);
+
+            dispatch(setLectureAsset(lectureAsset));
+            setShowContent(prev => ({
+                ...prev,
+                uploadingContent: true,
+                selectingContent: false,
+            }));
+
+            let response;
+            if (lectureData.lectureAssets?.status === "published") {
+                console.log("PDF is replacing an already published asset");
+                response = await server.put(
+                    `/media/lecture/${lectureId}/assets/${lectureData.lectureAssets.publicId}/edit`,
+                    formData,
+                    { headers: { "Content-Type": "multipart/form-data" } }
+                );
+            } else {
+                console.log("New PDF upload");
+                response = await server.post(
+                    `/media/lecture/${lectureId}/assets`,
+                    formData,
+                    { headers: { "Content-Type": "multipart/form-data" } }
+                );
+            }
+
+            if (response.data.success) {
+                lectureAsset = {
+                    ...lectureAsset,
+                    status: "published",
+                    url: response.data.url,
+                    publicId: response.data.public_id,
+                };
+                dispatch(setLectureAsset(lectureAsset));
+                setShowContent(prev => ({
+                    ...prev,
+                    selectingContent: false,
+                    uploadingContent: false,
+                }));
+                setShowSubContent(true)
+            }
+        } catch (err) {
+            console.error("PDF Upload failed:", err);
+
+            lectureAsset = {
+                ...lectureAsset,
+                status: "failed",
             };
             dispatch(setLectureAsset(lectureAsset));
+            setShowContent(prev => ({
+                ...prev,
+                uploadingContent: false,
+                selectingContent: false,
+            }));
         }
+    };
 
-        console.log("PDF Upload success:", response.data);
-    } catch (err) {
-        console.error("PDF Upload failed:", err);
-
-        // Optionally mark as failed in state
-        lectureAsset = {
-            ...lectureAsset,
-            status: 'failed'
-        };
-        dispatch(setLectureAsset(lectureAsset));
-    }
-};
 
 
     // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,7 +222,8 @@ const NewContent = ({ lectureId, isUploading, setIsUploading, lectureData }: New
         setIsVisible(true) // triggers animation after mount
     }, [])
 
-    if (isUploading || lectureData.lectureAsset?.status === 'uploading') {
+    if (showContent.uploadingContent) {
+        { console.log("status when uploading : ", lectureAsset.status) }
         return (
             <>
                 <hr className=" border border-gray-300 mt-2" />
@@ -172,10 +238,10 @@ const NewContent = ({ lectureId, isUploading, setIsUploading, lectureData }: New
                     </TableHeader>
                     <TableBody>
                         <TableRow>
-                            <TableCell >{lectureData.lectureAsset?.title}</TableCell>
-                            <TableCell className="text-center">{lectureData.lectureAsset?.type}</TableCell>
-                            <TableCell>{lectureData.lectureAsset?.status}</TableCell>
-                            <TableCell className="text-center">{lectureData.lectureAsset?.createdAt}</TableCell>
+                            <TableCell >{lectureData.lectureAssets?.title}</TableCell>
+                            <TableCell className="text-center">{lectureData.lectureAssets?.type}</TableCell>
+                            <TableCell>{lectureData.lectureAssets?.status}</TableCell>
+                            <TableCell className="text-center">{lectureData.lectureAssets?.createdAt}</TableCell>
                         </TableRow>
 
                     </TableBody>
@@ -185,33 +251,38 @@ const NewContent = ({ lectureId, isUploading, setIsUploading, lectureData }: New
     }
 
     return (
-        <Card
-            className={`flex flex-col items-center rounded-none p-3 justify-center border-dashed border-gray-300 mt-2 gap-3
+
+        <>
+            {console.log("status when select main type content : ", lectureAsset.status)}
+
+            <Card
+                className={`flex flex-col items-center rounded-none p-3 justify-center border-dashed border-gray-300 mt-2 gap-3
         transition-all duration-300 ease-out
         ${isVisible ? "translate-y-0 opacity-100" : "-translate-y-10 opacity-0"}`}
-        >
-            <p className="text-gray-500 mb-0">
-                Select the main type of content. Files and links can be added as resources.
-            </p>
-            <div className="flex p-0 gap-10">
-                <Card onClick={() => inputRefVideo.current?.click()} className="w-19 h-15 flex cursor-pointer flex-col items-center rounded-none border border-gray-300 gap-1 group p-0 hover:bg-gray-300 transition-colors duration-300">
-                    <CirclePlay size={23} className="p-0 mt-3 mb-0" strokeWidth={1} />
-                    <Input ref={inputRefVideo} className="hidden" type="file" accept="video/*" onChange={(e) => handleChange_VideoElement(e)} />
-                    <span className="text-[11px] text-center w-full h-5 flex items-center justify-center bg-gray-300 group-hover:bg-purple-400 group-hover:text-white transition-colors duration-300">
-                        Video
-                    </span>
-                </Card>
+            >
+                <p className="text-gray-500 mb-0">
+                    Select the main type of content. Files and links can be added as resources.
+                </p>
+                <div className="flex p-0 gap-10">
+                    <Card onClick={() => inputRefVideo.current?.click()} className="w-19 h-15 flex cursor-pointer flex-col items-center rounded-none border border-gray-300 gap-1 group p-0 hover:bg-gray-300 transition-colors duration-300">
+                        <CirclePlay size={23} className="p-0 mt-3 mb-0" strokeWidth={1} />
+                        <Input ref={inputRefVideo} className="hidden" type="file" accept="video/*" onChange={(e) => handleChange_VideoElement(e)} />
+                        <span className="text-[11px] text-center w-full h-5 flex items-center justify-center bg-gray-300 group-hover:bg-purple-400 group-hover:text-white transition-colors duration-300">
+                            Video
+                        </span>
+                    </Card>
 
-                <Card onClick={() => inputRefPdf.current?.click()}
-                    className="w-19 h-15 flex cursor-pointer flex-col items-center rounded-none border border-gray-300 gap-1 group p-0 hover:bg-gray-300 transition-colors duration-300">
-                    <FileTextIcon size={23} className="p-0 mt-3 mb-0" strokeWidth={1} />
-                    <Input ref={inputRefPdf} className="hidden" type="file" accept="application/pdf" onChange={(e) => handleChange_PdfElement(e)} />
-                    <span className="text-[11px] text-center w-full h-5 flex items-center justify-center bg-gray-300 group-hover:bg-purple-400 group-hover:text-white transition-colors duration-300">
-                        PDF
-                    </span>
-                </Card>
-            </div>
-        </Card>
+                    <Card onClick={() => inputRefPdf.current?.click()}
+                        className="w-19 h-15 flex cursor-pointer flex-col items-center rounded-none border border-gray-300 gap-1 group p-0 hover:bg-gray-300 transition-colors duration-300">
+                        <FileTextIcon size={23} className="p-0 mt-3 mb-0" strokeWidth={1} />
+                        <Input ref={inputRefPdf} className="hidden" type="file" accept="application/pdf" onChange={(e) => handleChange_PdfElement(e)} />
+                        <span className="text-[11px] text-center w-full h-5 flex items-center justify-center bg-gray-300 group-hover:bg-purple-400 group-hover:text-white transition-colors duration-300">
+                            PDF
+                        </span>
+                    </Card>
+                </div>
+            </Card>
+        </>
     )
 }
 

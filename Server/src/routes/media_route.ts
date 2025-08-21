@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
-import { uploadMediaToCloudinary } from "../utils/cloudinary";
+import { deleteMediaFromCloudinary, uploadMediaToCloudinary } from "../utils/cloudinary";
 import { AuthenticateMiddleware } from "../middleware";
 import { PrismaClient } from "@prisma/client";
 import { client } from "../utils/redis";
@@ -130,6 +130,56 @@ router.post('/lecture/:lectureId/assets', upload.single("file"), AuthenticateMid
         });
 
         res.status(500).json({ success: false, message: "Upload failed", asset: createdLectureAsset });
+    }
+
+});
+
+router.put('/lecture/:lectureId/assets/:AssetId/edit', upload.single("file"), AuthenticateMiddleware, async (req, res) => {
+    const userId = req.user?.id as string;
+    const { lectureId } = req.params;
+    const { AssetId } = req.params;
+    const { title, type } = req.body;
+
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!req.file?.path) return res.status(404).json({ success: false, message: "File not found" });
+
+    try {
+        const result = await uploadMediaToCloudinary(req.file.path);
+
+        // Generate a thumbnail URL from the uploaded video
+        const thumbnailUrl =  cloudinary.url(result.public_id, {
+            resource_type: "video",   // important for videos
+            format: "jpg",
+            start_offset: "2",        // pick frame at 2 seconds
+            width: 70,               // optional: resize
+            height: 50,
+            crop: "fill"
+        });
+
+        const deleteCloudinaryAsset = await deleteMediaFromCloudinary(AssetId)
+
+        const UpdatedLectureAsset = await prisma.lectureAsset.update({
+            where:{lectureId: lectureId},
+            data:{
+                publicId: result.public_id,
+                url: result.secure_url,
+                thumbnailUrl: thumbnailUrl,
+                status: 'published',
+                title: title,
+                type: type
+            }
+        })
+
+        console.log("prev asset deleted : ",deleteCloudinaryAsset)
+        console.log("updated lecture data :",UpdatedLectureAsset)
+
+        // console.log("lecture asset : ", createdLectureAsset)
+        res.status(200).json({ success: true, message: "Updated asset successfully", asset: UpdatedLectureAsset });
+
+    } catch (err) {
+        console.error("Upload failed:", err);
+
+        res.status(500).json({ success: false, message: "Upload failed" });
     }
 
 });

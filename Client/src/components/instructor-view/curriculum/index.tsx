@@ -1,17 +1,13 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import type { AppDispatch, RootState } from "@/store"
-import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseSection } from "@/store/courseSlice"
-import { CircleCheck, Edit2, FileTextIcon, Plus, Trash2Icon, X } from "lucide-react"
+import type {  RootState } from "@/store"
+import {  Edit2, FileTextIcon, Plus, Trash2Icon, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
+import {  useSelector } from "react-redux"
 import NewSection from "./section"
-import { useParams } from "react-router-dom"
-import server from "@/api/axiosinstance"
 import CurriculumSkeleton from "./curriculumSkeleton"
 import NewLecture from "./lecture/new-lecture"
-import Content from "./content/new-content"
 import Lecture from "./lecture"
 
 type AddingLectureState = {
@@ -31,7 +27,6 @@ const CourseCurriculum = () => {
 
   const sections = useSelector((state: RootState) => state.course.sections)
   const isLoading = useSelector((state: RootState) => state.course.loading)
-  const dispatch = useDispatch<AppDispatch>()
   const initalInputRef = useRef<HTMLInputElement>(null)
 
   const [isAddingSection, setIsAddingSection] = useState(false)
@@ -45,16 +40,16 @@ const CourseCurriculum = () => {
   const [isEditTitle, setIsEditTitle] = useState(false)
 
 
-  const a = 0
+  // const a = 0
   const handleClick_AddNewLecture = (sectionId: any) => {
     setIsAddingLecture((prev) => ({
       sectionId,
       addingLecture: prev.sectionId === sectionId ? !prev.addingLecture : true,
     }));
-
+    setIsEditTitle(false)
   };
 
-  const { id } = useParams<{ id: string }>();
+  // const { id } = useParams<{ id: string }>();
 
   // useEffect(() => {
 
@@ -104,7 +99,7 @@ const CourseCurriculum = () => {
               return (
                 <Card
                   key={section.id}
-                  className="p-5 border border-gray-200 rounded-md shadow-sm overflow-x-auto"
+                  className="p-5 border border-gray-300 rounded-md shadow-sm overflow-x-auto"
                 >
                   <div className="flex flex-col sm:flex-col gap-3">
                     <div className="flex items-center gap-3 group">

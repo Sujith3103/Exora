@@ -10,11 +10,11 @@ import {
     TableCell,
 } from "@/components/ui/table";
 import type { AppDispatch, RootState } from "@/store";
-import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseDetails, setCourseSection } from "@/store/courseSlice";
+import {  setCourseDetails } from "@/store/courseSlice";
 import { Edit, Plus, Trash } from "lucide-react";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const InstructorCourses = () => {
     const dispatch = useDispatch<AppDispatch>();
