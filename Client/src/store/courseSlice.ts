@@ -53,7 +53,7 @@ export interface Lectures {
     lengthStr?: string,// e.g. "12:34"
     order: number
     lectureAssets?: LectureAsset
-    resources?: Resources[]
+    Resource?: Resources[]
 }
 
 interface CourseLandingData {
@@ -194,28 +194,33 @@ const courseSlice = createSlice({
             }
         },
 
-        deleteLecture(state: courseState, action: PayloadAction<Lectures>){
+        deleteLecture(state: courseState, action: PayloadAction<Lectures>) {
             const section = state.sections.find(s => s.id === action.payload.sectionId)
 
-           if(section){
-            section.lectures = section.lectures?.filter(l => l.id != action.payload.id)
-           }
+            if (section) {
+                section.lectures = section.lectures?.filter(l => l.id != action.payload.id)
+            }
         },
 
-        deleteSection(state: courseState,action: PayloadAction<Section>){
+        deleteSection(state: courseState, action: PayloadAction<Section>) {
             state.sections = state.sections.filter(s => s.id != action.payload.id)
         },
 
+        setResource(state: courseState, action: PayloadAction<{ sectionId: string, lectureId: string, resources: Resources }>) {
+            const lecture = state.sections.flatMap(s => s.lectures || []).find(l => l.id === action.payload.lectureId);
+            if (lecture) {
+                lecture.Resource = [...(lecture.Resource || []), action.payload.resources];
+            }
+        },
 
-        //  id: string
-        //     title: String
-        //     url: String
-        //     publicId: String
-        //     type: 'VIDEO' | 'PDF'
-        //     createdAt: string
-        //     status: 'published' | 'pending' | 'failed'
-        //     lectureId: String
-        // }
+        removeResource(state: courseState, action: PayloadAction<{ sectionId: string, lectureId: string, resourceId: string }>) {
+            const lecture = state.sections.flatMap(s => s.lectures || []).find(l => l.id === action.payload.lectureId);
+
+            if(lecture){
+                lecture.Resource = lecture.Resource?.filter(r => r.id != action.payload.resourceId)
+            }
+        },
+
 
         removeCourseRequirement(state: courseState, action: PayloadAction<number>) {
             state.courseRequirements = state.courseRequirements.filter(
@@ -230,7 +235,7 @@ const courseSlice = createSlice({
 
 
 export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo, updateCourseLecture,
-    setCourseLandingDescription, setCousreLanding, setCourseSection, updateCourseSection,deleteLecture,deleteSection,
-    setLectureAsset,updateLectureTitle,updateSectionTitle,
+    setCourseLandingDescription, setCousreLanding, setCourseSection, updateCourseSection, deleteLecture, deleteSection,
+    setLectureAsset, updateLectureTitle, updateSectionTitle, setResource,removeResource,
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

@@ -1,29 +1,19 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Check, ChevronDown, ChevronUp, CircleCheck, Edit2, FileTextIcon, PlayCircleIcon, Plus, Trash2Icon, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import {  useRef, useState } from 'react'
 import Content from '../content/index'
 import NewContent from '../content/new-content'
 import { Checkbox } from '@/components/ui/checkbox'
-import { deleteLecture, updateLectureTitle, type LectureAsset, type Resources } from '@/store/courseSlice'
+import { deleteLecture, updateLectureTitle, type LectureAsset, type Lectures, type Resources } from '@/store/courseSlice'
 import { Input } from '@/components/ui/input'
 import server from '@/api/axiosinstance'
 import { useDispatch } from 'react-redux'
 import type { AppDispatch } from '@/store'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import ResourceComponent from '../resource'
+import NewResource from '../resource/new-resource'
 
-interface Lectures {
-    id: string,
-    sectionId: string,
-    title: string,
-    videoUrl: string,   // URL to CDN (Cloudinary, S3, etc.)
-    freePreview: boolean,
-    lengthNum?: number,    // length in seconds
-    lengthStr?: string,// e.g. "12:34"
-    order: number
-    lectureAssets?: LectureAsset
-    resources?: Resources[]
-}
 
 type LectureProp = {
     lecture: Lectures,
@@ -35,6 +25,12 @@ type ShowContent = {
     uploadingContent: boolean,
     selectingContent: boolean,
     LectureId: string | null
+}
+
+type ShowResource = {
+    showRecourse: boolean
+    uploadRecourse: boolean
+    lecture: Lectures | null
 }
 
 const Lecture = ({ lecture, index }: LectureProp) => {
@@ -49,6 +45,12 @@ const Lecture = ({ lecture, index }: LectureProp) => {
         uploadingContent: false,
         selectingContent: false,
         LectureId: null
+    })
+
+    const [ShowResource, setShowResource] = useState<ShowResource>({
+        showRecourse: false,
+        uploadRecourse: false,
+        lecture: null
     })
 
     async function handleClick_EditTitle() {
@@ -82,9 +84,9 @@ const Lecture = ({ lecture, index }: LectureProp) => {
         }
     }
 
-    useEffect(() => {
-        console.log("show ontent :", showContent)
-    }, [showContent])
+    // useEffect(() => {
+    //     console.log("show ontent :", showContent)
+    // }, [showContent])
 
     return (
         <div>
@@ -122,7 +124,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
                                 !isEditLectureTitle ?
                                     <>
                                         <Edit2 size={13}
-                                            className=' transition-transform duration-200 transform hover:scale-120  cursor-pointer'
+                                            className=' transition-transform duration-200 ml-2 transform hover:scale-120  cursor-pointer'
                                             onClick={() => setIsEditLectureTitle(true)}
                                         />
                                         <AlertDialog>
@@ -263,26 +265,38 @@ const Lecture = ({ lecture, index }: LectureProp) => {
                             <Content setShowContent={setShowContent} showContent={showContent} lecture={lecture} setShowSubContent={setShowSubContent} />
                         </>
                     }
-                    <Card className="p-2 flex flex-row items-center justify-center rounded-none gap-30 border-2 border-dotted border-gray-300">
-                        <Button className=" w-35 gap-1 text-purple-600 border bg-white border-purple-500 rounded-sm hover:bg-purple-100 transition-all duration-300"
+                    {ShowResource.uploadRecourse && <NewResource lecture={lecture} setShowResource={setShowResource}/>}
 
-                        >
-                            <Plus />
-                            Resources
-                        </Button>
-                        <Button
-                            asChild
-                            className="flex items-center gap-2 text-purple-600 border bg-white border-purple-500 rounded-sm hover:bg-purple-100 transition-all duration-300"
-                        >
-                            <div>
-                                Free Preview
-                                <Checkbox
-                                    className="ml-2 border-purple-500 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
-                                />
-                            </div>
-                        </Button>
+                    {lecture.Resource && lecture.Resource?.length > 0 && <ResourceComponent lecture={lecture} />}
+                    <>
+                        {console.log("res : ", lecture)}
+                    </>
+                    {
+                        !ShowResource.uploadRecourse &&
+                        <Card className="p-2 flex flex-row items-center justify-center rounded-none gap-30 border-2 border-dotted border-gray-300">
+                            <Button className=" w-35 gap-1 text-purple-600 border bg-white border-purple-500 rounded-sm hover:bg-purple-100 transition-all duration-300"
+                                onClick={() => setShowResource(prev => ({
+                                    ...prev,
+                                    uploadRecourse: true
+                                }))}
+                            >
+                                <Plus />
+                                Resources
+                            </Button>
+                            <Button
+                                asChild
+                                className="flex items-center gap-2 text-purple-600 border bg-white border-purple-500 rounded-sm hover:bg-purple-100 transition-all duration-300"
+                            >
+                                <div>
+                                    Free Preview
+                                    <Checkbox
+                                        className="ml-2 border-purple-500 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                                    />
+                                </div>
+                            </Button>
 
-                    </Card>
+                        </Card>
+                    }
                 </div>
                 {/* Extra card immediately below the button */}
 

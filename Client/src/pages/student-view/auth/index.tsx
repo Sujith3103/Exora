@@ -108,7 +108,7 @@ const AuthPage = () => {
                                         <Label htmlFor="email" className="">Email</Label>
                                         <Input id="email" name="email" value={formValue.email} onChange={(e) => setFormValue(prev => ({ ...prev, email: e.target.value }))} type="email" autoComplete="current-email" required placeholder="enter your email" className="border-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-7" />
                                     </div>
-                                </div>
+                                </div>  
                                 <div className="w-full shadow-[0_10px_25px_rgba(0,0,0,0.2)] rounded-xl bg-white flex p-2 gap-5  ">
                                     <span className="w-1/15 bg-blue-200 rounded"></span>
                                     <div className="flex-1">
