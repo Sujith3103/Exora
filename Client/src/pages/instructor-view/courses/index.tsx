@@ -100,14 +100,17 @@ const InstructorCourses = () => {
                     </TableHeader>
                     <TableBody>
                         {courseData.map((course) => {
+                            <>
+                            {console.log("data:  ",courseData)}
+                            </>
                             return (
                                 <TableRow key={course.id}>
                                     <TableCell>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-4">
                                             <img
-                                                src={course.courseImg || PLACEHOLDER_IMAGE}
+                                                src={course.thumbnailUrl || PLACEHOLDER_IMAGE}
                                                 alt={course.title || "Course Image"}
-                                                className="w-12 h-12 object-cover rounded"
+                                                className="w-24 h-14 object-cover rounded"
                                             />
                                             <span className="whitespace-nowrap truncate max-w-[200px]">
                                                 {course.title || "please enter a title"}

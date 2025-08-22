@@ -84,10 +84,10 @@ const CourseLanding = () => {
                 <Button className="bg-white text-blue-500 border border-blue-500 hover:bg-blue-50" onClick={() => inputRef.current?.click()}>Upload File</Button>
               </>
                 :
-                <>
-                  <p>uploaded</p>
+                <div className="flex items-center gap-10">
+                  <p>Edit File :</p>
                   <Button className="bg-white text-blue-500 border border-blue-500 hover:bg-blue-50" onClick={() => inputRef.current?.click()}>Upload File</Button>
-                </>
+                </div>
             }
 
           </div>

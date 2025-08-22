@@ -92,44 +92,58 @@ export const GetAllSections = async (req: Request, res: Response) => {
 }
 
 export const getCourseLanding = async (req: Request, res: Response) => {
+  const { courseId } = req.params;
 
-    const { courseId } = req.params
+  try {
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      select: {
+        primaryLanguage: true,
+        level: true,
+        category: true,
+        title: true,
+        subtitle: true,
+        description: true,
+        searchkey: true,
+        thumbnailUrl: true,
+        requirements: true,
+        pricing:true
+      },
+    });
 
-    try {
-
-        const course = await prisma.course.findUnique({
-            where: { id: courseId },
-            select: {
-                title: true,
-                subtitle: true,
-                description: true,
-                searchkey: true,
-                thumbnailUrl: true
-            }
-        });
-        if (!course) {
-            return res.status(404).json({ success: false, message: "Course not found" });
-        }
-
-        const { thumbnailUrl: courseImg, ...formattedCourse } = course;
-
-        return res.status(200).json({
-            success: true,
-            course: {
-                ...formattedCourse,
-                courseImg,
-            }
-        });
-
-    }catch(err){
-        console.log(err)
-        return res.status(500).json({
-            success: false,
-            message: "could not fetch course  landing data"
-        })
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found" });
     }
 
-}
+    return res.status(200).json({
+      success: true,
+      course: {
+        courseBasicinfo: {
+          primaryLanguage: course.primaryLanguage,
+          level: course.level,
+          category: course.category,
+        },
+        courseLandingState: {
+          title: course.title,
+          subtitle: course.subtitle,
+          description: course.description,
+          courseImg: course.thumbnailUrl,
+          searchKey: course.searchkey,
+        },
+        courseRequirements: course.requirements || [],
+        coursePricing:  course.pricing || 0,
+      },
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "could not fetch course landing data",
+    });
+  }
+};
+
 
 export const AddNewCourse = async (req: Request, res: Response) => {
 
@@ -197,6 +211,50 @@ const getNextLectureOrder = async (sectionId: string) => {
     return lastLecture ? lastLecture.order + 1 : 1;
 }
 
+export const updateCourseLanding = async (req: Request, res: Response) => {
+    const { courseId } = req.params;
+    const { courseBasicinfo, courseLandingState, courseRequirements,coursePricing } = req.body;
+
+    try {
+        const updated = await prisma.course.update({
+            where: { id: courseId },
+            data: {
+                primaryLanguage: courseBasicinfo.primaryLanguage,
+                level: courseBasicinfo.level,
+                category: courseBasicinfo.category,
+                title: courseLandingState.title,
+                subtitle: courseLandingState.subtitle,
+                description: courseLandingState.description,
+                thumbnailUrl: courseLandingState.courseImg,
+                searchkey: courseLandingState.searchKey,
+                requirements: courseRequirements,
+                pricing: coursePricing
+            },
+        });
+
+        // Rebuild to the same structure client expects
+        res.status(200).json({
+            success: true,
+            courseBasicinfo: {
+                primaryLanguage: updated.primaryLanguage,
+                level: updated.level,
+                category: updated.category,
+            },
+            courseLandingState: {
+                title: updated.title,
+                subtitle: updated.subtitle,
+                description: updated.description,
+                courseImg: updated.thumbnailUrl,
+                searchKey: updated.searchkey,
+            },
+            courseRequirements: updated.requirements,
+            coursePricing: updated.pricing
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to update course" });
+    }
+};
 
 //create
 export const CreateLecture = async (req: Request, res: Response) => {
@@ -267,7 +325,6 @@ export const CreateSection = async (req: Request, res: Response) => {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
-
 export const createResource = async (req: Request, res: Response) => {
     console.log(req.body)
     const { title, link } = req.body

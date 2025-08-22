@@ -5,7 +5,7 @@ import CourseCurriculum from "@/components/instructor-view/curriculum"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { AppDispatch, RootState } from "@/store"
-import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseLanding, setCourseSection } from "@/store/courseSlice"
+import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseBasicInfo, setCourseLanding, setCourseLandingDescription, setCoursePricing, setCourseRequirements, setCourseSection } from "@/store/courseSlice"
 import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
@@ -28,6 +28,17 @@ const NewCourse = () => {
     }
 
     const handleClick_saveChanges = async () => {
+
+        const response = await server.put(`/course/${id}/landing`, {
+            courseBasicinfo, courseLandingState, courseRequirements, coursePricing
+        })
+        if (response.data.success) {
+            console.log("updated course")
+            dispatch(setCourseBasicInfo(response.data.courseBasicinfo))
+            dispatch(setCourseLanding({ fromServer: true, data: response.data.courseLandingState }))
+            dispatch(setCourseRequirements(response.data.courseRequirements))
+            dispatch(setCoursePricing(response.data.coursePricing))
+        }
         console.log(courseBasicinfo, courseLandingState, courseRequirements, coursePricing)
     }
 
@@ -38,13 +49,15 @@ const NewCourse = () => {
         const valInTab = fetchComponentInUrl()
         if (valInTab != 'course-landing') return
 
-        const result = await server.get(`/course/${id}/landing`)
-        if (result.data.success) {
-            dispatch(setCourseLanding({ fromServer: true, data: result.data.course }))
-
+        const response = await server.get(`/course/${id}/landing`)
+        if (response.data.success) {
+            dispatch(setCourseBasicInfo({ fromServer: true, data: response.data.course.courseBasicinfo }))
+            dispatch(setCourseLanding({ fromServer: true, data: response.data.course.courseLandingState }))
+            dispatch(setCourseRequirements({ data: response.data.course.courseRequirements, fromServer: true }))
+            dispatch(setCoursePricing(response.data.course.coursePricing))
         }
         dispatch(courseSliceLoadingStop())
-        console.log(result.data)
+        console.log(response.data)
     }
 
     const FetchSectionsWhenIdle = () => {
@@ -79,9 +92,9 @@ const NewCourse = () => {
             <Tabs defaultValue={fetchComponentInUrl()}>
                 <div className="flex">
                     <TabsList className="space-x-2">
-                        <TabsTrigger onClick={() => navigate('/profile/courses/edit/course-landing/7b579a5c-1208-44d8-a416-4cf3a6e4a8d6')} value="course-landing">course-landing</TabsTrigger>
-                        <TabsTrigger onClick={() => navigate('/profile/courses/edit/course-curriculum/7b579a5c-1208-44d8-a416-4cf3a6e4a8d6')} value="course-curriculum">course-curriculum</TabsTrigger>
-                        <TabsTrigger onClick={() => navigate('/profile/courses/edit/course-message/7b579a5c-1208-44d8-a416-4cf3a6e4a8d6')} value="course-message">course-message</TabsTrigger>
+                        <TabsTrigger onClick={() => navigate(`/profile/courses/edit/course-landing/${id}`)} value="course-landing">course-landing</TabsTrigger>
+                        <TabsTrigger onClick={() => navigate(`/profile/courses/edit/course-curriculum/${id}`)} value="course-curriculum">course-curriculum</TabsTrigger>
+                        <TabsTrigger onClick={() => navigate(`/profile/courses/edit/course-message/${id}`)} value="course-message">course-message</TabsTrigger>
                     </TabsList>
                     {
                         fetchComponentInUrl() != 'course-curriculum' &&

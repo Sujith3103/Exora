@@ -52,7 +52,7 @@ const CourseBasicInfo = () => {
                             value={basicinfoData[field.id] || ""}
                             key={field.id}
                             onValueChange={(val) =>
-                                dispatch(setCourseBasicInfo({ key: field.id, value: val }))
+                                dispatch(setCourseBasicInfo({ key: field.id, value: val,fromServer:false }))
                             }
                         >
                             <SelectTrigger className="sm:w-1/3 w-full rounded-sm border-gray-400">

@@ -58,6 +58,7 @@ const CourseFormField = () => {
                             ) : (
                                 <div className="relative mt-2">
                                     <Input
+                                        value={field.id && courseLandingState ? courseLandingState[field.id as keyof typeof courseLandingState] || '' : ''}
                                         name={field.name}
                                         className="w-full pr-16 border-gray-400"
                                         placeholder={field.placeholder}

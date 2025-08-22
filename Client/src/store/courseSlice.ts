@@ -11,7 +11,7 @@ type CourseCategory = | "web-development" | "backend-development" | "data-scienc
 interface CourseDetails {
     id: string
     title: string;
-    courseImg?: string;
+    thumbnailUrl?: string;
     category: CourseCategory; // 👈 category restricted
     duration: string;
     pricing: number;
@@ -106,16 +106,41 @@ const courseSlice = createSlice({
         },
         //------------------------------------------------------------Course Landing------------------------------------------------------------------
 
-        setCourseRequirements(state: courseState, action: PayloadAction<string>) {
-            state.courseRequirements = [...state.courseRequirements, action.payload]
+        setCourseRequirements(state: courseState, action: PayloadAction<{ fromServer: boolean, val?: string, data?: string[] }>) {
+            if (action.payload.fromServer) {
+                if(action.payload.data){
+                    state.courseRequirements = action.payload.data
+                }
+            }
+            else {
+                if (action.payload.val) {
+                    state.courseRequirements = [...state.courseRequirements, action.payload.val]
+                }
+            }
         },
         setCourseBasicInfo(
             state,
-            action: PayloadAction<{ key: string; value: string }>
+            action: PayloadAction<{
+                key?: string;
+                value?: string;
+                fromServer: boolean;
+                data?: Record<string, string>;
+            }>
         ) {
-            state.courseBasicInfo[action.payload.key] = action.payload.value;
+            if (action.payload.fromServer) {
+                // ✅ Replace whole object from server
+                state.courseBasicInfo = action.payload.data ?? {};
+            } else {
+                if (
+                    action.payload.key &&
+                    action.payload.value !== undefined
+                ) {
+                    state.courseBasicInfo[action.payload.key] = action.payload.value;
+                }
+            }
         },
-        setCourseLanding(state: courseState,action: PayloadAction<{key?: keyof CourseLandingData;value?: string;fromServer: boolean;data?: CourseLandingData}>
+
+        setCourseLanding(state: courseState, action: PayloadAction<{ key?: keyof CourseLandingData; value?: string; fromServer: boolean; data?: CourseLandingData }>
         ) {
             if (action.payload.fromServer) {
                 // replace whole object safely
@@ -139,8 +164,8 @@ const courseSlice = createSlice({
             }
             state.CourseLanding.description = action.payload.description;
         },
-        setCourseImage(state:courseState,action:PayloadAction<string>){
-            if(state.CourseLanding){
+        setCourseImage(state: courseState, action: PayloadAction<string>) {
+            if (state.CourseLanding) {
                 state.CourseLanding.courseImg = action.payload
             }
         },
@@ -237,8 +262,8 @@ const courseSlice = createSlice({
 })
 
 
-export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo, updateCourseLecture,setCourseImage,
-    setCourseLandingDescription, setCourseLanding,setCourseSection, updateCourseSection, deleteLecture, deleteSection,
+export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo, updateCourseLecture, setCourseImage,
+    setCourseLandingDescription, setCourseLanding, setCourseSection, updateCourseSection, deleteLecture, deleteSection,
     setLectureAsset, updateLectureTitle, updateSectionTitle, setResource, removeResource, addNewCourse, setCoursePricing,
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

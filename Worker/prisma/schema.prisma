@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  INSTRUCTOR
+  USER
+}
+
+enum Gender {
+  Male
+  Female
+}
+
+model User {
+  id         String        @id @default(uuid())
+  name       String
+  email      String        @unique
+  password   String
+  role       Role          @default(USER)
+  rememberMe Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  profile    UserProfile?
+  security   UserSecurity?
+
+  // Relation to courses (instructor)
+  courses Course[]
+}
+
+model UserProfile {
+  id              String    @id @default(uuid())
+  contact         String?   @unique
+  about           String?
+  dob             DateTime?
+  gender          Gender?
+  profileimg      String?
+  profileimgId    String?
+  profilebanner   String?
+  profilebannerId String?
+  profession      String?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model UserSecurity {
+  id                  String    @id @default(uuid())
+  twoStepVerification Boolean?
+  lastPasswordChange  DateTime?
+  recoveryEmail       String?
+  recoveryPhone       String?
+  loginAlertsEnabled  Boolean?
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+}
+
+model Course {
+  id              String       @id @default(uuid())
+  title           String
+  category        String
+  level           String
+  primaryLanguage String
+  subtitle        String
+  language        String
+  description     String
+  pricing         Float
+  objectives      String
+  welcomeMessage  String
+  image           String
+  requirements    Json
+  searchkey       String
+  slug            String       @unique
+  createdAt       DateTime     @default(now())
+  lengthNum       Int
+  lengthStr       String
+  status          CourseStatus
+
+  // Relation to User (Instructor)
+  instructor   User   @relation(fields: [instructorId], references: [id])
+  instructorId String
+
+  // Relations
+  sections Section[] // A course has many sections
+
+  @@map("courses")
+}
+
+enum CourseStatus {
+  published
+  drafted
+}
+
+model Section {
+  id        String   @id @default(uuid())
+  title     String
+  createdAt DateTime @default(now())
+
+  // Relations
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
+
+  lectures Lecture[] // one-to-many
+  order    Int // for drag-and-drop ordering
+}
+
+model Resource {
+  id    String @id @default(uuid())
+  title String
+  link  String
+
+  lectureId String
+  lecture   Lecture @relation(fields: [lectureId], references: [id])
+}
+
+model Lecture {
+  id          String   @id @default(uuid())
+  title       String
+  freePreview Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  lengthNum Int? // optional, since PDFs won’t have length
+  lengthStr String? // optional, same reason
+
+  // Relations
+  sectionId String
+  section   Section @relation(fields: [sectionId], references: [id])
+  order     Int // position within the section
+
+  // Link to assets
+  assets   LectureAsset[]
+  Resource Resource[]
+}
+
+enum LectureAssetStatus {
+  published
+  pending
+}
+
+model LectureAsset {
+  id        String    @id @default(uuid())
+  title     String
+  url       String // Cloudinary/S3 CDN link
+  publicId  String // object key for deletion/management
+  type      AssetType
+  createdAt DateTime  @default(now())
+  status LectureAssetStatus @default(pending)
+
+  // Relation
+  lectureId String
+  lecture   Lecture @relation(fields: [lectureId], references: [id])
+}
+
+enum AssetType {
+  VIDEO
+  PDF
+}

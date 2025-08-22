@@ -18,6 +18,20 @@ export const userTasksWorker = new Worker('user-tasks', async (job) => {
             await handleLoginAlert(job.data)
 
             break;
+
+            
+            
+        default:
+            console.warn(`Unknown job: ${job.name}`);
+    }
+}, {
+    connection: QueueConnection,
+});
+
+
+export const instructorTaskWorker = new Worker('instructor-tasks', async (job) => {
+    console.log("Worker file has started for instructor");
+    switch (job.name) {
             
         default:
             console.warn(`Unknown job: ${job.name}`);

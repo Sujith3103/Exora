@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { AddNewCourse, CreateLecture, createResource, CreateSection, deleteLecture, deleteResource, deleteSection, GetAllCourses, GetAllSections, getCourseLanding, UpdateLectureTitle, UpdateSectionTitle } from "../controllers/course-controller";
+import { AddNewCourse, CreateLecture, createResource, CreateSection, deleteLecture, deleteResource, deleteSection, GetAllCourses, GetAllSections, getCourseLanding, updateCourseLanding, UpdateLectureTitle, UpdateSectionTitle } from "../controllers/course-controller";
 import { AuthenticateMiddleware } from "../middleware";
 
 import multer from "multer";
@@ -14,6 +14,8 @@ router.post('/create-lecture/:id', AuthenticateMiddleware, CreateLecture)
 // Create a resource under a lecture
 router.post("/sections/:sectionId/lectures/:lectureId/resources",AuthenticateMiddleware,upload.none(),createResource);
 
+
+router.put('/:courseId/landing', AuthenticateMiddleware, updateCourseLanding)
 
 router.patch('/:courseId/sections/:sectionId/title', AuthenticateMiddleware, UpdateSectionTitle)
 router.patch('/:sectionId/lectures/:lectureId/title', AuthenticateMiddleware, UpdateLectureTitle)

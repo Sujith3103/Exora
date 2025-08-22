@@ -12,6 +12,7 @@ const CourseRequirements = () => {
   const dispatch = useDispatch<AppDispatch>()
 
   const requirements = useSelector((state: RootState) => state.course.courseRequirements)
+  const CoursePrice = useSelector((state: RootState) => state.course.coursePricing)
 
   //   const [requirements, setRequirements] = useState<string[]>([])
   const [inputVal, setInputVal] = useState('')
@@ -33,7 +34,7 @@ const CourseRequirements = () => {
 
   const handleAdd = () => {
     if (inputVal.trim()) {
-      dispatch(setCourseRequirements(inputVal))
+      dispatch(setCourseRequirements({val:inputVal, fromServer:false}))
       //   setRequirements(prev => [...prev, inputVal.trim()])
       setInputVal("")
     }
@@ -45,8 +46,8 @@ const CourseRequirements = () => {
   }
 
   useEffect(() => {
-    console.log("req : ", requirements)
-  }, [requirements])
+    console.log("price : ", CoursePrice)
+  }, [CoursePrice])
 
   return (
     <>
@@ -96,7 +97,7 @@ const CourseRequirements = () => {
         <Label className="text-lg font-semibold tracking-tight text-gray-800">
           Pricing : $
         </Label>
-        <Input className='w-20' ref={pricingRef} type='number' onChange={handleChange_Input} />
+        <Input className='w-20' ref={pricingRef} value={CoursePrice} type='number' onChange={handleChange_Input} />
       </div>
     </>
   )
