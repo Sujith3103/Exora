@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { courseCategories, courseLevelOptions, languageOptions } from '@/config/config'
 import type { AppDispatch, RootState } from '@/store'
-import { setCourseBasicInfo, setCousreLanding } from '@/store/courseSlice'
+import { setCourseBasicInfo, setCourseLanding } from '@/store/courseSlice'
 import { CircleQuestionMark } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -39,7 +39,7 @@ const CourseBasicInfo = () => {
     const CourselandingState = useSelector((state: RootState) => state.course.CourseLanding)
 
     const handleChange_SearchKey = (e: React.ChangeEvent<HTMLInputElement>) => {
-        dispatch(setCousreLanding({key : 'searchKey', value: e.target.value}))
+        dispatch(setCourseLanding({ key: 'searchKey', value: e.target.value, fromServer: false }))
     }
 
     return (
@@ -103,7 +103,7 @@ const CourseBasicInfo = () => {
                     </span>
                 </div>
 
-                <Input placeholder="e.g. Landscape Photography" className="mt-3" value={CourselandingState?.searchKey} onChange={(e) => handleChange_SearchKey(e)}/>
+                <Input placeholder="e.g. Landscape Photography" className="mt-3" value={CourselandingState?.searchKey} onChange={(e) => handleChange_SearchKey(e)} />
             </div>
         </>
     )

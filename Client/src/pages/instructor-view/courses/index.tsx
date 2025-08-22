@@ -31,7 +31,6 @@ const InstructorCourses = () => {
     const PLACEHOLDER_IMAGE = "/images/placeholder.png";
 
     const handleClick_EditCourse = (courseid: string) => {
-        console.log("courseif : ", courseid)
         navigate(`/profile/courses/edit/course-landing/${courseid}`)
     }
 

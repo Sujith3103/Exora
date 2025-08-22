@@ -38,8 +38,8 @@ router.post(
       const userId = req.user?.id as string;
       await prisma.userProfile.upsert({
         where: { userId },
-        update: { profileimg: result.secure_url },
-        create: { userId, profileimg: result.secure_url }
+        update: { profileImg: result.secure_url },
+        create: { userId, profileImg: result.secure_url }
       });
 
       // Cleanup temp files

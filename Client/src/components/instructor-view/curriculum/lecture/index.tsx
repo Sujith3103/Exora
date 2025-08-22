@@ -275,9 +275,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
                     {ShowResource.uploadRecourse && <NewResource lecture={lecture} setShowResource={setShowResource} />}
 
                     {lecture.Resource && lecture.Resource?.length > 0 && <ResourceComponent lecture={lecture} />}
-                    <>
-                        {console.log("res : ", lecture)}
-                    </>
+                    <>                    </>
                     {
                         !ShowResource.uploadRecourse &&
                         <Card className="p-2 flex flex-row items-center justify-center rounded-none gap-30 border-2 border-dotted border-gray-300">

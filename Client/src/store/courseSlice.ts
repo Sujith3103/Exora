@@ -19,11 +19,6 @@ interface CourseDetails {
     status: "published" | "drafted";
 }
 
-
-interface UploadState {
-    file: File | {};
-}
-
 export interface Resources {
     id?: string,
     title: string,
@@ -76,9 +71,9 @@ interface courseState {
     courseData: CourseDetails[],
     courseBasicInfo: Record<string, string>
     courseRequirements: string[]
+    coursePricing: number
     CourseLanding: CourseLandingData | null
     sections: Section[]
-    courseImgUpload: UploadState | null
     lectures: Lectures[] | []
     loading: boolean,
     error: boolean
@@ -89,7 +84,7 @@ const initialState: courseState = {
     courseBasicInfo: {},
     courseRequirements: [],
     CourseLanding: null,
-    courseImgUpload: null,
+    coursePricing: 0,
     sections: [],
     lectures: [],
     loading: true,
@@ -120,10 +115,19 @@ const courseSlice = createSlice({
         ) {
             state.courseBasicInfo[action.payload.key] = action.payload.value;
         },
-        setCousreLanding(state: courseState, action: PayloadAction<{ key: keyof CourseLandingData, value: string }>) {
-            if (state.CourseLanding) {
-                state.CourseLanding[action.payload.key] = action.payload.value
+        setCourseLanding(state: courseState,action: PayloadAction<{key?: keyof CourseLandingData;value?: string;fromServer: boolean;data?: CourseLandingData}>
+        ) {
+            if (action.payload.fromServer) {
+                // replace whole object safely
+                state.CourseLanding = action.payload.data ?? null;
+            } else {
+                if (state.CourseLanding && action.payload.key && action.payload.value !== undefined) {
+                    state.CourseLanding[action.payload.key] = action.payload.value;
+                }
             }
+        },
+        setCoursePricing(state: courseState, action: PayloadAction<number>) {
+            state.coursePricing = action.payload
         }
         ,
         setCourseLandingDescription(
@@ -135,14 +139,11 @@ const courseSlice = createSlice({
             }
             state.CourseLanding.description = action.payload.description;
         },
-        uploadCourseImage(state: courseState, action: PayloadAction<File>) {
-            if (!state.courseImgUpload) {
-                state.courseImgUpload = { file: action.payload };
-            } else {
-                state.courseImgUpload.file = action.payload;
+        setCourseImage(state:courseState,action:PayloadAction<string>){
+            if(state.CourseLanding){
+                state.CourseLanding.courseImg = action.payload
             }
         },
-
         //-------------------------------------------------Course Curriculum----------------------------------------------------------------------
 
         setCourseSection(state: courseState, action: PayloadAction<Section[]>) {
@@ -236,8 +237,8 @@ const courseSlice = createSlice({
 })
 
 
-export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo, updateCourseLecture,
-    setCourseLandingDescription, setCousreLanding, setCourseSection, updateCourseSection, deleteLecture, deleteSection,
-    setLectureAsset, updateLectureTitle, updateSectionTitle, setResource, removeResource,addNewCourse,
+export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo, updateCourseLecture,setCourseImage,
+    setCourseLandingDescription, setCourseLanding,setCourseSection, updateCourseSection, deleteLecture, deleteSection,
+    setLectureAsset, updateLectureTitle, updateSectionTitle, setResource, removeResource, addNewCourse, setCoursePricing,
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

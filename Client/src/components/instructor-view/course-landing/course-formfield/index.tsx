@@ -3,7 +3,7 @@ import Editor from '../../text-editor/Editor';
 import { Input } from '@/components/ui/input';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/store';
-import { setCousreLanding } from '@/store/courseSlice';
+import { setCourseLanding } from '@/store/courseSlice';
 
 const CourseFormField = () => {
 
@@ -43,7 +43,7 @@ const CourseFormField = () => {
     ];
 
     const handleChange = (e: any, field: any) => {
-        dispatch(setCousreLanding({ key: field.id, value: e.target.value }))
+        dispatch(setCourseLanding({ key: field.id, value: e.target.value, fromServer:false }))
     }
 
     return (
@@ -58,7 +58,6 @@ const CourseFormField = () => {
                             ) : (
                                 <div className="relative mt-2">
                                     <Input
-                                        value={field.id && courseLandingState ? courseLandingState[field.id as keyof typeof courseLandingState] || '' : ''}
                                         name={field.name}
                                         className="w-full pr-16 border-gray-400"
                                         placeholder={field.placeholder}

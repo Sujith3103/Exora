@@ -19,7 +19,7 @@ export const GetAllCourses = async (req: Request, res: Response) => {
                 title: true,
                 level: true,
                 category: true,
-                image: true,
+                thumbnailUrl: true,
                 pricing: true,
                 status: true,
                 lengthStr: true
@@ -91,6 +91,46 @@ export const GetAllSections = async (req: Request, res: Response) => {
 
 }
 
+export const getCourseLanding = async (req: Request, res: Response) => {
+
+    const { courseId } = req.params
+
+    try {
+
+        const course = await prisma.course.findUnique({
+            where: { id: courseId },
+            select: {
+                title: true,
+                subtitle: true,
+                description: true,
+                searchkey: true,
+                thumbnailUrl: true
+            }
+        });
+        if (!course) {
+            return res.status(404).json({ success: false, message: "Course not found" });
+        }
+
+        const { thumbnailUrl: courseImg, ...formattedCourse } = course;
+
+        return res.status(200).json({
+            success: true,
+            course: {
+                ...formattedCourse,
+                courseImg,
+            }
+        });
+
+    }catch(err){
+        console.log(err)
+        return res.status(500).json({
+            success: false,
+            message: "could not fetch course  landing data"
+        })
+    }
+
+}
+
 export const AddNewCourse = async (req: Request, res: Response) => {
 
     const userId = req.user?.id as string
@@ -116,7 +156,6 @@ export const AddNewCourse = async (req: Request, res: Response) => {
                 pricing: 0,
                 objectives: "",
                 welcomeMessage: "",
-                image: "",
                 requirements: [],          // empty array for Json
                 searchkey: "",
                 slug: `temp-slug-${Date.now()}`,         // must be unique

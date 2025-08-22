@@ -72,24 +72,25 @@ model UserSecurity {
 
 model Course {
   id              String       @id @default(uuid())
-  title           String
   category        String
-  level           String
-  primaryLanguage String
-  subtitle        String
-  language        String
+  createdAt       DateTime     @default(now())
   description     String
-  pricing         Float
+  thumbnailUrl    String?
+  thumbnailId     String?
+  language        String
+  level           String
+  lengthNum       Int
+  lengthStr       String
   objectives      String
-  welcomeMessage  String
-  image           String
+  primaryLanguage String
+  pricing         Float
   requirements    Json
   searchkey       String
   slug            String       @unique
-  createdAt       DateTime     @default(now())
-  lengthNum       Int
-  lengthStr       String
   status          CourseStatus
+  subtitle        String
+  title           String
+  welcomeMessage  String
 
   // Relation to User (Instructor)
   instructor   User   @relation(fields: [instructorId], references: [id])
@@ -143,8 +144,8 @@ model Lecture {
   order     Int // position within the section
 
   // Link to assets
-  lectureAssets   LectureAsset?
-  Resource Resource[]
+  lectureAssets LectureAsset?
+  Resource      Resource[]
 }
 
 enum LectureAssetStatus {
@@ -155,18 +156,18 @@ enum LectureAssetStatus {
 }
 
 model LectureAsset {
-  id        String    @id @default(uuid())
-  title     String
-  url       String // Cloudinary/S3 CDN link
-  publicId  String // object key for deletion/management
-  type      AssetType
-  createdAt DateTime  @default(now())
-  status LectureAssetStatus @default(pending)
+  id           String             @id @default(uuid())
+  title        String
+  url          String // Cloudinary/S3 CDN link
+  publicId     String // object key for deletion/management
+  type         AssetType
+  createdAt    DateTime           @default(now())
+  status       LectureAssetStatus @default(pending)
   thumbnailUrl String?
 
   // Relation
-  lectureId String @unique
-  lecture   Lecture @relation(fields: [lectureId], references: [id]) 
+  lectureId String  @unique
+  lecture   Lecture @relation(fields: [lectureId], references: [id])
 }
 
 enum AssetType {

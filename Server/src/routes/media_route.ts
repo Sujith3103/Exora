@@ -114,8 +114,6 @@ router.post('/lecture/:lectureId/assets', upload.single("file"), AuthenticateMid
                 status: 'published',
             },
         });
-
-        console.log("lecture asset : ", createdLectureAsset)
         res.status(200).json({ success: true, message: "created asset successfully", asset: createdLectureAsset });
 
     } catch (err) {
@@ -147,7 +145,7 @@ router.put('/lecture/:lectureId/assets/:AssetId/edit', upload.single("file"), Au
         const result = await uploadMediaToCloudinary(req.file.path);
 
         // Generate a thumbnail URL from the uploaded video
-        const thumbnailUrl =  cloudinary.url(result.public_id, {
+        const thumbnailUrl = cloudinary.url(result.public_id, {
             resource_type: "video",   // important for videos
             format: "jpg",
             start_offset: "2",        // pick frame at 2 seconds
@@ -159,8 +157,8 @@ router.put('/lecture/:lectureId/assets/:AssetId/edit', upload.single("file"), Au
         const deleteCloudinaryAsset = await deleteMediaFromCloudinary(AssetId)
 
         const UpdatedLectureAsset = await prisma.lectureAsset.update({
-            where:{lectureId: lectureId},
-            data:{
+            where: { lectureId: lectureId },
+            data: {
                 publicId: result.public_id,
                 url: result.secure_url,
                 thumbnailUrl: thumbnailUrl,
@@ -170,8 +168,8 @@ router.put('/lecture/:lectureId/assets/:AssetId/edit', upload.single("file"), Au
             }
         })
 
-        console.log("prev asset deleted : ",deleteCloudinaryAsset)
-        console.log("updated lecture data :",UpdatedLectureAsset)
+        console.log("prev asset deleted : ", deleteCloudinaryAsset)
+        console.log("updated lecture data :", UpdatedLectureAsset)
 
         // console.log("lecture asset : ", createdLectureAsset)
         res.status(200).json({ success: true, message: "Updated asset successfully", asset: UpdatedLectureAsset });
@@ -183,5 +181,51 @@ router.put('/lecture/:lectureId/assets/:AssetId/edit', upload.single("file"), Au
     }
 
 });
+router.patch('/course/:courseId/thumbnail', upload.single('thumbnail'), async (req, res) => {
+    const { courseId } = req.params;
+
+    if (!req.file?.path) {
+        return res.status(404).json({ success: false, message: "file not found" });
+    }
+
+    try {
+        // Find the course first
+        const course = await prisma.course.findUnique({
+            where: { id: courseId },
+            select: { thumbnailId: true },
+        });
+
+        // If there’s an existing thumbnail, delete it from Cloudinary
+        if (course?.thumbnailId) {
+            // await cloudinary.uploader.destroy(course.thumbnailId);
+            await deleteMediaFromCloudinary(course.thumbnailId)
+        }
+
+        // Upload new thumbnail to Cloudinary
+        const result = await uploadMediaToCloudinary(req.file.path);
+
+        // Update course with new thumbnail
+        const upload = await prisma.course.update({
+            where: { id: courseId },
+            data: {
+                thumbnailId: result.public_id,
+                thumbnailUrl: result.secure_url,
+            },
+        });
+
+        console.log("updated img:",upload)
+
+        return res.status(200).json({
+            success: true,
+            message: "Thumbnail uploaded successfully",
+            url: upload.thumbnailUrl,
+        });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Upload failed" });
+    }
+});
+
 
 export default router
