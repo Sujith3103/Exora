@@ -51,14 +51,6 @@ export interface Lectures {
     Resource?: Resources[]
 }
 
-interface CourseLandingData {
-    title?: string,
-    subtitle?: string,
-    description?: string | null,
-    searchKey?: string,
-    courseImg?: string
-}
-
 export interface Section {
     id?: string,
     title: string,
@@ -67,12 +59,44 @@ export interface Section {
     lectures?: Lectures[]
 }
 
+// Enum for course status
+export type CourseStatus = "draft" | "published" | "archived";
+// (⚠️ Update this based on your Prisma enum definition)
+
+// Instructor minimal interface
+export interface Instructor {
+    id: string;
+    name?: string;   // add more fields if needed (email, profilePic, etc.)
+}
+
+// Main Course interface
+export interface CourseInfo {
+    id: string;
+    category: string;
+    description: string;
+    thumbnailUrl?: string;
+    thumbnailId?: string;
+    language: string;
+    level: string;
+    lengthNum: number;     // numeric length (e.g., 120)
+    lengthStr: string;     // formatted length (e.g., "2h 30m")
+    objectives: string;
+    primaryLanguage: string;
+    pricing: number;
+    requirements: string[];  // since Prisma `Json`
+    searchkey: string;
+    slug: string;
+    status: CourseStatus;
+    subtitle: string;
+    title: string;
+    welcomeMessage: string;
+}
+
+
 interface courseState {
+    courseInformation: CourseInfo | null,
     courseData: CourseDetails[],
-    courseBasicInfo: Record<string, string>
     courseRequirements: string[]
-    coursePricing: number
-    CourseLanding: CourseLandingData | null
     sections: Section[]
     lectures: Lectures[] | []
     loading: boolean,
@@ -80,11 +104,9 @@ interface courseState {
 }
 
 const initialState: courseState = {
+    courseInformation: null,
     courseData: [],
-    courseBasicInfo: {},
     courseRequirements: [],
-    CourseLanding: null,
-    coursePricing: 0,
     sections: [],
     lectures: [],
     loading: true,
@@ -104,69 +126,59 @@ const courseSlice = createSlice({
         addNewCourse(state, action: PayloadAction<CourseDetails>) {
             state.courseData.push(action.payload);
         },
+        //-----------------------------------------------------------stuff-----------------------------------------------------------------------
+
+        setCourseInformation(
+            state,
+            action: PayloadAction<{
+                fromServer: boolean;
+                key?: keyof CourseInfo;
+                value?: any;
+                data?: CourseInfo;
+            }>
+        ) {
+            const { fromServer, key, value, data } = action.payload;
+
+            if (fromServer && data) {
+                // Case 1: Replace whole object from backend
+                state.courseInformation = data;
+            } else if (!fromServer && key) {
+                // Case 2: Update one field only
+                if (state.courseInformation) {
+                    state.courseInformation = {
+                        ...state.courseInformation,
+                        [key]: value,
+                    };
+                } else {
+                    // If it's null, initialize with just that key/value
+                    state.courseInformation = { [key]: value } as CourseInfo;
+                }
+            }
+        },
         //------------------------------------------------------------Course Landing------------------------------------------------------------------
 
         setCourseRequirements(state: courseState, action: PayloadAction<{ fromServer: boolean, val?: string, data?: string[] }>) {
             if (action.payload.fromServer) {
-                if(action.payload.data){
-                    state.courseRequirements = action.payload.data
+                if (action.payload.data && state.courseInformation) {
+                    state.courseInformation.requirements = action.payload.data
                 }
             }
-            else {
-                if (action.payload.val) {
-                    state.courseRequirements = [...state.courseRequirements, action.payload.val]
-                }
+            else if (action.payload.val && state.courseInformation) {
+                state.courseInformation.requirements = [...state.courseInformation?.requirements, action.payload.val]
             }
-        },
-        setCourseBasicInfo(
-            state,
-            action: PayloadAction<{
-                key?: string;
-                value?: string;
-                fromServer: boolean;
-                data?: Record<string, string>;
-            }>
-        ) {
-            if (action.payload.fromServer) {
-                // ✅ Replace whole object from server
-                state.courseBasicInfo = action.payload.data ?? {};
-            } else {
-                if (
-                    action.payload.key &&
-                    action.payload.value !== undefined
-                ) {
-                    state.courseBasicInfo[action.payload.key] = action.payload.value;
-                }
-            }
-        },
 
-        setCourseLanding(state: courseState, action: PayloadAction<{ key?: keyof CourseLandingData; value?: string; fromServer: boolean; data?: CourseLandingData }>
-        ) {
-            if (action.payload.fromServer) {
-                // replace whole object safely
-                state.CourseLanding = action.payload.data ?? null;
-            } else {
-                if (state.CourseLanding && action.payload.key && action.payload.value !== undefined) {
-                    state.CourseLanding[action.payload.key] = action.payload.value;
-                }
-            }
         },
-        setCoursePricing(state: courseState, action: PayloadAction<number>) {
-            state.coursePricing = action.payload
-        }
-        ,
         setCourseLandingDescription(
             state: courseState,
             action: PayloadAction<{ description: string | null }>
         ) {
-            if (!state.CourseLanding) {
-                state.CourseLanding = {}; // initialize if null
+            if (state.courseInformation) {
+                state.courseInformation.description = action.payload.description ?? "";
             }
-            state.CourseLanding.description = action.payload.description;
         },
         setCourseImage(state: courseState, action: PayloadAction<string>) {
-            if (state.CourseLanding) {
-                state.CourseLanding.courseImg = action.payload
+            if (state.courseInformation) {
+                state.courseInformation.thumbnailUrl = action.payload
             }
         },
         //-------------------------------------------------Course Curriculum----------------------------------------------------------------------
@@ -262,8 +274,8 @@ const courseSlice = createSlice({
 })
 
 
-export const { courseSliceLoadingStart, setCourseDetails, setCourseBasicInfo, updateCourseLecture, setCourseImage,
-    setCourseLandingDescription, setCourseLanding, setCourseSection, updateCourseSection, deleteLecture, deleteSection,
-    setLectureAsset, updateLectureTitle, updateSectionTitle, setResource, removeResource, addNewCourse, setCoursePricing,
+export const { courseSliceLoadingStart, setCourseDetails, updateCourseLecture, setCourseImage, setCourseInformation,
+    setCourseLandingDescription, setCourseSection, updateCourseSection, deleteLecture, deleteSection,
+    setLectureAsset, updateLectureTitle, updateSectionTitle, setResource, removeResource, addNewCourse, 
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

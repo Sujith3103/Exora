@@ -92,58 +92,42 @@ export const GetAllSections = async (req: Request, res: Response) => {
 }
 
 export const getCourseLanding = async (req: Request, res: Response) => {
-  const { courseId } = req.params;
+    const { courseId } = req.params;
 
-  try {
-    const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      select: {
-        primaryLanguage: true,
-        level: true,
-        category: true,
-        title: true,
-        subtitle: true,
-        description: true,
-        searchkey: true,
-        thumbnailUrl: true,
-        requirements: true,
-        pricing:true
-      },
-    });
+    try {
+        const course = await prisma.course.findUnique({
+            where: { id: courseId },
+            select: {
+                primaryLanguage: true,
+                level: true,
+                category: true,
+                title: true,
+                subtitle: true,
+                description: true,
+                searchkey: true,
+                thumbnailUrl: true,
+                requirements: true,
+                pricing: true
+            },
+        });
 
-    if (!course) {
-      return res.status(404).json({ success: false, message: "Course not found" });
+        if (!course) {
+            return res.status(404).json({ success: false, message: "Course not found" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            course: course
+        });
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            success: false,
+            message: "could not fetch course landing data",
+        });
     }
-
-    return res.status(200).json({
-      success: true,
-      course: {
-        courseBasicinfo: {
-          primaryLanguage: course.primaryLanguage,
-          level: course.level,
-          category: course.category,
-        },
-        courseLandingState: {
-          title: course.title,
-          subtitle: course.subtitle,
-          description: course.description,
-          courseImg: course.thumbnailUrl,
-          searchKey: course.searchkey,
-        },
-        courseRequirements: course.requirements || [],
-        coursePricing:  course.pricing || 0,
-      },
-    });
-
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      success: false,
-      message: "could not fetch course landing data",
-    });
-  }
 };
-
 
 export const AddNewCourse = async (req: Request, res: Response) => {
 
@@ -200,7 +184,6 @@ export const AddNewCourse = async (req: Request, res: Response) => {
 
 }
 
-
 // helper to get the next section order
 
 const getNextLectureOrder = async (sectionId: string) => {
@@ -213,42 +196,29 @@ const getNextLectureOrder = async (sectionId: string) => {
 
 export const updateCourseLanding = async (req: Request, res: Response) => {
     const { courseId } = req.params;
-    const { courseBasicinfo, courseLandingState, courseRequirements,coursePricing } = req.body;
+    const { courseInformation } = req.body; // single object now
 
     try {
         const updated = await prisma.course.update({
             where: { id: courseId },
             data: {
-                primaryLanguage: courseBasicinfo.primaryLanguage,
-                level: courseBasicinfo.level,
-                category: courseBasicinfo.category,
-                title: courseLandingState.title,
-                subtitle: courseLandingState.subtitle,
-                description: courseLandingState.description,
-                thumbnailUrl: courseLandingState.courseImg,
-                searchkey: courseLandingState.searchKey,
-                requirements: courseRequirements,
-                pricing: coursePricing
+                primaryLanguage: courseInformation.primaryLanguage,
+                level: courseInformation.level,
+                category: courseInformation.category,
+                title: courseInformation.title,
+                subtitle: courseInformation.subtitle,
+                description: courseInformation.description,
+                thumbnailUrl: courseInformation.thumbnailUrl,
+                searchkey: courseInformation.searchkey,
+                requirements: courseInformation.requirements,
+                pricing: courseInformation.pricing,
             },
         });
 
-        // Rebuild to the same structure client expects
+        // Respond with updated courseInformation
         res.status(200).json({
             success: true,
-            courseBasicinfo: {
-                primaryLanguage: updated.primaryLanguage,
-                level: updated.level,
-                category: updated.category,
-            },
-            courseLandingState: {
-                title: updated.title,
-                subtitle: updated.subtitle,
-                description: updated.description,
-                courseImg: updated.thumbnailUrl,
-                searchKey: updated.searchkey,
-            },
-            courseRequirements: updated.requirements,
-            coursePricing: updated.pricing
+            courseInformation: updated
         });
     } catch (err) {
         console.error(err);

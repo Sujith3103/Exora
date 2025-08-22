@@ -5,7 +5,7 @@ import CourseCurriculum from "@/components/instructor-view/curriculum"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { AppDispatch, RootState } from "@/store"
-import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseBasicInfo, setCourseLanding, setCourseLandingDescription, setCoursePricing, setCourseRequirements, setCourseSection } from "@/store/courseSlice"
+import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseInformation, setCourseSection } from "@/store/courseSlice"
 import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
@@ -14,10 +14,7 @@ const NewCourse = () => {
 
     const dispatch = useDispatch<AppDispatch>()
 
-    const courseLandingState = useSelector((state: RootState) => state.course.CourseLanding)
-    const courseRequirements = useSelector((state: RootState) => state.course.courseRequirements)
-    const courseBasicinfo = useSelector((state: RootState) => state.course.courseBasicInfo)
-    const coursePricing = useSelector((state: RootState) => state.course.coursePricing)
+    const courseData = useSelector((state: RootState) => state.course.courseInformation)
 
     const navigate = useNavigate()
 
@@ -30,16 +27,11 @@ const NewCourse = () => {
     const handleClick_saveChanges = async () => {
 
         const response = await server.put(`/course/${id}/landing`, {
-            courseBasicinfo, courseLandingState, courseRequirements, coursePricing
+            courseInformation:courseData
         })
         if (response.data.success) {
-            console.log("updated course")
-            dispatch(setCourseBasicInfo(response.data.courseBasicinfo))
-            dispatch(setCourseLanding({ fromServer: true, data: response.data.courseLandingState }))
-            dispatch(setCourseRequirements(response.data.courseRequirements))
-            dispatch(setCoursePricing(response.data.coursePricing))
+            console.log("updated course",response.data)
         }
-        console.log(courseBasicinfo, courseLandingState, courseRequirements, coursePricing)
     }
 
     const { id } = useParams<{ id: string }>();
@@ -51,10 +43,7 @@ const NewCourse = () => {
 
         const response = await server.get(`/course/${id}/landing`)
         if (response.data.success) {
-            dispatch(setCourseBasicInfo({ fromServer: true, data: response.data.course.courseBasicinfo }))
-            dispatch(setCourseLanding({ fromServer: true, data: response.data.course.courseLandingState }))
-            dispatch(setCourseRequirements({ data: response.data.course.courseRequirements, fromServer: true }))
-            dispatch(setCoursePricing(response.data.course.coursePricing))
+            dispatch(setCourseInformation({fromServer:true, data:response.data.course}))
         }
         dispatch(courseSliceLoadingStop())
         console.log(response.data)
@@ -64,7 +53,6 @@ const NewCourse = () => {
         if ('requestIdleCallback' in window) {
             requestIdleCallback(async () => {
                 console.log("fetching sections")
-
                 dispatch(courseSliceLoadingStart())
                 const response = await server.get(`/course/get-all-sections/${id}`)
                 if (response.data.success) {

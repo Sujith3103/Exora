@@ -20,11 +20,11 @@ import { setCourseLandingDescription } from "@/store/courseSlice";
 
 function LoadContentPlugin() {
     const [editor] = useLexicalComposerContext();
-    const courseLandingState = useSelector((state: RootState) => state.course.CourseLanding);
+    const courseData = useSelector((state: RootState) => state.course.courseInformation);
 
     useEffect(() => {
-        if (courseLandingState?.description) {
-            const json = JSON.parse(courseLandingState.description);
+        if (courseData?.description) {
+            const json = JSON.parse(courseData.description);
             const editorState = editor.parseEditorState(json);
             editor.setEditorState(editorState);
         }
@@ -46,7 +46,7 @@ type EditorProps = {
 export default function Editor({ placeholder }: EditorProps) {
 
     const dispatch = useDispatch<AppDispatch>()
-    const courseLandingState = useSelector((state: RootState) => state.course.CourseLanding)
+    const courseData = useSelector((state: RootState) => state.course.courseInformation)
     function onChange(editorState: EditorState) {
         const json = editorState.toJSON();
 
@@ -95,7 +95,7 @@ export default function Editor({ placeholder }: EditorProps) {
                             {/* Custom placeholder inside the same relative wrapper */}
                             <div className="absolute top-2 left-2 text-gray-400 pointer-events-none">
                                 {
-                                    !courseLandingState?.description && placeholder
+                                    !courseData?.description && placeholder
                                 }
                             </div>
                         </div>
