@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/store';
 import { setCourseInformation, type CourseInfo } from '@/store/courseSlice';
+import { renderTiptapJSONtoHTML } from '../../text-editor/renderHTML';
 
 // 🔑 Extract only string-based keys from CourseInfo
 type StringKeys<T> = {
@@ -25,6 +26,10 @@ export type CourseFormFieldType<K extends StringKeys<CourseInfo> = StringKeys<Co
 const CourseFormField = () => {
   const courseData = useSelector((state: RootState) => state.course.courseInformation);
   const dispatch = useDispatch<AppDispatch>();
+  let htmlContent;
+  if (courseData?.description) {
+    htmlContent = renderTiptapJSONtoHTML(JSON.parse(courseData?.description))
+  }
 
   // ✅ these fields are typed safely
   const courseFormFields = [
@@ -105,6 +110,10 @@ const CourseFormField = () => {
           </p>
         </div>
       ))}
+      {/* <div
+        className="prose [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1"
+        dangerouslySetInnerHTML={{ __html: htmlContent || "" }}
+      ></div> */}
     </>
   );
 };

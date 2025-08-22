@@ -1,26 +1,60 @@
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import { FORMAT_TEXT_COMMAND} from 'lexical';
-import {Bold, Italic, List} from "lucide-react";
-import {Button} from "@/components/ui/button"; // if using shadcn
+"use client";
 
-export default function ToolbarPlugin() {
-  const [editor] = useLexicalComposerContext();
+import React from "react";
+import { Editor } from "@tiptap/react";
+import { Bold, Italic, List, ListOrdered, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-  const formatText = (format: any) => {
-    editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
-  };
+type ToolbarProps = {
+  editor: Editor | null;
+};
+
+export default function Toolbar({ editor }: ToolbarProps) {
+  if (!editor) return null;
 
   return (
-    <div className="flex space-x-2 border-b p-2 bg-gray-50 dark:bg-gray-800 rounded-t-xl">
-      <Button size="sm" variant="ghost" onClick={() => formatText('bold')}>
+    <div className="flex space-x-1 border-b p-2 bg-gray-50 dark:bg-gray-800 rounded-t-lg">
+      <Button
+        size="sm"
+        variant={editor.isActive("bold") ? "default" : "ghost"}
+        onClick={() => editor.chain().focus().toggleBold().run()}
+      >
         <Bold className="w-4 h-4" />
       </Button>
-      <Button size="sm" variant="ghost" onClick={() => formatText('italic')}>
+      <Button
+        size="sm"
+        variant={editor.isActive("italic") ? "default" : "ghost"}
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+      >
         <Italic className="w-4 h-4" />
       </Button>
-  
-      <Button size="sm" variant="ghost">
+      <Button
+        size="sm"
+        variant={editor.isActive("bulletList") ? "default" : "ghost"}
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+      >
         <List className="w-4 h-4" />
+      </Button>
+      <Button
+        size="sm"
+        variant={editor.isActive("orderedList") ? "default" : "ghost"}
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+      >
+        <ListOrdered className="w-4 h-4" />
+      </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => editor.chain().focus().undo().run()}
+      >
+        <RotateCcw className="w-4 h-4" />
+      </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => editor.chain().focus().redo().run()}
+      >
+        <RotateCcw className="w-4 h-4 rotate-180" />
       </Button>
     </div>
   );
