@@ -39,7 +39,7 @@ const NewResource = ({ lecture, setShowResource }: NewResourceProp) => {
 
         try {
             const response = await server.post(
-                `/course/sections/${lecture.sectionId}/lectures/${lecture.id}/resources`,
+                `/instructor/course/sections/${lecture.sectionId}/lectures/${lecture.id}/resources`,
                 payload // 👈 send as JSON
             );
             if (response.data.success) {

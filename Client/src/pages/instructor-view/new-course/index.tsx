@@ -21,6 +21,7 @@ const NewCourse = () => {
     const [isValid, setIsValid] = useState(false)
 
     const navigate = useNavigate()
+    const { id } = useParams<{ id: string }>();
 
     let location = useLocation()
 
@@ -36,7 +37,7 @@ const NewCourse = () => {
             setIsValid(valid.valid)
         }
 
-        const response = await server.put(`/course/${id}/landing`, {
+        const response = await server.put(`/instructor/course/${id}/landing`, {
             courseInformation: courseData
         })
         if (response.data.success) {
@@ -44,14 +45,24 @@ const NewCourse = () => {
         }
     }
 
-    const { id } = useParams<{ id: string }>();
+    const handleClick_PublishCourse = async() => {
+        try{
+            const response = await server.patch(`/instructor/course/${id}/publish`)
+            if(response.data.success){
+                console.log("course published")
+            }
+        }catch(err){
+            console.log(err)
+        }
+    }
+
 
     const fetchCourseLanding = async () => {
         dispatch(courseSliceLoadingStart())
         const valInTab = fetchComponentInUrl()
         if (valInTab != 'course-landing') return
 
-        const response = await server.get(`/course/${id}/landing`)
+        const response = await server.get(`/instructor/course/${id}/landing`)
         if (response.data.success) {
             dispatch(setCourseInformation({ fromServer: true, data: response.data.course }))
         }
@@ -64,7 +75,7 @@ const NewCourse = () => {
             requestIdleCallback(async () => {
                 console.log("fetching sections")
                 dispatch(courseSliceLoadingStart())
-                const response = await server.get(`/course/get-all-sections/${id}`)
+                const response = await server.get(`/instructor/course/get-all-sections/${id}`)
                 if (response.data.success) {
                     console.log("fetched sections", response.data)
 
@@ -95,7 +106,7 @@ const NewCourse = () => {
                     </TabsList>
                     {
                         fetchComponentInUrl() != 'course-curriculum' && isValid ? (
-                            <Button className="ml-auto">Publish Course</Button>
+                            <Button className="ml-auto" onClick={handleClick_PublishCourse}>Publish Course</Button>
                         ) : (
 
                             <Button className="ml-auto bg-white text-black border hover:bg-white cursor-pointer border-black" onClick={handleClick_saveChanges}>Save Changes</Button>

@@ -402,7 +402,33 @@ export const UpdateLectureTitle = async (req: Request, res: Response) => {
         });
     }
 };
+export const publishCourse = async(req:Request,res:Response) => {
+    const {courseId} = req.params
+    const userId = req.user?.id as string
 
+    try{
+
+        const result = await prisma.course.update({
+            where:{id: courseId},
+            data:{
+                status: 'published'
+            }
+        })
+
+        return res.status(200).json({
+            success:true,
+            message: "published the course successfully"
+        })
+
+    }catch(err){
+        console.log(err)
+        return res.status(500).json({
+            success: false,
+            message: "failed to publish course"
+        })
+    }
+    
+}
 
 //delete
 export const deleteLecture = async (req: Request, res: Response) => {

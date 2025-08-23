@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../../store";
 import server from '@/api/axiosinstance';
 import { updateUserRole } from '@/store/authSlice';
+import ExploreMenu from './exploreMenu';
 
 
 
@@ -34,7 +35,7 @@ const StudentNavbar = () => {
 
             <div className='flex items-center gap-5 cursor-pointer'>
                 <Link to={'/'} className='font-semibold'>Home</Link>
-                <Link to={'/'} className='font-semibold'>Explore</Link>
+                <ExploreMenu />
                 {
                     user?.role === "INSTRUCTOR" ? 
                     <Button className='font-semibold'>Instructor</Button>

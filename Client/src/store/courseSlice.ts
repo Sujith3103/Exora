@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 
 // ✅ Define a union type for categories
-type CourseCategory = | "web-development" | "backend-development" | "data-science" | "machine-learning" | "artificial-intelligence" | "cloud-computing" | "cyber-security" | "mobile-development" | "game-development" | "software-engineering" | string;
+export type CourseCategory = | "web-development" | "backend-development" | "data-science" | "machine-learning" | "artificial-intelligence" | "cloud-computing" | "cyber-security" | "mobile-development" | "game-development" | "software-engineering" | string;
 
 // type CourseLevel = "beginner" | "intermediate" | "advanced" | string;
 

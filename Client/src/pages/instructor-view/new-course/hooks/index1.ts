@@ -21,7 +21,7 @@ export function useNewCourse() {
 
   const handleClick_saveChanges = async () => {
     if (!id) return;
-    const response = await server.put(`/course/${id}/landing`, {
+    const response = await server.put(`/instructor/course/${id}/landing`, {
       courseInformation: courseData
     });
     if (response.data.success) {
@@ -38,7 +38,7 @@ export function useNewCourse() {
       return;
     }
 
-    const response = await server.get(`/course/${id}/landing`);
+    const response = await server.get(`/instructor/course/${id}/landing`);
     if (response.data.success) {
       dispatch(setCourseInformation({ fromServer: true, data: response.data.course }));
     }
@@ -52,7 +52,7 @@ export function useNewCourse() {
       requestIdleCallback(async () => {
         console.log("fetching sections");
         dispatch(courseSliceLoadingStart());
-        const response = await server.get(`/course/get-all-sections/${id}`);
+        const response = await server.get(`/instructor/course/get-all-sections/${id}`);
         if (response.data.success) {
           console.log("fetched sections", response.data);
           dispatch(setCourseSection(response.data.sections));

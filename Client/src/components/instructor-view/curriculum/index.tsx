@@ -55,7 +55,7 @@ const CourseCurriculum = () => {
 
   async function handleClick_UpdateSectionTitle(section: Section) {
     try {
-      const response = await server.patch(`/course/${section.courseId}/sections/${section.id}/title`, { title: initalInputRef.current?.value })
+      const response = await server.patch(`instructor/course/${section.courseId}/sections/${section.id}/title`, { title: initalInputRef.current?.value })
       initalInputRef.current = null
       console.log("updated title:", response.data)
 
@@ -72,7 +72,7 @@ const CourseCurriculum = () => {
 
   async function handleClick_deleteSection(section: Section) {
     try {
-      const response = await server.delete(`/course/${section.courseId}/sections/${section.id}`)
+      const response = await server.delete(`/instructor/course/${section.courseId}/sections/${section.id}`)
 
       if (response.data.success) {
         console.log("deleted")

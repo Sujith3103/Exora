@@ -58,7 +58,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
         setIsloading(true)
         try {
             const title = inputRef.current?.value
-            const response = await server.patch(`/course/${lecture.sectionId}/lectures/${lecture.id}/title`, { title })
+            const response = await server.patch(`/instructor/course/${lecture.sectionId}/lectures/${lecture.id}/title`, { title })
             inputRef.current = null
 
             console.log("updated title:", response.data)
@@ -77,7 +77,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
         setIsloading(true)
         try {
 
-            const response = await server.delete(`/course/${lecture.sectionId}/lectures/${lecture.id}`)
+            const response = await server.delete(`/instructor/course/${lecture.sectionId}/lectures/${lecture.id}`)
 
             if (response.data.success) {
                 console.log("deleted")

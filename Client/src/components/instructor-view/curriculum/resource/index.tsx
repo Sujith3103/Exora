@@ -19,7 +19,7 @@ const ResourceComponent = ({ lecture }: ResourceComponentProp) => {
   const handleClick_DeleteResource = async (resource: Resources) => {
     setIsLoading(true)
     try {
-      const response = await server.delete(`/course/sections/${lecture.sectionId}/lectures/${lecture.id}/resources/${resource.id}`)
+      const response = await server.delete(`/instructor/course/sections/${lecture.sectionId}/lectures/${lecture.id}/resources/${resource.id}`)
 
       if (response.data.success && resource.id) {
         dispatch(removeResource({ lectureId: lecture.id, resourceId: resource.id, sectionId: lecture.sectionId }))

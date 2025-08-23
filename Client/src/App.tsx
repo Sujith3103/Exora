@@ -16,6 +16,8 @@ import NewCourse from "./pages/instructor-view/new-course"
 import CourseLanding from "./components/instructor-view/course-landing"
 import CourseCurriculum from "./components/instructor-view/curriculum"
 import CourseMessage from "./components/instructor-view/course-messages"
+import StudentViewCourses from "./pages/student-view/courses"
+import StudentViewCourseLayout from "./components/layout/courseLayout"
 
 
 function App() {
@@ -76,6 +78,9 @@ function App() {
           <Route path="auth" element={<AuthPage />}>
             <Route path="login" element={<AuthPage />} />
             <Route path="signup" element={<AuthPage />} />
+          </Route>
+          <Route path="courses" element={<StudentViewCourseLayout />}>
+
           </Route>
         </Route>
         <Route path="/profile" element={<RouteGuard element={<ProfileLayout />} />} >

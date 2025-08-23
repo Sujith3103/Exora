@@ -36,7 +36,7 @@ const InstructorCourses = () => {
 
     const handleClick_AddNewCourse = async () => {
         try {
-            const response = await server.post("/course/create-new");
+            const response = await server.post("/instructor/course/create-new");
             if (response.data.success) {
                 console.log("created course: ", response.data);
                 // Update Redux state with the new course
@@ -52,7 +52,7 @@ const InstructorCourses = () => {
         async function fetchData() {
             setContentFetching(true)
             try {
-                const response = await server.get(`/course/get-all-courses`);
+                const response = await server.get(`/instructor/course/get-all-courses`);
                 if (response.data.success) {
                     // Update Redux state with the new course
                     console.log("res : ",response.data)

@@ -34,7 +34,7 @@ const NewLecture = ({ sectionId, setIsAddingLecture }: NewLectureProps) => {
     const value = inputRef.current?.value.trim()
     if (!value) return
 
-    const response = await server.post(`/course/create-lecture/${id}`, {
+    const response = await server.post(`/instructor/course/create-lecture/${id}`, {
       title: value,
       sectionId: sectionId, // ✅ send sectionId
     })

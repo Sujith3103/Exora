@@ -34,7 +34,7 @@ const NewSection: React.FC<NewSectionProps> = ({setIsAddingSection,}) => {
             const value = initalInputRef.current.value.trim()
             if (!value) return
 
-            const response = await server.post(`/course/create-section/${id}`, { title: value })
+            const response = await server.post(`/instructor/course/create-section/${id}`, { title: value })
             if (response.data.success) {
                 dispatch(updateCourseSection(response.data.section))
                 setIsAddingSection(false)

@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { AddNewCourse, CreateLecture, createResource, CreateSection, deleteLecture, deleteResource, deleteSection, GetAllCourses, GetAllSections, getCourseLanding, updateCourseLanding, UpdateLectureTitle, UpdateSectionTitle } from "../controllers/course-controller";
-import { AuthenticateMiddleware } from "../middleware";
+import { AddNewCourse, CreateLecture, createResource, CreateSection, deleteLecture, deleteResource, deleteSection, GetAllCourses, GetAllSections, getCourseLanding, publishCourse, updateCourseLanding, UpdateLectureTitle, UpdateSectionTitle } from "../../controllers/instructor/course-controller";
+import { AuthenticateMiddleware } from "../../middleware";
 
 import multer from "multer";
 const upload = multer();
@@ -19,6 +19,7 @@ router.put('/:courseId/landing', AuthenticateMiddleware, updateCourseLanding)
 
 router.patch('/:courseId/sections/:sectionId/title', AuthenticateMiddleware, UpdateSectionTitle)
 router.patch('/:sectionId/lectures/:lectureId/title', AuthenticateMiddleware, UpdateLectureTitle)
+router.patch('/:courseId/publish', AuthenticateMiddleware, publishCourse)
 
 router.delete('/:courseId/sections/:sectionId', AuthenticateMiddleware, deleteSection)
 router.delete('/:sectionId/lectures/:lectureId', AuthenticateMiddleware, deleteLecture)
