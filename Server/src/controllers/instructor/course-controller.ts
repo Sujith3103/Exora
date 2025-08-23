@@ -136,61 +136,6 @@ export const getCourseLanding = async (req: Request, res: Response) => {
     }
 };
 
-export const AddNewCourse = async (req: Request, res: Response) => {
-
-    const userId = req.user?.id as string
-    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" })
-
-    try {
-
-        const instructor = await prisma.user.findFirst({
-            where: { id: userId }
-        })
-
-        if (instructor?.role !== 'INSTRUCTOR') return res.status(401).json({ success: false, message: "Unauthorized" })
-
-        const newCourse = await prisma.course.create({
-            data: {
-                title: "",
-                category: "",
-                level: "",
-                primaryLanguage: "",
-                subtitle: "",
-                language: "",
-                description: "",
-                pricing: 0,
-                objectives: "",
-                welcomeMessage: "",
-                requirements: [],          // empty array for Json
-                searchkey: "",
-                slug: `temp-slug-${Date.now()}`,         // must be unique
-                lengthNum: 0,
-                lengthStr: "",
-                status: "drafted",         // default enum value
-                instructorId: userId,
-
-            }
-        });
-
-        console.log("course: ", newCourse)
-
-        res.status(200).json({
-            success: true,
-            message: "course created successfully",
-            newCourse
-        })
-
-
-    } catch (err) {
-        console.log(err)
-        return res.status(500).json({
-            success: false,
-            message: "failed creating a new course"
-        })
-    }
-
-}
-
 // helper to get the next section order
 
 const getNextLectureOrder = async (sectionId: string) => {
@@ -330,6 +275,60 @@ export const createResource = async (req: Request, res: Response) => {
     }
 }
 
+export const AddNewCourse = async (req: Request, res: Response) => {
+
+    const userId = req.user?.id as string
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" })
+
+    try {
+
+        const instructor = await prisma.user.findFirst({
+            where: { id: userId }
+        })
+
+        if (instructor?.role !== 'INSTRUCTOR') return res.status(401).json({ success: false, message: "Unauthorized" })
+
+        const newCourse = await prisma.course.create({
+            data: {
+                title: "",
+                category: "",
+                level: "",
+                primaryLanguage: "",
+                subtitle: "",
+                language: "",
+                description: "",
+                pricing: 0,
+                objectives: "",
+                welcomeMessage: "",
+                requirements: [],          // empty array for Json
+                searchkey: "",
+                slug: `temp-slug-${Date.now()}`,         // must be unique
+                lengthNum: 0,
+                lengthStr: "",
+                status: "drafted",         // default enum value
+                instructorId: userId,
+
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "course created successfully",
+            newCourse
+        })
+
+
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({
+            success: false,
+            message: "failed creating a new course"
+        })
+    }
+
+}
+
+
 //update
 export const UpdateSectionTitle = async (req: Request, res: Response) => {
     const userId = req.user?.id as string;
@@ -402,35 +401,67 @@ export const UpdateLectureTitle = async (req: Request, res: Response) => {
         });
     }
 };
-export const publishCourse = async(req:Request,res:Response) => {
-    const {courseId} = req.params
+export const publishCourse = async (req: Request, res: Response) => {
+    const { courseId } = req.params
     const userId = req.user?.id as string
 
-    try{
+    try {
 
         const result = await prisma.course.update({
-            where:{id: courseId},
-            data:{
+            where: { id: courseId },
+            data: {
                 status: 'published'
             }
         })
 
         return res.status(200).json({
-            success:true,
+            success: true,
             message: "published the course successfully"
         })
 
-    }catch(err){
+    } catch (err) {
         console.log(err)
         return res.status(500).json({
             success: false,
             message: "failed to publish course"
         })
     }
-    
+
 }
 
 //delete
+export const deleteCourse = async (req: Request, res: Response) => {
+
+    const { courseId } = req.params
+    const userId = req.user?.id as string
+    try {
+        const courseToDelete = await prisma.course.findFirst({
+            where: { id: courseId }
+        })
+        if (courseToDelete?.instructorId == userId) {
+            await prisma.course.delete({
+                where: { id: courseToDelete.id }
+            })
+            return res.status(200).json({
+                success: true,
+                message: "delete course successfully"
+            })
+        }else{
+
+        }
+
+
+
+    } catch (err) {
+
+        return res.status(500).json({
+            success: false,
+            message: "failed to delete course"
+        })
+
+    }
+}
+
 export const deleteLecture = async (req: Request, res: Response) => {
     const userId = req.user?.id as string;
     const { sectionId, lectureId } = req.params;

@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import type { AppDispatch, RootState } from '@/store'
 import { removeCourseRequirement, setCourseInformation, setCourseRequirements } from '@/store/courseSlice'
 import { X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import {  useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 const CourseRequirements = () => {

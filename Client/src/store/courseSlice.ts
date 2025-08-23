@@ -261,7 +261,9 @@ const courseSlice = createSlice({
             }
         },
 
-
+        removeCourse(state: courseState,action:PayloadAction<string>){
+            state.courseData = state.courseData.filter(c => c.id != action.payload)
+        },
         removeCourseRequirement(state: courseState, action: PayloadAction<number>) {
             state.courseRequirements = state.courseRequirements.filter(
                 (_, index) => index !== action.payload
@@ -275,7 +277,7 @@ const courseSlice = createSlice({
 
 
 export const { courseSliceLoadingStart, setCourseDetails, updateCourseLecture, setCourseImage, setCourseInformation,
-    setCourseLandingDescription, setCourseSection, updateCourseSection, deleteLecture, deleteSection,
+    setCourseLandingDescription, setCourseSection, updateCourseSection, deleteLecture, deleteSection,removeCourse,
     setLectureAsset, updateLectureTitle, updateSectionTitle, setResource, removeResource, addNewCourse, 
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

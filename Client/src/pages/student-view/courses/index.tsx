@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { fetchCourses } from "@/hooks/useCourse";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 export default function StudentViewCourses({
   category,
@@ -9,12 +10,13 @@ export default function StudentViewCourses({
   page: number;
 }) {
   const limit = 10;
+  const navigate = useNavigate();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["courses", category, page, limit], // ✅ unique key for caching
+    queryKey: ["courses", category, page, limit],
     queryFn: () => fetchCourses({ category, page, limit }),
-    keepPreviousData: true, // ✅ smooth pagination (keeps old data until new arrives)
-    staleTime: 1000 * 60, // ✅ cache for 1 min before re-fetch
+    placeholderData: keepPreviousData,
+    staleTime: 1000 * 60, // cache 1 min
   });
 
   if (isLoading) return <p>Loading...</p>;
@@ -42,14 +44,18 @@ export default function StudentViewCourses({
       <div className="flex gap-2 mt-4">
         <button
           disabled={page === 1}
-          onClick={() => (window.location.href = `/courses?category=${category}&page=${page - 1}&limit=${limit}`)}
+          onClick={() =>
+            navigate(`/courses?category=${category}&page=${page - 1}&limit=${limit}`)
+          }
           className="px-3 py-1 border rounded disabled:opacity-50"
         >
           Prev
         </button>
         <button
           disabled={page === data.totalPages}
-          onClick={() => (window.location.href = `/courses?category=${category}&page=${page + 1}&limit=${limit}`)}
+          onClick={() =>
+            navigate(`/courses?category=${category}&page=${page + 1}&limit=${limit}`)
+          }
           className="px-3 py-1 border rounded disabled:opacity-50"
         >
           Next

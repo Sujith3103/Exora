@@ -10,12 +10,13 @@ import {
     TableCell,
 } from "@/components/ui/table";
 import type { AppDispatch, RootState } from "@/store";
-import {  addNewCourse, setCourseDetails } from "@/store/courseSlice";
+import { addNewCourse, removeCourse, setCourseDetails } from "@/store/courseSlice";
 import { Edit, Plus, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import InstructorCoursesSkeleton from "./courseSkeleton";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const InstructorCourses = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -25,7 +26,7 @@ const InstructorCourses = () => {
         (state: RootState) => state.course.courseData
     );
 
-    const [contentFetching,setContentFetching] = useState(false)
+    const [contentFetching, setContentFetching] = useState(false)
 
     // Placeholder image for empty courses
     const PLACEHOLDER_IMAGE = "/images/placeholder.png";
@@ -48,6 +49,18 @@ const InstructorCourses = () => {
         }
     };
 
+    const handleClick_deleteCourse = async(courseId:string) => {
+        try{
+            dispatch(removeCourse(courseId))
+            const result = await server.delete(`/instructor/course/${courseId}`)
+            if(result.data.success){
+                // react - toast
+            }
+        }catch(err){
+            console.log(err)
+        }
+    }
+
     useEffect(() => {
         async function fetchData() {
             setContentFetching(true)
@@ -55,7 +68,7 @@ const InstructorCourses = () => {
                 const response = await server.get(`/instructor/course/get-all-courses`);
                 if (response.data.success) {
                     // Update Redux state with the new course
-                    console.log("res : ",response.data)
+                    console.log("res : ", response.data)
                     dispatch(setCourseDetails(response.data.instructorCourses.flat()));
                 }
             } catch (error) {
@@ -66,7 +79,7 @@ const InstructorCourses = () => {
         fetchData();
     }, [dispatch]);
 
-    if(contentFetching){
+    if (contentFetching) {
         return <InstructorCoursesSkeleton />
     }
 
@@ -136,7 +149,24 @@ const InstructorCourses = () => {
                                             className="text-gray-500"
                                             onClick={() => handleClick_EditCourse(course.id)}
                                         />
-                                        <Trash className="text-red-500" />
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Trash className="text-red-500" />
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete your
+                                                        section and remove your data from our servers.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleClick_deleteCourse(course.id)}>Continue</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </TableCell>
                                 </TableRow>
                             );
