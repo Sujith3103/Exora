@@ -93,11 +93,13 @@ export const GetAllSections = async (req: Request, res: Response) => {
 
 export const getCourseLanding = async (req: Request, res: Response) => {
     const { courseId } = req.params;
+    const userId = req.user?.id as string;
 
     try {
         const course = await prisma.course.findUnique({
             where: { id: courseId },
             select: {
+                id: true,
                 primaryLanguage: true,
                 level: true,
                 category: true,
@@ -107,9 +109,14 @@ export const getCourseLanding = async (req: Request, res: Response) => {
                 searchkey: true,
                 thumbnailUrl: true,
                 requirements: true,
-                pricing: true
+                pricing: true,
+                instructorId: true
             },
         });
+
+        if (course?.instructorId != userId) {
+            return res.status(403).json({ success: false, message: "Not authorized" });
+        }
 
         if (!course) {
             return res.status(404).json({ success: false, message: "Course not found" });
@@ -194,6 +201,8 @@ const getNextLectureOrder = async (sectionId: string) => {
     return lastLecture ? lastLecture.order + 1 : 1;
 }
 
+
+//update
 export const updateCourseLanding = async (req: Request, res: Response) => {
     const { courseId } = req.params;
     const { courseInformation } = req.body; // single object now
@@ -211,9 +220,11 @@ export const updateCourseLanding = async (req: Request, res: Response) => {
                 thumbnailUrl: courseInformation.thumbnailUrl,
                 searchkey: courseInformation.searchkey,
                 requirements: courseInformation.requirements,
-                pricing: courseInformation.pricing,
+                pricing: courseInformation.pricing || 0,
             },
         });
+
+        console.log("updated: ", updated)
 
         // Respond with updated courseInformation
         res.status(200).json({

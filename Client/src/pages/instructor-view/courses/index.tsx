@@ -31,7 +31,7 @@ const InstructorCourses = () => {
     const PLACEHOLDER_IMAGE = "/images/placeholder.png";
 
     const handleClick_EditCourse = (courseid: string) => {
-        navigate(`/profile/courses/edit/course-landing/${courseid}`)
+        navigate(`/profile/instructor/courses/edit/course-landing/${courseid}`)
     }
 
     const handleClick_AddNewCourse = async () => {
@@ -41,7 +41,7 @@ const InstructorCourses = () => {
                 console.log("created course: ", response.data);
                 // Update Redux state with the new course
                 dispatch(addNewCourse(response.data.newCourse));
-                navigate(`/profile/courses/edit/course-landing/${response.data.newCourse.id}`)
+                navigate(`/profile/instructor/courses/edit/course-landing/${response.data.newCourse.id}`)
             }
         } catch (error) {
             console.error("Failed to create course:", error);
@@ -101,7 +101,6 @@ const InstructorCourses = () => {
                     <TableBody>
                         {courseData.map((course) => {
                             <>
-                            {console.log("data:  ",courseData)}
                             </>
                             return (
                                 <TableRow key={course.id}>

@@ -7,6 +7,7 @@ const RouteGuard = ({element}:any) => {
     // const user = useSelector((state: RootState ) => state.auth.user)
     const isAuthenticated = useSelector((state : RootState) => state.auth?.isAuthenticated)
     const isloading = useSelector((state: RootState) => state.auth.loading)
+    const user = useSelector((state:RootState) => state.auth.user)
 
     const location = useLocation()
 
@@ -21,6 +22,10 @@ const RouteGuard = ({element}:any) => {
     }
 
     if(isAuthenticated && location.pathname.includes('auth')){
+        return <Navigate to={'/'} />
+    }
+
+    if(isAuthenticated && location.pathname.includes('instructor') &&user?.role != 'INSTRUCTOR' ){
         return <Navigate to={'/'} />
     }
 

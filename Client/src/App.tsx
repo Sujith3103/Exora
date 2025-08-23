@@ -80,10 +80,10 @@ function App() {
         </Route>
         <Route path="/profile" element={<RouteGuard element={<ProfileLayout />} />} >
           <Route path="overview" element={<OverView />} />
-          <Route path="courses" element={<InstructorCourses />}>
+          <Route path="instructor/courses" element={<InstructorCourses />}>
           </Route>
-          <Route path="courses/new-course" element={<NewCourse />} />
-          <Route path="courses/edit" element={<NewCourse />}>
+          <Route path="instructor/courses/new-course" element={<NewCourse />} />
+          <Route path="instructor/courses/edit" element={<NewCourse />}>
               <Route path="course-landing/:id" element={<CourseLanding />}/>
               <Route path="course-curriculum/:id" element={<CourseCurriculum />}/>
               <Route path="course-message/:id" element={<CourseMessage />}/>

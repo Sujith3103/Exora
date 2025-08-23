@@ -18,7 +18,7 @@ const SideBar = () => {
         {
             icon: <BookOpen />,
             title: 'Courses',
-            link: 'courses',
+            link: 'instructor/courses',
             role: 'instructor'
         }
     ]

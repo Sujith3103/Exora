@@ -1,6 +1,4 @@
 "use client";
-
-import React from "react";
 import { Editor } from "@tiptap/react";
 import { Bold, Italic, List, ListOrdered, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";

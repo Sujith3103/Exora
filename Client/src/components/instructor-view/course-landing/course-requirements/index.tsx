@@ -38,10 +38,6 @@ const CourseRequirements = () => {
     dispatch(removeCourseRequirement(index))
   }
 
-  useEffect(() => {
-    console.log("data : ", courseData)
-  }, [courseData])
-
   return (
     <>
       <div className="w-full max-w-lg mx-0">
