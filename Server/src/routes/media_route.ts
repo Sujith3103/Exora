@@ -71,116 +71,191 @@ router.post('/set-profile-img', upload.single("profileImage"), AuthenticateMiddl
     }
 })
 
-router.post('/lecture/:lectureId/assets', upload.single("file"), AuthenticateMiddleware, async (req, res) => {
+router.post(
+  "/course/:courseId/lecture/:lectureId/assets",
+  upload.single("file"),
+  AuthenticateMiddleware,
+  async (req, res) => {
     const userId = req.user?.id as string;
-    const { lectureId } = req.params;
+    const { lectureId, courseId } = req.params;
     const { title, type } = req.body;
 
-    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    if (!req.file?.path) return res.status(404).json({ success: false, message: "File not found" });
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!req.file?.path)
+      return res.status(404).json({ success: false, message: "File not found" });
 
-    // Create asset in DB first with "pending" status
-    let createdLectureAsset = await prisma.lectureAsset.create({
-        data: {
-            title: title,
-            type: type,
-            url: '',
-            publicId: '',
-            lectureId: lectureId,
-            status: 'uploading',  // start as pending
-        }
+    // Create DB record in 'uploading' state
+    let lectureAsset = await prisma.lectureAsset.create({
+      data: {
+        title,
+        type,
+        url: "",
+        publicId: "",
+        lectureId,
+        status: "uploading",
+      },
     });
 
     try {
-        const result = await uploadMediaToCloudinary(req.file.path);
+      const result = await uploadMediaToCloudinary(req.file.path);
+      const isVideo = result.resource_type === "video";
+      const duration = isVideo ? result.duration || 0 : 0;
 
-        // Generate a thumbnail URL from the uploaded video
-        const thumbnailUrl = cloudinary.url(result.public_id, {
-            resource_type: "video",   // important for videos
-            format: "jpg",
-            start_offset: "2",        // pick frame at 2 seconds
-            width: 70,               // optional: resize
-            height: 50,
-            crop: "fill"
+      let thumbnailUrl: string | null = null;
+      if (isVideo) {
+        thumbnailUrl = cloudinary.url(result.public_id, {
+          resource_type: "video",
+          format: "jpg",
+          start_offset: "2",
+          width: 70,
+          height: 50,
+          crop: "fill",
+        });
+      }
+
+      // Wrap all DB updates in a single transaction
+      await prisma.$transaction(async (tx) => {
+        // Update lecture asset
+        lectureAsset = await tx.lectureAsset.update({
+          where: { id: lectureAsset.id },
+          data: {
+            url: result.secure_url,
+            publicId: result.public_id,
+            thumbnailUrl,
+            status: "published",
+          },
         });
 
-        // Update asset with real URL, publicId, thumbnail, and mark as published
-        createdLectureAsset = await prisma.lectureAsset.update({
-            where: { id: createdLectureAsset.id },
-            data: {
-                url: result.secure_url,
-                publicId: result.public_id,
-                thumbnailUrl: thumbnailUrl,  // store thumbnail
-                status: 'published',
-            },
-        });
-        res.status(200).json({ success: true, message: "created asset successfully", asset: createdLectureAsset });
+        // Update lecture duration
+        if (duration > 0) {
+          await tx.lecture.update({
+            where: { id: lectureId },
+            data: { lengthNum: duration },
+          });
 
+          console.log("courseid: ",courseId)
+          // Increment course total duration
+          await tx.course.update({
+            where: { id: courseId },
+            data: { lengthNum: { increment: duration } },
+          });
+        }
+      });
+
+      res
+        .status(200)
+        .json({ success: true, message: "Asset created successfully", asset: lectureAsset });
     } catch (err) {
-        console.error("Upload failed:", err);
+      console.error("Upload failed:", err);
 
-        // Mark as failed in DB
-        await prisma.lectureAsset.update({
-            where: { id: createdLectureAsset.id },
-            data: {
-                status: 'failed',
-            },
-        });
+      // Mark asset as failed
+      await prisma.lectureAsset.update({
+        where: { id: lectureAsset.id },
+        data: { status: "failed" },
+      });
 
-        res.status(500).json({ success: false, message: "Upload failed", asset: createdLectureAsset });
+      res.status(500).json({ success: false, message: "Upload failed", asset: lectureAsset });
     }
+  }
+);
 
-});
-
-router.put('/lecture/:lectureId/assets/:AssetId/edit', upload.single("file"), AuthenticateMiddleware, async (req, res) => {
+/**
+ * PUT: Update lecture asset (replace existing file)
+ */
+router.put(
+  "/course/:courseId/lecture/:lectureId/assets/:assetId",
+  upload.single("file"),
+  AuthenticateMiddleware,
+  async (req, res) => {
     const userId = req.user?.id as string;
-    const { lectureId } = req.params;
-    const { AssetId } = req.params;
+    const { lectureId, courseId, assetId } = req.params;
     const { title, type } = req.body;
 
-    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    if (!req.file?.path) return res.status(404).json({ success: false, message: "File not found" });
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!req.file?.path)
+      return res.status(404).json({ success: false, message: "File not found" });
 
     try {
-        const result = await uploadMediaToCloudinary(req.file.path);
+      // Fetch old asset
+      const oldAsset = await prisma.lectureAsset.findUnique({ where: { id: assetId } });
+      if (!oldAsset) return res.status(404).json({ success: false, message: "Asset not found" });
 
-        // Generate a thumbnail URL from the uploaded video
-        const thumbnailUrl = cloudinary.url(result.public_id, {
-            resource_type: "video",   // important for videos
-            format: "jpg",
-            start_offset: "2",        // pick frame at 2 seconds
-            width: 70,               // optional: resize
-            height: 50,
-            crop: "fill"
+      // Upload new file to Cloudinary
+      const result = await uploadMediaToCloudinary(req.file.path);
+      const isVideo = result.resource_type === "video";
+      const newDuration = isVideo ? result.duration || 0 : 0;
+
+      let thumbnailUrl: string | null = null;
+      if (isVideo) {
+        thumbnailUrl = cloudinary.url(result.public_id, {
+          resource_type: "video",
+          format: "jpg",
+          start_offset: "2",
+          width: 70,
+          height: 50,
+          crop: "fill",
+        });
+      }
+
+      // Delete old file from Cloudinary
+      await deleteMediaFromCloudinary(oldAsset.publicId);
+
+      // Wrap all updates in a transaction
+      await prisma.$transaction(async (tx) => {
+        // If old asset was video, subtract its duration from lecture & course
+        if (oldAsset.type === "VIDEO") {
+          const lecture = await tx.lecture.findUnique({ where: { id: lectureId } });
+          const oldDuration = lecture?.lengthNum || 0;
+
+          await tx.lecture.update({
+            where: { id: lectureId },
+            data: { lengthNum: oldDuration - oldDuration }, // oldDuration subtraction
+          });
+
+          await tx.course.update({
+            where: { id: courseId },
+            data: { lengthNum: { decrement: oldDuration } },
+          });
+        }
+
+        // Update lecture asset metadata
+        await tx.lectureAsset.update({
+          where: { id: assetId },
+          data: {
+            title,
+            type,
+            url: result.secure_url,
+            publicId: result.public_id,
+            thumbnailUrl,
+            status: "published",
+          },
         });
 
-        const deleteCloudinaryAsset = await deleteMediaFromCloudinary(AssetId)
+        // Add new video duration
+        if (newDuration > 0) {
+          await tx.lecture.update({
+            where: { id: lectureId },
+            data: { lengthNum: newDuration },
+          });
 
-        const UpdatedLectureAsset = await prisma.lectureAsset.update({
-            where: { lectureId: lectureId },
-            data: {
-                publicId: result.public_id,
-                url: result.secure_url,
-                thumbnailUrl: thumbnailUrl,
-                status: 'published',
-                title: title,
-                type: type
-            }
-        })
+          await tx.course.update({
+            where: { id: courseId },
+            data: { lengthNum: { increment: newDuration } },
+          });
+        }
+      });
 
-        console.log("prev asset deleted : ", deleteCloudinaryAsset)
-        console.log("updated lecture data :", UpdatedLectureAsset)
-
-        // console.log("lecture asset : ", createdLectureAsset)
-        res.status(200).json({ success: true, message: "Updated asset successfully", asset: UpdatedLectureAsset });
-
+      res.status(200).json({ success: true, message: "Asset updated successfully" });
     } catch (err) {
-        console.error("Upload failed:", err);
-
-        res.status(500).json({ success: false, message: "Upload failed" });
+      console.error("Update failed:", err);
+      res.status(500).json({ success: false, message: "Update failed" });
     }
+  }
+);
 
-});
+
 router.patch('/course/:courseId/thumbnail', upload.single('thumbnail'), async (req, res) => {
     const { courseId } = req.params;
 
@@ -213,7 +288,7 @@ router.patch('/course/:courseId/thumbnail', upload.single('thumbnail'), async (r
             },
         });
 
-        console.log("updated img:",upload)
+        console.log("updated img:", upload)
 
         return res.status(200).json({
             success: true,

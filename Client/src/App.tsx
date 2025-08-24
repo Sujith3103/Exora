@@ -31,7 +31,7 @@ function App() {
 
         // if no token, logout immediately
         if (!accesstoken) {
-          dispatch(logout()); 
+          dispatch(logout());
           dispatch(isloading(false));
           return;
         }
@@ -82,15 +82,16 @@ function App() {
 
           </Route>
         </Route>
+
         <Route path="/profile" element={<RouteGuard element={<ProfileLayout />} />} >
           <Route path="overview" element={<OverView />} />
           <Route path="instructor/courses" element={<InstructorCourses />}>
           </Route>
           <Route path="instructor/courses/new-course" element={<NewCourse />} />
           <Route path="instructor/courses/edit" element={<NewCourse />}>
-              <Route path="course-landing/:id" element={<CourseLanding />}/>
-              <Route path="course-curriculum/:id" element={<CourseCurriculum />}/>
-              <Route path="course-message/:id" element={<CourseMessage />}/>
+            <Route path="course-landing/:id" element={<CourseLanding />} />
+            <Route path="course-curriculum/:id" element={<CourseCurriculum />} />
+            <Route path="course-message/:id" element={<CourseMessage />} />
           </Route>
         </Route>
       </Routes>

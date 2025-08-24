@@ -2,15 +2,17 @@ import server from "@/api/axiosinstance"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { AppDispatch } from "@/store"
+import type { AppDispatch, RootState } from "@/store"
 import { setLectureAsset, type LectureAsset, type Resources } from "@/store/courseSlice"
 import { CirclePlay, FileTextIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
+import { useParams } from "react-router-dom"
 
 type NewContentProps = {
     lectureId: string
     lectureData: Lectures
+    sectionId: string
     setShowContent: React.Dispatch<React.SetStateAction<{
         uploadingContent: boolean,
         selectingContent: boolean,
@@ -37,14 +39,18 @@ type Lectures = {
 }
 const readable = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }).format(new Date(new Date().toISOString()));
 
-const NewContent = ({ lectureId, lectureData, showContent, setShowContent, setShowSubContent }: NewContentProps) => {
+const NewContent = ({ lectureId, lectureData, showContent, setShowContent, setShowSubContent, sectionId }: NewContentProps) => {
     const [isVisible, setIsVisible] = useState(false)
     const inputRefVideo = useRef<HTMLInputElement>(null)
     const inputRefPdf = useRef<HTMLInputElement>(null)
 
     const dispatch = useDispatch<AppDispatch>()
-    // const lectureAssetData = useSelector((state:RootState) => state.course.sections)
+    const sections = useSelector((state: RootState) => state.course.sections)
 
+
+    const { id } = useParams<{ id: string }>();
+
+    console.log("course id in params: ",id)
     let lectureAsset: LectureAsset = {
         title: '',
         type: '',
@@ -85,7 +91,7 @@ const NewContent = ({ lectureId, lectureData, showContent, setShowContent, setSh
             if (lectureData.lectureAssets?.status === 'published') {
                 console.log("published")
                 const response = await server.put(
-                    `/media/lecture/${lectureId}/assets/${lectureData.lectureAssets.publicId}/edit`,
+                    `/media/course/${id}/lecture/${lectureId}/assets/${lectureData.lectureAssets.publicId}/edit`,
                     formData,
                     {
                         headers: {
@@ -106,7 +112,7 @@ const NewContent = ({ lectureId, lectureData, showContent, setShowContent, setSh
             else {
                 console.log("not published")
                 const response = await server.post(
-                    `/media/lecture/${lectureId}/assets`,
+                    `/media/course/${id}/lecture/${lectureId}/assets`,
                     formData,
                     {
                         headers: {
@@ -164,14 +170,14 @@ const NewContent = ({ lectureId, lectureData, showContent, setShowContent, setSh
             if (lectureData.lectureAssets?.status === "published") {
                 console.log("PDF is replacing an already published asset");
                 response = await server.put(
-                    `/media/lecture/${lectureId}/assets/${lectureData.lectureAssets.publicId}/edit`,
+                    `/media/course/${id}/lecture/${lectureId}/assets/${lectureData.lectureAssets.publicId}/edit`,
                     formData,
                     { headers: { "Content-Type": "multipart/form-data" } }
                 );
             } else {
                 console.log("New PDF upload");
                 response = await server.post(
-                    `/media/lecture/${lectureId}/assets`,
+                    `/media/course/${id}/lecture/${lectureId}/assets`,
                     formData,
                     { headers: { "Content-Type": "multipart/form-data" } }
                 );

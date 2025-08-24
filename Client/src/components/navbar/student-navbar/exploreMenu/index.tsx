@@ -2,9 +2,8 @@ import type { CourseCategory } from "@/store/courseSlice";
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 
-const categories: CourseCategory[] = [
+export const categories: CourseCategory[] = [
   "web-development",
-  "backend-development",
   "data-science",
   "machine-learning",
   "artificial-intelligence",

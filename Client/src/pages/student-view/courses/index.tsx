@@ -1,66 +1,66 @@
-import { fetchCourses } from "@/hooks/useCourse";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import CourseFilter from "@/components/student-view/courses/courseFilter";
+import CourseList from "@/components/student-view/courses/courseList";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { courseCategories, type CourseQueryOptions } from "@/config/config";
+import { useCourses } from "@/hooks/useCourse";
+import { AlertCircleIcon, ListFilterIcon } from "lucide-react";
+import { useState } from "react";
 
-export default function StudentViewCourses({
-  category,
-  page,
-}: {
-  category: string;
-  page: number;
-}) {
-  const limit = 10;
-  const navigate = useNavigate();
+export default function StudentViewCourses(queryOptions: CourseQueryOptions) {
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["courses", category, page, limit],
-    queryFn: () => fetchCourses({ category, page, limit }),
-    placeholderData: keepPreviousData,
-    staleTime: 1000 * 60, // cache 1 min
-  });
+  const { data, isLoading, isError, isFetching } = useCourses(queryOptions)
+
+  const [showCourseFilter, setShowFilter] = useState(false)
+
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading courses</p>;
+  if (isFetching) return <p>fetching</p>
+  const courses = data?.data ?? [];
 
   return (
-    <div className="p-4">
-      <h2 className="font-semibold mb-2">
-        {category.replace("-", " ")} Courses
-      </h2>
+    <>
+      <div className="p-10 flex flex-col">
+        <p className="text-2xl font-serif font-bold">All {courseCategories.find(c => c.id === queryOptions.category)?.label ?? "Courses"} Courses</p>
 
-      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {data.data.map((course: any) => (
-          <li
-            key={course.id}
-            className="border rounded-lg p-4 shadow hover:shadow-md transition"
-          >
-            <h3 className="font-medium">{course.title}</h3>
-            <p className="text-sm text-gray-600">{course.description}</p>
-          </li>
-        ))}
-      </ul>
+        <Card className="flex flex-row gap-2 mt-2">
+          <AlertCircleIcon className="ml-5" />
+          <p>Not sure? All courses have a 30-day money-back guarantee</p>
+        </Card>
 
-      {/* Pagination */}
-      <div className="flex gap-2 mt-4">
-        <button
-          disabled={page === 1}
-          onClick={() =>
-            navigate(`/courses?category=${category}&page=${page - 1}&limit=${limit}`)
+        <div>
+          <div className="flex gap-4 mt-5">
+            <Button className="bg-white text-black hover:bg-white border border-gray-200 w-30 p-7"
+              onClick={() => setShowFilter(prev => !prev)}
+            ><ListFilterIcon /> Filter</Button>
+            <Select>
+              <SelectTrigger className="min-w-[8rem] w-auto p-7">
+                <SelectValue placeholder="Sort By" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup defaultValue={"popular"}>
+                  <SelectItem value="latest">Latest</SelectItem>
+                  <SelectItem value="popular">Popular</SelectItem>
+                  <SelectItem value="highly-rated">Highly Rated</SelectItem>
+                  <SelectItem value="highly-reviewed">None</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          {/* total results */}
+        </div>
+        <div className="flex">
+          {
+            showCourseFilter && <CourseFilter />
           }
-          className="px-3 py-1 border rounded disabled:opacity-50"
-        >
-          Prev
-        </button>
-        <button
-          disabled={page === data.totalPages}
-          onClick={() =>
-            navigate(`/courses?category=${category}&page=${page + 1}&limit=${limit}`)
-          }
-          className="px-3 py-1 border rounded disabled:opacity-50"
-        >
-          Next
-        </button>
+          <CourseList />
+        </div>
+
+
+
       </div>
-    </div>
+    </>
   );
 }

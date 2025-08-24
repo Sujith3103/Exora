@@ -260,7 +260,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
                 </div>
                 {
                     (showContent.selectingContent || showContent.uploadingContent) && lecture.id === showContent.LectureId && (
-                        <NewContent setShowContent={setShowContent} showContent={showContent} lectureData={lecture} lectureId={lecture.id} setShowSubContent={setShowSubContent} />
+                        <NewContent sectionId={lecture.sectionId} setShowContent={setShowContent} showContent={showContent} lectureData={lecture} lectureId={lecture.id} setShowSubContent={setShowSubContent} />
                     )
                 }
                 <div

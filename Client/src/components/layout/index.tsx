@@ -3,10 +3,10 @@ import NavBar from "../navbar"
 
 const NavBarLayout = () => {
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden">
+    <div className="h-screen min-w-fit flex flex-col">
       <NavBar/>
 
-      <div className=" min-w-screen w-full flex-1">
+      <div className="w-full flex-1">
         <Outlet />
       </div>
     </div>

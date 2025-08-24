@@ -1,9 +1,14 @@
-import server from "@/api/axiosinstance";
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { fetchCourses } from "./api/courseApi"
+import type { CourseQueryOptions } from "@/config/config"
 
-export const fetchCourses = async({category,page,limit}: {category:string,page:number,limit:number}) =>{
+export const useCourses = (queryOptions:CourseQueryOptions) => {
 
-    const response = await server.get('/courses',{
-        params:{category,page,limit}
+    return useQuery({
+        queryKey:["courses",queryOptions],
+        queryFn:() => fetchCourses(queryOptions),
+        placeholderData: keepPreviousData,
+        staleTime: 1000*60
     })
-    return response.data
+
 }

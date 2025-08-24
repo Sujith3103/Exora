@@ -26,7 +26,7 @@ const StudentNavbar = () => {
     }
 
     return (
-        <div className='flex items-center p-3 justify-between'>
+        <div className="flex items-center p-4 justify-between border-gray-300 [box-shadow:0_2px_4px_color-mix(in_oklch,oklch(27.54%_.1638_265.98deg)_8%,transparent),0_4px_12px_color-mix(in_oklch,oklch(27.54%_.1638_265.98deg)_8%,transparent)]">
 
             <Link to={'/'} className='flex items-center gap-2'>
                 <GraduationCap />
@@ -37,10 +37,10 @@ const StudentNavbar = () => {
                 <Link to={'/'} className='font-semibold'>Home</Link>
                 <ExploreMenu />
                 {
-                    user?.role === "INSTRUCTOR" ? 
-                    <Button className='font-semibold'>Instructor</Button>
-                    : 
-                    <Button  onClick={handleClick_ChangeRole} className='bg-gray-300 hover:bg-gray-200 text-black'>Teach on Exora</Button>
+                    user?.role === "INSTRUCTOR" ?
+                        <Button className='font-semibold'>Instructor</Button>
+                        :
+                        <Button onClick={handleClick_ChangeRole} className='bg-gray-300 hover:bg-gray-200 text-black'>Teach on Exora</Button>
                 }
 
                 <ShoppingCart />
