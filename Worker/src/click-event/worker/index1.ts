@@ -7,17 +7,26 @@ import { handleClicked_Category, handleClicked_Course } from "../handlers";
 
 const prisma = new PrismaClient()
 
-export const clickWorker = new Worker("click-events", async (job) => {
+export const clickWorker = new Worker("click-events",async (job) => {
 
-  const clickEvent:ClickEvent = {
-    ...job.data
-  }
+  console.log("worker for click started")
 
-  if(clickEvent.type === 'category'){
-    await handleClicked_Category(clickEvent)
-  }
-  
-},
+    const fields = job.data as ClickEvent;
+
+    // 1️⃣ Update recently viewed in Redis
+    if (fields.type === "course" && fields.userId) {
+      handleClicked_Course(fields)
+    }
+
+    if(fields.type === 'category' && fields.userId){
+      handleClicked_Category(fields)
+    }
+
+    // // 3️⃣ Optional: trigger recommendation scoring
+    // if (fields.type === "course" && fields.categoryId) {
+    //   await stream.zIncrBy(`category:${fields.categoryId}:trending`, 1, fields.targetId);
+    // }
+  },
   { connection: QueueConnection, concurrency: 5 } // process multiple click events in parallel
 );
 

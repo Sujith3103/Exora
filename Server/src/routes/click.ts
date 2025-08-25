@@ -52,6 +52,8 @@ router.post("", async (req: Request, res: Response) => {
             },
         };
 
+        
+
         await enqueueClickEvent(clickEvent);
 
         return res.status(200).json({ message: "Click tracked" });

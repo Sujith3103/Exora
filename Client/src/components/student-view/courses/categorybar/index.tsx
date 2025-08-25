@@ -1,12 +1,27 @@
 import { categories } from '@/components/navbar/student-navbar/exploreMenu'
 import { Button } from '@/components/ui/button'
+import type { ClickEvent } from '@/config/config'
+import { trackClick } from '@/services/userService'
+import type { RootState } from '@/store'
+import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
 const CategoryBar = () => {
 
     const navigate = useNavigate()
 
+    const user = useSelector((state:RootState) => state.auth.user)
     const handleClick_Category = async (category: (typeof categories)[number]) => {
+
+        if(!user) return
+
+        const clickEvent: ClickEvent = {
+            type:'category',
+            targetId: category,
+            userId: user?.id.toString()
+        }
+
+        await trackClick(clickEvent)
         navigate(`/courses?category=${category}&page=1&limit=10`)
     }
 
