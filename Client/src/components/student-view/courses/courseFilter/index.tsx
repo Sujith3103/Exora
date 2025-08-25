@@ -1,12 +1,11 @@
 import { Card } from '@/components/ui/card'
-import React from 'react'
 
 
 
 const CourseFilter = () => {
   return (
     <>
-      <Card className='w-1/4 h-full mt-5'>
+      <Card className='w-1/4 h-screen hidden md:inline mt-8 bg-neutral-200 sticky top-10'>
 
       </Card>
     </>

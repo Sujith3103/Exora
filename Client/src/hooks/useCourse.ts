@@ -8,6 +8,7 @@ export const useCourses = (queryOptions:CourseQueryOptions) => {
         queryKey:["courses",queryOptions],
         queryFn:() => fetchCourses(queryOptions),
         placeholderData: keepPreviousData,
+        refetchOnWindowFocus:false,
         staleTime: 1000*60
     })
 

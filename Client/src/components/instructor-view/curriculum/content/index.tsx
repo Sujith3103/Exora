@@ -34,7 +34,7 @@ const Content = ({ lecture, showContent, setShowContent,setShowSubContent }: Con
   }
 
   if (showContent.selectingContent || showContent.uploadingContent && lecture.lectureAssets?.status === 'published') {
-    return <NewContent showContent={showContent} setShowContent={setShowContent} lectureId={lecture.id} lectureData={lecture} setShowSubContent={setShowSubContent}/>
+    return <NewContent sectionId={lecture.sectionId} showContent={showContent} setShowContent={setShowContent} lectureId={lecture.id} lectureData={lecture} setShowSubContent={setShowSubContent}/>
   }
 
   return (

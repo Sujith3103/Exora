@@ -2,27 +2,35 @@ import CourseFilter from "@/components/student-view/courses/courseFilter";
 import CourseList from "@/components/student-view/courses/courseList";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem,  SelectTrigger, SelectValue } from "@/components/ui/select";
 import { courseCategories, type CourseQueryOptions } from "@/config/config";
 import { useCourses } from "@/hooks/useCourse";
+import type { AppDispatch,  } from "@/store";
+import { setCourseSummary } from "@/store/courseCatalogSlice";
 import { AlertCircleIcon, ListFilterIcon } from "lucide-react";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 
 export default function StudentViewCourses(queryOptions: CourseQueryOptions) {
 
-  const { data, isLoading, isError, isFetching } = useCourses(queryOptions)
+  const dispatch = useDispatch<AppDispatch>()
 
-  const [showCourseFilter, setShowFilter] = useState(false)
+  const { data, isLoading, isError, isFetching } = useCourses(queryOptions)
+  if (data) {
+    dispatch(setCourseSummary(data.data))
+  }
+
+  const [showCourseFilter, setShowFilter] = useState(true)
+
 
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading courses</p>;
   if (isFetching) return <p>fetching</p>
-  const courses = data?.data ?? [];
-
+  
   return (
     <>
-      <div className="p-10 flex flex-col">
+      <div className="lg:px-15 p-5 md:pt-10 flex flex-col">
         <p className="text-2xl font-serif font-bold">All {courseCategories.find(c => c.id === queryOptions.category)?.label ?? "Courses"} Courses</p>
 
         <Card className="flex flex-row gap-2 mt-2">

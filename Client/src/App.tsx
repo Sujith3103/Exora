@@ -73,13 +73,12 @@ function App() {
         <Route path="/" element={<RouteGuard element={<NavBarLayout />} />}>
           <Route path="" element={<StudentViewHomePage />} />
         </Route>
+        <Route path="/auth" element={<AuthPage />}>
+          <Route path="login" element={<AuthPage />} />
+          <Route path="signup" element={<AuthPage />} />
+        </Route>
         <Route path="/" element={<RouteGuard element={<NavBarLayout />} />} >
-          <Route path="auth" element={<AuthPage />}>
-            <Route path="login" element={<AuthPage />} />
-            <Route path="signup" element={<AuthPage />} />
-          </Route>
           <Route path="courses" element={<StudentViewCourseLayout />}>
-
           </Route>
         </Route>
 

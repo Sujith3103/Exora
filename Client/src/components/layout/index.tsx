@@ -1,16 +1,16 @@
-import { Outlet } from "react-router-dom"
-import NavBar from "../navbar"
+import { Outlet } from "react-router-dom";
+import StudentNavbar from "../navbar/student-navbar";
 
 const NavBarLayout = () => {
   return (
-    <div className="h-screen min-w-fit flex flex-col">
-      <NavBar/>
+    <div className="min-h-screen w-full overflow-x-hidden">
+      <StudentNavbar />
 
       <div className="w-full flex-1">
         <Outlet />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default NavBarLayout
+export default NavBarLayout;

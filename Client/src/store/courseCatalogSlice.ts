@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit"
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 
 interface CourseSummary {
     id: string;
@@ -51,9 +51,13 @@ const courseCatalogSlice = createSlice({
     name: 'courseCatalog',
     initialState,
     reducers: {
-
+        setCourseSummary(state:CourseCatalogState, action:PayloadAction<CourseSummary[]>){
+            state.data = action.payload
+        },
     }
 
 })
+
+export const {setCourseSummary} = courseCatalogSlice.actions
 
 export default courseCatalogSlice.reducer

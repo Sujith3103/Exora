@@ -31,7 +31,7 @@ export default function ExploreMenu() {
 
   return (
     <div
-      className="relative"
+      className="relative hidden md:block"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
