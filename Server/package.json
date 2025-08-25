@@ -30,7 +30,8 @@
     "redis": "^5.8.0",
     "sharp": "^0.34.3",
     "socket.io": "^4.8.1",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^4.1.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

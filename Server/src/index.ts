@@ -33,6 +33,7 @@ import user_route from './routes/user/user_route';
 import media_route from './routes/media_route'
 import instructor_course_route from './routes/instructor/course_route'
 import course_route from './routes/user/course_route'
+import trackEvent_route from './routes/click'
 // -------------------- CONFIG --------------------
 dotenv.config();
 const app = express();
@@ -49,6 +50,7 @@ app.use('/api/user', user_route);
 app.use('/api/media', media_route);
 app.use('/api/courses', course_route);
 app.use('/api/instructor/course', instructor_course_route)
+app.use('/api/track-click',trackEvent_route)
 
 // -------------------- SUPABASE --------------------
 const supabaseUrl = "https://aywktugruubporzskjdt.supabase.co";

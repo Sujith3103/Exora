@@ -1,4 +1,5 @@
 import server from "@/api/axiosinstance"
+import type { ClickEvent } from "@/config/config"
 // import { useSelector } from "react-redux";
 // import type { RootState } from "../store";
 
@@ -19,3 +20,13 @@ export const FetchUserSecurityData = async() => {
 
     return response
 }
+
+export const trackClick = async (clickEvent: ClickEvent) => {
+  try {
+    const response = await server.post("/track-click", clickEvent);
+    return response.data;
+  } catch (err) {
+    console.error("Click tracking failed:", err);
+    return null;
+  }
+};

@@ -23,7 +23,6 @@ export default function StudentViewCourses(queryOptions: CourseQueryOptions) {
   const [showCourseFilter, setShowFilter] = useState(true)
 
 
-
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading courses</p>;
   if (isFetching) return <p>fetching</p>

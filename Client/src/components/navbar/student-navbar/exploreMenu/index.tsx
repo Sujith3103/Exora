@@ -1,5 +1,9 @@
+import type { ClickEvent } from "@/config/config";
+import { trackClick } from "@/services/userService";
+import type { RootState } from "@/store";
 import type { CourseCategory } from "@/store/courseSlice";
 import { useState, useRef } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 export const categories: CourseCategory[] = [
@@ -17,6 +21,24 @@ export const categories: CourseCategory[] = [
 export default function ExploreMenu() {
   const [open, setOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const user = useSelector((state: RootState) => state.auth.user)
+
+  const handleClick_ClickEvent = async (category: CourseCategory) => {
+
+    if (user) {
+      console.log(category)
+      const clickEvent: ClickEvent = {
+        userId: user?.id.toString(),
+        type:'category',
+        targetId:category,
+      }
+
+      await trackClick(clickEvent)
+    }
+
+
+  }
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -44,8 +66,9 @@ export default function ExploreMenu() {
         <div className="flex flex-col">
           {categories.map((category) => (
             <Link
+              onClick={() => handleClick_ClickEvent(category)}
               key={category}
-             to={`/courses?category=${category}&page=${1}&limit=${10}`}
+              to={`/courses?category=${category}&page=${1}&limit=${10}`}
               className="px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors duration-150"
             >
               {category.replace("-", " ")}
