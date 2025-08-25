@@ -12,7 +12,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  directUrl = env("DIRECT_URL") 
 }
 
 enum Role {
@@ -39,8 +39,36 @@ model User {
   security   UserSecurity?
 
   // Relation to courses (instructor)
-  courses Course[]
+  courses   Course[]
+  clicks    UserClick[]
+  purchases UserPurchase[]
 }
+
+model UserClick {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String
+  timestamp DateTime @default(now())
+
+  @@index([userId, timestamp]) // for recent views
+  @@index([courseId, timestamp]) // for popularity queries
+}
+
+model UserPurchase {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String
+  price     Int
+  timestamp DateTime @default(now())
+
+  @@index([userId, timestamp])
+  @@index([courseId, timestamp])
+}
+
 
 model UserProfile {
   id              String    @id @default(uuid())
@@ -48,10 +76,10 @@ model UserProfile {
   about           String?
   dob             DateTime?
   gender          Gender?
-  profileimg      String?
-  profileimgId    String?
-  profilebanner   String?
-  profilebannerId String?
+  profileImg      String?
+  profileImgId    String?
+  profileBanner   String?
+  profileBannerId String?
   profession      String?
 
   userId String @unique
@@ -72,24 +100,29 @@ model UserSecurity {
 
 model Course {
   id              String       @id @default(uuid())
-  title           String
   category        String
-  level           String
-  primaryLanguage String
-  subtitle        String
-  language        String
+  createdAt       DateTime     @default(now())
   description     String
-  pricing         Float
+  thumbnailUrl    String?
+  thumbnailId     String?
+  language        String
+  level           String
+  lengthNum       Int
+  lengthStr       String
   objectives      String
-  welcomeMessage  String
-  image           String
+  primaryLanguage String
+  pricing         Float
   requirements    Json
   searchkey       String
   slug            String       @unique
-  createdAt       DateTime     @default(now())
-  lengthNum       Int
-  lengthStr       String
   status          CourseStatus
+  subtitle        String
+  title           String
+  welcomeMessage  String
+  updatedAt       DateTime?    @updatedAt
+
+  clicks    UserClick[]
+  purchases UserPurchase[]
 
   // Relation to User (Instructor)
   instructor   User   @relation(fields: [instructorId], references: [id])
@@ -125,7 +158,7 @@ model Resource {
   link  String
 
   lectureId String
-  lecture   Lecture @relation(fields: [lectureId], references: [id])
+  lecture   Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
 }
 
 model Lecture {
@@ -143,27 +176,30 @@ model Lecture {
   order     Int // position within the section
 
   // Link to assets
-  assets   LectureAsset[]
-  Resource Resource[]
+  lectureAssets LectureAsset?
+  Resource      Resource[]
 }
 
 enum LectureAssetStatus {
   published
   pending
+  uploading
+  failed
 }
 
 model LectureAsset {
-  id        String    @id @default(uuid())
-  title     String
-  url       String // Cloudinary/S3 CDN link
-  publicId  String // object key for deletion/management
-  type      AssetType
-  createdAt DateTime  @default(now())
-  status LectureAssetStatus @default(pending)
+  id           String             @id @default(uuid())
+  title        String
+  url          String // Cloudinary/S3 CDN link
+  publicId     String // object key for deletion/management
+  type         AssetType
+  createdAt    DateTime           @default(now())
+  status       LectureAssetStatus @default(pending)
+  thumbnailUrl String?
 
   // Relation
-  lectureId String
-  lecture   Lecture @relation(fields: [lectureId], references: [id])
+  lectureId String  @unique
+  lecture   Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
 }
 
 enum AssetType {

@@ -20,7 +20,6 @@ const NavBar_sm = ({ isNavbarOpen, setIsNavbarOpen }: NavBarProps) => {
                         <p>somethin</p>
                         <p>somethin</p>
                         <p>somethin</p>
-                        <p>somethin</p>
                     </div>
                 </div>
                 <X className="mt-5" onClick={() => setIsNavbarOpen(false)} />

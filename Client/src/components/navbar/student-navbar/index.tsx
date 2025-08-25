@@ -20,8 +20,6 @@ const StudentNavbar = () => {
 
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
     const user = useSelector((state: RootState) => state.auth.user)
-    console.log("user : ", user)
-
     const handleClick_ChangeRole = async () => {
         const response = await server.put('/user/change-role')
         if (response.data.success) {
