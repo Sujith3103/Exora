@@ -10,15 +10,10 @@ const config = {
   }
 };
 
-export const pub = createClient(config);
-export const sub = createClient(config);
-export const stream = createClient(config);
-
-(async () => {
-  await pub.connect();
-  await sub.connect();
-  await stream.connect();
-  console.log("Redis Pub/Sub/Stream connected");
-})();
+export const redis = createClient(config);
 
 
+export async function connectRedis() {
+  if (!redis.isOpen) await redis.connect();
+  console.log("✅ Redis connected");
+}

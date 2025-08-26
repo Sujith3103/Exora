@@ -2,7 +2,6 @@ import { Queue } from 'bullmq';
 import { QueueConnection } from '../connection';
 import { clickQueue } from '../services/click-event';
 import { ClickEvent } from '../config';
-import { stream } from '../utils/redisClient';
 
 const userTasksQueue = new Queue('user-tasks', { connection: QueueConnection });
 

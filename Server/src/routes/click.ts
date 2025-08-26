@@ -1,21 +1,11 @@
 import { Request, Response, Router } from "express";
 import { z } from "zod";
-import { enqueueClickEvent } from "../producers/userTasks.producer";
 import { ClickEvent } from "../config";
-import { stream } from "../utils/redisClient";
+import { redis } from "../utils/redisClient";
 
 const router = Router();
 
-// {
-//   userId: "u123",
-//   type: "course/category/instructor",         // primary object clicked
-//   targetId: "c456",       // course id
-//   categoryId: "cat789",   // course belongs to this category
-//   instructorId: "i101",   // course belongs to this instructor
-//   action: "view",
-//   timestamp: "2025-08-25T10:00:00.000Z"
-// }
-
+const DEDUP_KEY = "dedup:clicks";    
 
 const clickSchema = z.object({
     userId: z.string().min(1, "userId is required"),
@@ -53,7 +43,7 @@ router.post("", async (req: Request, res: Response) => {
             },
         };
 
-        const result = await stream.xAdd("click-events-stream", "*", {
+        const result = await redis.xAdd("click-events-stream", "*", {
             userId,
             type,
             targetId,
@@ -81,5 +71,12 @@ router.post("", async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Server error" });
     }
 });
+
+router.get('/trending',async(req:Request,res:Response) => {
+    console.log("yes")
+    const result = await redis.zRange(`trending:category:web-development`,0 ,9)
+    console.log(result)
+
+})
 
 export default router;

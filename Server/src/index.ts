@@ -34,6 +34,7 @@ import media_route from './routes/media_route'
 import instructor_course_route from './routes/instructor/course_route'
 import course_route from './routes/user/course_route'
 import trackEvent_route from './routes/click'
+import { connectRedis, redis } from "./utils/redisClient";
 // -------------------- CONFIG --------------------
 dotenv.config();
 const app = express();
@@ -41,7 +42,7 @@ const upload = multer();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.urlencoded({ extended: true }));
 
 //-------------------- ROUTE REGISTER --------------------
 
@@ -50,7 +51,7 @@ app.use('/api/user', user_route);
 app.use('/api/media', media_route);
 app.use('/api/courses', course_route);
 app.use('/api/instructor/course', instructor_course_route)
-app.use('/api/track-click',trackEvent_route)
+app.use('/api/track-click', trackEvent_route)
 
 // -------------------- SUPABASE --------------------
 const supabaseUrl = "https://aywktugruubporzskjdt.supabase.co";
@@ -74,7 +75,9 @@ const PORT = process.env.PORT || 8800;
 
 async function startServer() {
   try {
-    await initRedis(); // <--- Connect Redis first
+    // await initRedis();
+    await connectRedis();
+    // <--- Connect Redis first
     console.log("Redis connected successfully");
 
     httpServer.listen(PORT, () => {
@@ -85,5 +88,26 @@ async function startServer() {
     process.exit(1);
   }
 }
+process.on("SIGINT", async () => {
+  console.log("Shutting down worker...");
+  try {
+    await redis.quit();
+  } catch (err) {
+    console.error("Error closing Redis:", err);
+  } finally {
+    process.exit(0);
+  }
+});
+
+process.on("SIGTERM", async () => {
+  console.log("Worker terminated...");
+  try {
+    await redis.quit();
+  } catch (err) {
+    console.error("Error closing Redis:", err);
+  } finally {
+    process.exit(0);
+  }
+});
 
 startServer();

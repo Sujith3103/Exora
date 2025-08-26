@@ -1,4 +1,3 @@
-import server from "@/api/axiosinstance"
 import { Card } from "@/components/ui/card"
 import type { ClickEvent } from "@/config/config"
 import { trackClick } from "@/services/userService"
