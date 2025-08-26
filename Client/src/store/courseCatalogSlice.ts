@@ -1,12 +1,18 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 
-interface CourseSummary {
+
+export interface CourseSummary {
     id: string;
     title: string;
     subtitle: string;
     category: string;
     thumbnailUrl: string;
-    instructor:{}
+    instructor: {
+        id:string,
+        name:string,
+        email:string,
+
+    }
     level: "beginner" | "intermediate" | "advanced" | "all_levels";
     pricing: number;
     primaryLanguage: string;
@@ -28,8 +34,8 @@ interface CourseCatalogState {
         page: number,
         limit: number,
         total: number
-        }
     }
+}
 
 const initialState: CourseCatalogState = {
     data: [],
@@ -51,13 +57,13 @@ const courseCatalogSlice = createSlice({
     name: 'courseCatalog',
     initialState,
     reducers: {
-        setCourseSummary(state:CourseCatalogState, action:PayloadAction<CourseSummary[]>){
+        setCourseSummary(state: CourseCatalogState, action: PayloadAction<CourseSummary[]>) {
             state.data = action.payload
         },
     }
 
 })
 
-export const {setCourseSummary} = courseCatalogSlice.actions
+export const { setCourseSummary } = courseCatalogSlice.actions
 
 export default courseCatalogSlice.reducer

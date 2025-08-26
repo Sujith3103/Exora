@@ -18,13 +18,18 @@ export const student_GetAllCourses = async (req: Request, res: Response) => {
         const [courses, total] = await Promise.all([
             prisma.course.findMany({
                 where,
+                select: {
+                    id: true, title: true, subtitle: true, category: true, thumbnailUrl: true, level: true,
+                    pricing: true, primaryLanguage: true, slug: true,
+                    instructor: { select: { id: true, name: true, email: true, } }
+                },
                 skip,
                 take: limitNum,
                 orderBy: { createdAt: 'desc' }, // optional
             }),
             prisma.course.count({ where }),
         ]);
-        
+
         res.status(200).json({
             success: true,
             message: "fetched courses successfully",

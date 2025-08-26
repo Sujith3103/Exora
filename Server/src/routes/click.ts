@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import { z } from "zod";
 import { enqueueClickEvent } from "../producers/userTasks.producer";
 import { ClickEvent } from "../config";
+import { stream } from "../utils/redisClient";
 
 const router = Router();
 
@@ -35,7 +36,7 @@ router.post("", async (req: Request, res: Response) => {
             return res.status(400).json({ message: parsed.error.message });
         }
 
-        const {userId,type,targetId,categoryId,instructorId,action,sessionId,metadata,} = parsed.data;
+        const { userId, type, targetId, categoryId, instructorId, action, sessionId, metadata, } = parsed.data;
 
         const clickEvent: ClickEvent = {
             userId,
@@ -52,9 +53,27 @@ router.post("", async (req: Request, res: Response) => {
             },
         };
 
-        
+        const result = await stream.xAdd("click-events-stream", "*", {
+            userId,
+            type,
+            targetId,
+            categoryId: categoryId || "",
+            instructorId: instructorId || "",
+            action,
+            sessionId: sessionId || "",
+            metadata: metadata ? JSON.stringify(metadata) : "",
+            timestamp: new Date().toISOString(),
+            device: req.headers["user-agent"] || "",
+        }, {
+            TRIM: {
+                strategy: 'MAXLEN',
+                threshold: 100,
+            }
+        });
 
-        await enqueueClickEvent(clickEvent);
+        console.log(result)
+
+        // await enqueueClickEvent(clickEvent);
 
         return res.status(200).json({ message: "Click tracked" });
     } catch (err) {

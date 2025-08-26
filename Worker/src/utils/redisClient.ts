@@ -6,19 +6,14 @@ const config = {
   password: 'QCUBYBja7gnbBQV54md5FEQbKgsD8UK9',
   socket: {
     host: 'redis-12784.crce206.ap-south-1-1.ec2.redns.redis-cloud.com',
-    port: 12784
-  }
+    port: 12784,
+  },
 };
 
-export const pub = createClient(config);
-export const sub = createClient(config);
-export const stream = createClient(config);
+// create one shared client
+export const redis = createClient(config);
 
-(async () => {
-  await pub.connect();
-  await sub.connect();
-  await stream.connect();
-  console.log("Redis Pub/Sub/Stream connected");
-})();
-
-
+export async function connectRedis() {
+  if (!redis.isOpen) await redis.connect();
+  console.log("✅ Redis connected");
+}

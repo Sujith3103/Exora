@@ -1,5 +1,4 @@
 import { Worker } from "bullmq";
-import { stream } from "../../utils/redisClient";
 import { PrismaClient } from "@prisma/client";
 import { QueueConnection } from "../../connection";
 import { ClickEvent } from "../../config";
