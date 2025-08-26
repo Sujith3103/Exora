@@ -10,19 +10,18 @@ const CategoryBar = () => {
 
     const navigate = useNavigate()
 
-    const user = useSelector((state:RootState) => state.auth.user)
+    const user = useSelector((state: RootState) => state.auth.user)
     const handleClick_Category = async (category: (typeof categories)[number]) => {
+        navigate(`/courses?category=${category}&page=1&limit=10`)
 
-        if(!user) return
+        if (!user) return
 
         const clickEvent: ClickEvent = {
-            type:'category',
+            type: 'category',
             targetId: category,
             userId: user?.id.toString()
         }
-
         await trackClick(clickEvent)
-        navigate(`/courses?category=${category}&page=1&limit=10`)
     }
 
     return (
@@ -45,7 +44,7 @@ const CategoryBar = () => {
                     <Button
                         key={index}
                         onClick={() => handleClick_Category(category)}
-                        className="bg-white text-gray-600 font-semibold hover:underline hover:bg-white p-1 whitespace-nowrap"
+                        className="bg-white cursor-pointer text-gray-600 font-semibold hover:underline hover:bg-white p-1 whitespace-nowrap"
                     >
                         {category}
                     </Button>
