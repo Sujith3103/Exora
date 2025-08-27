@@ -4,7 +4,8 @@
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index.ts"
+    "dev": "nodemon src/index.ts",
+    "export-clicks": "ts-node src/scripts/exportClicks.ts"
   },
   "keywords": [],
   "author": "",
@@ -16,11 +17,14 @@
     "cloudinary": "^2.7.0",
     "dayjs": "^1.11.13",
     "dotenv": "^17.2.1",
+    "json2csv": "^6.0.0-alpha.2",
     "nodemailer": "^7.0.5",
     "p-map": "^7.0.3",
-    "redis": "^5.8.2"
+    "redis": "^5.8.2",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/json2csv": "^5.0.7",
     "@types/node": "^24.2.1",
     "@types/nodemailer": "^6.4.17",
     "nodemon": "^3.1.10",

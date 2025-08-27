@@ -30,7 +30,7 @@ export async function setupClickEventStream() {
     }
   }
 
-  //  processDbEvents()
+   processDbEvents()
    processCounterEvent()
 }
 

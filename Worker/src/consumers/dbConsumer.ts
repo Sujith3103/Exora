@@ -76,6 +76,8 @@ export async function processDbEvents() {
                 clickType: clickEvent.type,
                 targetId: clickEvent.targetId,
                 userId: clickEvent.userId,
+                categoryId:clickEvent.categoryId,
+                instructorId:clickEvent.instructorId || null
               },
             });
 
