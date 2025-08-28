@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Check, ChevronDown, ChevronUp, CircleCheck, Edit2, FileTextIcon, PlayCircleIcon, Plus, Trash2Icon, X } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Content from '../content/index'
 import NewContent from '../content/new-content'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -40,6 +40,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
     const [showSubContent, setShowSubContent] = useState(false)
     const [isEditLectureTitle, setIsEditLectureTitle] = useState(false)
     const [isloading, setIsloading] = useState(false)
+    const [isFailedAsset, setisFailedAsset] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
 
     const [showContent, setShowContent] = useState<ShowContent>({
@@ -90,9 +91,30 @@ const Lecture = ({ lecture, index }: LectureProp) => {
         setIsloading(false)
     }
 
-    // useEffect(() => {
-    //     console.log("show ontent :", showContent)
-    // }, [showContent])
+    const handleClick_SetShowContent = () => {
+        if (lecture.lectureAssets?.status === 'failed') {
+            setisFailedAsset(prev => !prev)
+
+        }
+        else {
+            setShowContent(prev => ({
+                ...prev,
+                LectureId: lecture.id,
+                selectingContent: !prev.selectingContent,
+                uploadingContent: false,
+            }))
+        }
+    }
+
+    useEffect(() => {
+        console.log("this ran")
+        if (lecture.lectureAssets?.status === 'failed') {
+            setisFailedAsset(true)
+        }
+    }, [])
+    useEffect(() => {
+
+    })
 
     return (
         <div className={isloading ? "cursor-progress pointer-events-none" : ""}>
@@ -103,7 +125,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
             >
                 <div className="flex flex-row items-center gap-2 group">
                     <CircleCheck size={15} strokeWidth={1} />
-                    <p className="whitespace-nowrap">Lecture {index+1}:</p>
+                    <p className="whitespace-nowrap">Lecture {index + 1}:</p>
 
                     <div className="flex items-center gap-1 ml-4 w-full">
                         {
@@ -167,18 +189,13 @@ const Lecture = ({ lecture, index }: LectureProp) => {
                         </div>
                     </div>
                     {
-                        !lecture.lectureAssets?.status &&
+                        lecture.lectureAssets?.status != 'published' &&
 
                         <div className='ml-auto flex items-center gap-2'>
                             <Button
                                 variant="outline"
                                 onClick={() =>
-                                    setShowContent(prev => ({
-                                        ...prev,
-                                        LectureId: lecture.id,
-                                        selectingContent: !prev.selectingContent,
-                                        uploadingContent: false,
-                                    }))
+                                    handleClick_SetShowContent()
                                 }
                                 className="flex items-center justify-center ml-auto rounded-none text-purple-600 border-purple-500 hover:bg-purple-100 w-35 h-9"
                             >
@@ -191,11 +208,11 @@ const Lecture = ({ lecture, index }: LectureProp) => {
                                                 </>
                                             )
                                         }
-                                        return (
-                                            <>
-                                                <Plus /> Content
-                                            </>
-                                        )
+                                        // return (
+                                        //     <>
+                                        //         <Plus /> Content
+                                        //     </>
+                                        // )
                                     }
                                     return (
                                         <>
@@ -223,7 +240,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
 
                     }
                     {
-                        lecture.lectureAssets?.status &&
+                        lecture.lectureAssets?.status === 'published' &&
                         <>
                             {showSubContent ? (
                                 <div className='flex ml-auto transition-all duration-300 items-center'>
@@ -263,6 +280,7 @@ const Lecture = ({ lecture, index }: LectureProp) => {
                         <NewContent sectionId={lecture.sectionId} setShowContent={setShowContent} showContent={showContent} lectureData={lecture} lectureId={lecture.id} setShowSubContent={setShowSubContent} />
                     )
                 }
+
                 <div
                     className={`transition-all duration-300 ease-in-out overflow-hidden ${showSubContent ? "opacity-100 mt-2 h-auto" : "opacity-0 h-0 mt-0"}`}
                 >
@@ -271,6 +289,9 @@ const Lecture = ({ lecture, index }: LectureProp) => {
                         <>
                             <Content setShowContent={setShowContent} showContent={showContent} lecture={lecture} setShowSubContent={setShowSubContent} />
                         </>
+                    }
+                    {
+                        lecture.lectureAssets?.status === 'failed' && <NewContent isfailed={isFailedAsset} sectionId={lecture.sectionId} setShowContent={setShowContent} showContent={showContent} lectureData={lecture} lectureId={lecture.id} setShowSubContent={setShowSubContent} />
                     }
                     {ShowResource.uploadRecourse && <NewResource lecture={lecture} setShowResource={setShowResource} />}
 

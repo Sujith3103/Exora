@@ -1,7 +1,8 @@
 import { PrismaClient, Role } from "@prisma/client";
 import { Request, Response } from "express";
-import { client } from "../utils/redis";
+// import { client } from "../utils/redis";
 import { format } from 'date-fns';
+import { redis } from "../utils/redisClient";
 
 const prisma = new PrismaClient();
 
@@ -76,7 +77,7 @@ export const EditUserProfile = async (req: Request, res: Response) => {
         console.log("DB profile created:", createdProfile);
 
         // 2. Update cache (Write-through strategy)
-        await client.hSet(userProfileKey, {
+        await redis.hSet(userProfileKey, {
             contact: userData.contact || '',
             dob: userData.dob ? new Date(userData.dob).toISOString() : '',
             gender: userData.gender || '',
@@ -86,7 +87,7 @@ export const EditUserProfile = async (req: Request, res: Response) => {
         });
 
         // 3. Set TTL (10 mins)
-        await client.expire(userProfileKey, 600);
+        await redis.expire(userProfileKey, 600);
 
         // 4. Respond once - format DOB for user-friendly display
         return res.status(200).json({
@@ -142,7 +143,7 @@ export const EditUserSecurity = async (req: Request, res: Response) => {
         console.log("DB profile created:", createdSecurityData);
 
         // 2. Update cache (Write-through strategy)
-        await client.hSet(userProfileKey, {
+        await redis.hSet(userProfileKey, {
             twoStepVerification: String(userData.twoStepVerification ?? ""),
             recoveryEmail: userData.recoveryEmail?.trim() || "",
             recoveryPhone: userData.recoveryPhone?.trim() || "",
@@ -150,7 +151,7 @@ export const EditUserSecurity = async (req: Request, res: Response) => {
         });
 
         // 3. Set TTL (10 mins)
-        await client.expire(userProfileKey, 600);
+        await redis.expire(userProfileKey, 600);
 
         const updatedSecurityData = {
             ...createdSecurityData,
@@ -185,7 +186,7 @@ export const getUserProfileData = async (req: Request, res: Response) => {
     const userProfileKey = `user:profile:${userId}`
 
     try {
-        const { ...cachedData } = await client.hGetAll(userProfileKey)
+        const { ...cachedData } = await redis.hGetAll(userProfileKey)
 
         if (Object.keys(cachedData).length === 0) {
 
@@ -193,7 +194,7 @@ export const getUserProfileData = async (req: Request, res: Response) => {
                 where: { userId: userId }
             })
 
-            await client.hSet(userProfileKey, {
+            await redis.hSet(userProfileKey, {
                 contact: profileData?.contact || '',
                 dob: profileData?.dob ? new Date(profileData?.dob).toISOString() : '',
                 gender: profileData?.gender || '',
@@ -201,7 +202,7 @@ export const getUserProfileData = async (req: Request, res: Response) => {
                 about: profileData?.about || '',
                 profileImg: profileData?.profileImg || '',
             })
-            await client.expire(userProfileKey, 600);
+            await redis.expire(userProfileKey, 600);
 
             return res.status(200).json({
                 success: true,
@@ -209,7 +210,7 @@ export const getUserProfileData = async (req: Request, res: Response) => {
                 profileData
             })
         }
-        await client.expire(userProfileKey, 600);
+        await redis.expire(userProfileKey, 600);
 
         return res.status(200).json({
             success: true,
@@ -233,7 +234,7 @@ export const getUserSecurityData = async (req: Request, res: Response) => {
     const userProfileKey = `user:security:${userId}`
 
     try {
-        const { ...cachedData } = await client.hGetAll(userProfileKey)
+        const { ...cachedData } = await redis.hGetAll(userProfileKey)
 
         if (Object.keys(cachedData).length === 0) {
 
@@ -241,13 +242,13 @@ export const getUserSecurityData = async (req: Request, res: Response) => {
                 where: { userId: userId }
             })
 
-            await client.hSet(userProfileKey, {
+            await redis.hSet(userProfileKey, {
                 twoStepVerification: String(securityData?.twoStepVerification ?? ""),
                 recoveryEmail: securityData?.recoveryEmail?.trim() || "",
                 recoveryPhone: securityData?.recoveryPhone?.trim() || "",
                 loginAlertsEnabled: String(securityData?.loginAlertsEnabled ?? "")
             })
-            await client.expire(userProfileKey, 600);
+            await redis.expire(userProfileKey, 600);
 
             return res.status(200).json({
                 success: true,
@@ -255,7 +256,7 @@ export const getUserSecurityData = async (req: Request, res: Response) => {
                 securityData
             })
         }
-        await client.expire(userProfileKey, 600);
+        await redis.expire(userProfileKey, 600);
 
         return res.status(200).json({
             success: true,

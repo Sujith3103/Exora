@@ -219,8 +219,7 @@ router.get("/for-you/:userId", async (req: Request, res: Response) => {
     }
     normalize(categoryPref);
     normalize(instructorPref);
-    console.log(categoryPref, instructorPref)
-    // Step 4: Fetch candidate courses
+
     const interestedCategories = Array.from(categoryPref.keys());
     const interestedInstructors = Array.from(instructorPref.keys());
 

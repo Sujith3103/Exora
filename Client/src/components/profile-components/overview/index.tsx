@@ -46,7 +46,6 @@ const OverView = () => {
       })
       if (res.data.success) {
         dispatch(updateProfileImage(res.data.url))
-        console.log(res.data.url)
       }
 
     } catch (err) {
@@ -60,13 +59,10 @@ const OverView = () => {
   );
 
   const handle_fetchprofile = async () => {
-    console.log("fetching profile")
     dispatch(profileSliceLoadinStart())
     const response = await FetchUserProfileData()
     if (response.data.success) {
-      console.log("profile : ",response.data)
       dispatch(setProfile(response.data.cachedData ?? response.data.profileData))
-      console.log("fetched profile")
     }
 
   }
@@ -75,7 +71,6 @@ const OverView = () => {
     dispatch(profileSliceLoadinStart())
     const response = await FetchUserSecurityData()
     if (response.data.success) {
-      console.log("security :", response.data)
       dispatch(setSecurity(response.data.cachedData ?? response.data.securityData))
     }
     dispatch(profileSliceLoadinStop())

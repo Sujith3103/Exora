@@ -13,62 +13,62 @@ const prisma = new PrismaClient();
 
 
 router.post('/set-profile-img', upload.single("profileImage"), AuthenticateMiddleware, async (req, res) => {
-    const userId = req.user?.id as string
-    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" })
+  const userId = req.user?.id as string
+  if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" })
 
 
-    console.log(req.file)
-    const userProfileKey = `user:profile:${userId}`
+  console.log(req.file)
+  const userProfileKey = `user:profile:${userId}`
 
-    try {
+  try {
 
-        if (req.file?.path) {
-            const result = await uploadMediaToCloudinary(req.file?.path)
+    if (req.file?.path) {
+      const result = await uploadMediaToCloudinary(req.file?.path)
 
-            const user = await prisma.userProfile.upsert({
-                where: { userId: userId },
-                update: {
-                    profileImg: result.secure_url,
-                    profileImgId: result.public_id, // store Cloudinary public_id too
-                },
-                create: {
-                    userId: userId,
-                    profileImg: result.secure_url,
-                    profileImgId: result.public_id,
-                }
-            });
-
-            await client.hSet(userProfileKey, {
-                contact: user?.contact || '',
-                dob: user?.dob ? new Date(user?.dob).toISOString() : '',
-                gender: user?.gender || '',
-                profession: user?.profession || '',
-                about: user?.about || '',
-                profileImg: user?.profileImg || '',
-            })
-            await client.expire(userProfileKey, 600);
-            // fs.unlinkSync(req.file.path);
-            res.status(200).json({
-                success: true,
-                message: "File uploaded successfully",
-                url: result.secure_url,
-                public_id: result.public_id,
-            });
+      const user = await prisma.userProfile.upsert({
+        where: { userId: userId },
+        update: {
+          profileImg: result.secure_url,
+          profileImgId: result.public_id, // store Cloudinary public_id too
+        },
+        create: {
+          userId: userId,
+          profileImg: result.secure_url,
+          profileImgId: result.public_id,
         }
-        else {
-            res.status(200).json({
-                success: false,
-                message: "File path not found",
-            });
-        }
+      });
 
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({
-            success: false,
-            message: "upload failed"
-        })
+      await client.hSet(userProfileKey, {
+        contact: user?.contact || '',
+        dob: user?.dob ? new Date(user?.dob).toISOString() : '',
+        gender: user?.gender || '',
+        profession: user?.profession || '',
+        about: user?.about || '',
+        profileImg: user?.profileImg || '',
+      })
+      await client.expire(userProfileKey, 600);
+      // fs.unlinkSync(req.file.path);
+      res.status(200).json({
+        success: true,
+        message: "File uploaded successfully",
+        url: result.secure_url,
+        public_id: result.public_id,
+      });
     }
+    else {
+      res.status(200).json({
+        success: false,
+        message: "File path not found",
+      });
+    }
+
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({
+      success: false,
+      message: "upload failed"
+    })
+  }
 })
 
 router.post(
@@ -134,7 +134,7 @@ router.post(
             data: { lengthNum: duration },
           });
 
-          console.log("courseid: ",courseId)
+          console.log("courseid: ", courseId)
           // Increment course total duration
           await tx.course.update({
             where: { id: courseId },
@@ -164,7 +164,7 @@ router.post(
  * PUT: Update lecture asset (replace existing file)
  */
 router.put(
-  "/course/:courseId/lecture/:lectureId/assets/:assetId",
+  "/course/:courseId/lecture/:lectureId/assets/:assetId/edit",
   upload.single("file"),
   AuthenticateMiddleware,
   async (req, res) => {
@@ -176,7 +176,7 @@ router.put(
       return res.status(401).json({ success: false, message: "Unauthorized" });
     if (!req.file?.path)
       return res.status(404).json({ success: false, message: "File not found" });
-
+    console.log("here")
     try {
       // Fetch old asset
       const oldAsset = await prisma.lectureAsset.findUnique({ where: { id: assetId } });
@@ -200,7 +200,11 @@ router.put(
       }
 
       // Delete old file from Cloudinary
-      await deleteMediaFromCloudinary(oldAsset.publicId);
+      if (oldAsset.status != 'failed') {
+        await deleteMediaFromCloudinary(oldAsset.publicId);
+      }
+
+      let lectureAsset;
 
       // Wrap all updates in a transaction
       await prisma.$transaction(async (tx) => {
@@ -240,14 +244,14 @@ router.put(
             data: { lengthNum: newDuration },
           });
 
-          await tx.course.update({
+          lectureAsset = await tx.course.update({
             where: { id: courseId },
             data: { lengthNum: { increment: newDuration } },
           });
         }
       });
 
-      res.status(200).json({ success: true, message: "Asset updated successfully" });
+      res.status(200).json({ success: true, message: "Asset updated successfully",  asset: lectureAsset});
     } catch (err) {
       console.error("Update failed:", err);
       res.status(500).json({ success: false, message: "Update failed" });
@@ -257,49 +261,49 @@ router.put(
 
 
 router.patch('/course/:courseId/thumbnail', upload.single('thumbnail'), async (req, res) => {
-    const { courseId } = req.params;
+  const { courseId } = req.params;
 
-    if (!req.file?.path) {
-        return res.status(404).json({ success: false, message: "file not found" });
+  if (!req.file?.path) {
+    return res.status(404).json({ success: false, message: "file not found" });
+  }
+
+  try {
+    // Find the course first
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      select: { thumbnailId: true },
+    });
+
+    // If there’s an existing thumbnail, delete it from Cloudinary
+    if (course?.thumbnailId) {
+      // await cloudinary.uploader.destroy(course.thumbnailId);
+      await deleteMediaFromCloudinary(course.thumbnailId)
     }
 
-    try {
-        // Find the course first
-        const course = await prisma.course.findUnique({
-            where: { id: courseId },
-            select: { thumbnailId: true },
-        });
+    // Upload new thumbnail to Cloudinary
+    const result = await uploadMediaToCloudinary(req.file.path);
 
-        // If there’s an existing thumbnail, delete it from Cloudinary
-        if (course?.thumbnailId) {
-            // await cloudinary.uploader.destroy(course.thumbnailId);
-            await deleteMediaFromCloudinary(course.thumbnailId)
-        }
+    // Update course with new thumbnail
+    const upload = await prisma.course.update({
+      where: { id: courseId },
+      data: {
+        thumbnailId: result.public_id,
+        thumbnailUrl: result.secure_url,
+      },
+    });
 
-        // Upload new thumbnail to Cloudinary
-        const result = await uploadMediaToCloudinary(req.file.path);
+    console.log("updated img:", upload)
 
-        // Update course with new thumbnail
-        const upload = await prisma.course.update({
-            where: { id: courseId },
-            data: {
-                thumbnailId: result.public_id,
-                thumbnailUrl: result.secure_url,
-            },
-        });
+    return res.status(200).json({
+      success: true,
+      message: "Thumbnail uploaded successfully",
+      url: upload.thumbnailUrl,
+    });
 
-        console.log("updated img:", upload)
-
-        return res.status(200).json({
-            success: true,
-            message: "Thumbnail uploaded successfully",
-            url: upload.thumbnailUrl,
-        });
-
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ success: false, message: "Upload failed" });
-    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Upload failed" });
+  }
 });
 
 

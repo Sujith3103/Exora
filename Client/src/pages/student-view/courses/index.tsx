@@ -6,10 +6,11 @@ import { Select, SelectContent, SelectGroup, SelectItem,  SelectTrigger, SelectV
 import { courseCategories, type CourseQueryOptions } from "@/config/config";
 import { useCourses } from "@/hooks/useCourse";
 import type { AppDispatch,  } from "@/store";
-import { setCourseSummary } from "@/store/courseCatalogSlice";
+import { setCourseSummary, setPagination } from "@/store/courseCatalogSlice";
 import { AlertCircleIcon, ListFilterIcon } from "lucide-react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+import CourseSkeleton from "./courseSkeleton";
 
 export default function StudentViewCourses(queryOptions: CourseQueryOptions) {
 
@@ -18,14 +19,15 @@ export default function StudentViewCourses(queryOptions: CourseQueryOptions) {
   const { data, isLoading, isError, isFetching } = useCourses(queryOptions)
   if (data) {
     dispatch(setCourseSummary(data.data))
+    dispatch(setPagination({limit:data.limit,page:data.page,total:data.total,totalPages:data.totalPages}))
   }
 
   const [showCourseFilter, setShowFilter] = useState(true)
 
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <CourseSkeleton />;
   if (isError) return <p>Error loading courses</p>;
-  if (isFetching) return <p>fetching</p>
+  if (isFetching) return <CourseSkeleton />
   
   return (
     <>
@@ -64,8 +66,6 @@ export default function StudentViewCourses(queryOptions: CourseQueryOptions) {
           }
           <CourseList />
         </div>
-
-
 
       </div>
     </>

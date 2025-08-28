@@ -33,7 +33,8 @@ interface CourseCatalogState {
     pagination: {
         page: number,
         limit: number,
-        total: number
+        total: number,
+        totalPages: number
     }
 }
 
@@ -49,7 +50,8 @@ const initialState: CourseCatalogState = {
     pagination: {
         page: 1,
         limit: 10,
-        total: 0
+        total: 0,
+        totalPages: 1,
     }
 }
 
@@ -60,10 +62,13 @@ const courseCatalogSlice = createSlice({
         setCourseSummary(state: CourseCatalogState, action: PayloadAction<CourseSummary[]>) {
             state.data = action.payload
         },
+        setPagination(state:CourseCatalogState, action: PayloadAction<{page:number,limit:number,total:number,totalPages:number}>){
+            state.pagination = {...action.payload}
+        }
     }
 
 })
 
-export const { setCourseSummary } = courseCatalogSlice.actions
+export const { setCourseSummary,setPagination } = courseCatalogSlice.actions
 
 export default courseCatalogSlice.reducer

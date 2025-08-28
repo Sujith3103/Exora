@@ -1,4 +1,5 @@
 import server from "@/api/axiosinstance";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -29,6 +30,7 @@ type ShowContent = {
 };
 
 type NewContentProps = {
+    isfailed?: boolean
     lectureId: string;
     lectureData: Lectures;
     sectionId: string; // <--- required
@@ -50,6 +52,7 @@ const NewContent = ({
     showContent,
     setShowContent,
     setShowSubContent,
+    isfailed
 }: NewContentProps) => {
     const [isVisible, setIsVisible] = useState(false);
     const inputRefVideo = useRef<HTMLInputElement>(null);
@@ -75,7 +78,7 @@ const NewContent = ({
         formData.append("file", selectedFile);
         formData.append("type", "VIDEO");
         formData.append("title", selectedFile.name);
-        
+
         lectureAsset = {
             ...lectureAsset,
             lectureId,
@@ -88,9 +91,9 @@ const NewContent = ({
 
         try {
             let response;
-            if (lectureData.lectureAssets?.status === "published") {
+            if (lectureData.lectureAssets?.status === "published" || lectureData.lectureAssets?.status === 'failed' ) {
                 response = await server.put(
-                    `/media/course/${id}/lecture/${lectureId}/assets/${lectureData.lectureAssets.publicId}/edit`,
+                    `/media/course/${id}/lecture/${lectureId}/assets/${lectureData.lectureAssets.id}/edit`,
                     formData,
                     { headers: { "Content-Type": "multipart/form-data" } }
                 );
@@ -145,9 +148,9 @@ const NewContent = ({
 
         try {
             let response;
-            if (lectureData.lectureAssets?.status === "published") {
+            if (lectureData.lectureAssets?.status === "published"|| lectureData.lectureAssets?.status === 'failed' ) {
                 response = await server.put(
-                    `/media/course/${id}/lecture/${lectureId}/assets/${lectureData.lectureAssets.publicId}/edit`,
+                    `/media/course/${id}/lecture/${lectureId}/assets/${lectureData.lectureAssets.id}/edit`,
                     formData,
                     { headers: { "Content-Type": "multipart/form-data" } }
                 );
@@ -174,7 +177,7 @@ const NewContent = ({
             console.error("PDF Upload failed:", err);
             lectureAsset.status = "failed";
             dispatch(setLectureAsset(lectureAsset));
-            setShowContent((prev) => ({ ...prev, uploadingContent: false, selectingContent: false }));
+            setShowContent((prev) => ({ ...prev, uploadingContent: true, selectingContent: false }));
         }
     };
 
@@ -182,7 +185,11 @@ const NewContent = ({
         setIsVisible(true);
     }, []);
 
-    if (showContent.uploadingContent) {
+    useEffect(() => {
+
+    })
+    console.log(showContent.uploadingContent, isfailed)
+    if (showContent.uploadingContent || isfailed) {
         return (
             <>
                 <hr className="border border-gray-300 mt-2" />
@@ -208,7 +215,9 @@ const NewContent = ({
         );
     }
 
-    return (
+    else{
+        console.log("nothing")
+        return (
         <Card
             className={`flex flex-col items-center rounded-none p-3 justify-center border-dashed border-gray-300 mt-2 gap-3
         transition-all duration-300 ease-out
@@ -254,6 +263,7 @@ const NewContent = ({
             </div>
         </Card>
     );
+    }
 };
 
 export default NewContent;
