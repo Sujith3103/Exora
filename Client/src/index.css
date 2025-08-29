@@ -148,6 +148,13 @@
     border-radius: 9999px;
   }
 
+  /* styles.css or your global CSS */
+  .content-visible-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 500px;
+    /* reserve space to prevent layout jumps */
+  }
+
   .thin-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }

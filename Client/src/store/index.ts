@@ -3,13 +3,15 @@ import authReducer from './authSlice'
 import profileReducer from './profileSlice'
 import courseReducer from './courseSlice'
 import courseCatalogReducer from './courseCatalogSlice'
+import courseCatalogDetailsReducer from './courseDetailsSlice'
 
 export const store = configureStore({
     reducer: {
         auth: authReducer,
         profile: profileReducer,
         course: courseReducer,
-        courseCatalog: courseCatalogReducer,  
+        courseCatalog: courseCatalogReducer,
+        courseCatalogDetails: courseCatalogDetailsReducer
     }
 })
 

@@ -17,6 +17,7 @@ import CourseLanding from "./components/instructor-view/course-landing"
 import CourseCurriculum from "./components/instructor-view/curriculum"
 import CourseMessage from "./components/instructor-view/course-messages"
 import StudentViewCourseLayout from "./components/layout/courseLayout"
+import CourseDetails from "./pages/student-view/course-detail"
 
 
 function App() {
@@ -80,6 +81,7 @@ function App() {
         <Route path="/" element={<RouteGuard element={<NavBarLayout />} />} >
           <Route path="courses" element={<StudentViewCourseLayout />}>
           </Route>
+          <Route path="course/:id" element={<CourseDetails />}/>
         </Route>
 
         <Route path="/profile" element={<RouteGuard element={<ProfileLayout />} />} >

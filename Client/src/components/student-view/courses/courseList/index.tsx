@@ -29,6 +29,7 @@ const CourseList = () => {
 
   const handleClick_ClickEvent = useCallback(
     async (course: CourseSummary) => {
+      navigate(`/course/${course.id}`)
       if (!user) return
       const clickEvent: ClickEvent = {
         userId: user.id.toString(),
@@ -42,25 +43,29 @@ const CourseList = () => {
       } catch (err) {
         console.error("Failed to track click", err)
       }
-    },
-    [user]
+    }, [user]
   )
 
   return (
     <div className="mt-5 flex-1">
       {courseCatalog.map((course) => (
         <div key={course.id}>
-          <Card className="flex flex-row gap-0 w-full sm:p-4 pb-0 pt-0 border-0 shadow-none">
-            <div className="flex-shrink-0 w-[35%] max-w-[311px]">
+          <Card
+            key={course.id}
+            className="flex flex-row gap-0 w-full sm:p-4 border-0 shadow-none border-b border-gray-300 last:border-b-0"
+          >
+            <div className="flex-shrink-0 w-[35%]  max-w-[311px]">
               <img
                 src={course.thumbnailUrl}
                 alt={course.title}
-                className="w-full h-auto object-cover border cursor-pointer"
+                loading="lazy"
+                decoding="async"
+                className="w-full h-auto max-h-[175px] aspect-video object-cover cursor-pointer"
                 onClick={() => handleClick_ClickEvent(course)}
               />
             </div>
 
-            <div className="flex flex-col ml-3 gap-[2px]">
+            <div className="flex flex-col ml-3 gap-[2px] flex-grow">
               <p
                 className="font-bold line-clamp-2 cursor-pointer"
                 onClick={() => handleClick_ClickEvent(course)}
@@ -69,12 +74,15 @@ const CourseList = () => {
               </p>
               <p className="text-sm line-clamp-2">{course.subtitle}</p>
               <p className="text-[12px] text-muted-foreground">{course.instructor.name}</p>
-              <div>⭐ Ratings</div>
-              <div className="line-clamp-1">⏱ Duration • # Lectures</div>
+              <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                <li>⭐ Ratings</li>
+                <li>⏱ Duration • # Lectures</li>
+              </ul>
             </div>
 
             <span className="ml-auto font-bold">${course.pricing}</span>
           </Card>
+
 
           <div className="px-2">
             <hr className="border-gray-300" />
@@ -83,13 +91,11 @@ const CourseList = () => {
       ))}
 
       {totalPages > 1 && (
-        <div className="mt-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       )}
     </div>
   )

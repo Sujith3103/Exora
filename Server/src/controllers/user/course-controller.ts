@@ -43,3 +43,31 @@ export const student_GetAllCourses = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Something went wrong' });
     }
 };
+
+export const student_GetCourseDetails = async(req: Request, res:Response) => {
+
+    const {courseId} = req.params
+
+    try{
+
+        const details = await prisma.course.findFirst({
+            where: {id:courseId},
+            include:{instructor:true}
+        })
+
+        if(!details) return res.status(404).json({success:false, message:"course not found"})
+
+        return res.status(200).json({
+            success:true,
+            message:"fetched course details successfully",
+            data:details
+        })
+
+    }catch(err){
+        console.log(err)
+        return res.status(500).json({
+            success: false,
+            message:"failed to fetch course details"
+        })
+    }
+}
