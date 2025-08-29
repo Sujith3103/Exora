@@ -1,11 +1,10 @@
-import server from "@/api/axiosinstance";
 import CourseDetailsLayout from "@/components/layout/course-details";
 import Student_CourseDetailsPricing from "@/components/student-view/course-details/course-pricing";
 import CourseDetailsBanner from "@/components/student-view/course-details/details-banner";
 import CourseDetailsBannerSmall from "@/components/student-view/course-details/details-banner/small";
-import { Button } from "@/components/ui/button";
+import { useCourseDetails } from "@/hooks/useCourseDetails";
 import type { AppDispatch } from "@/store";
-import { setCourseCatalogDetails } from "@/store/courseDetailsSlice";
+import { fetchCourseDetailsStart, fetchCourseDetailsStop, setCourseCatalogDetails } from "@/store/courseDetailsSlice";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -18,6 +17,9 @@ export default function CourseDetailsPage() {
 
     const dispatch = useDispatch<AppDispatch>()
     const [isFixed, setIsFixed] = useState(false);
+
+    if (!id) return
+    const { data, isError } = useCourseDetails(id)
 
     useEffect(() => {
         function handleScroll() {
@@ -32,12 +34,16 @@ export default function CourseDetailsPage() {
     }, []);
 
     useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'instant' });
-        async function fetchData() {
-            const response = await server.get(`/courses/${id}`)
-            dispatch(setCourseCatalogDetails(response.data.data))
+        console.log("coursedetails strt")
+        dispatch(fetchCourseDetailsStart())
+        if (data) {
+            dispatch(setCourseCatalogDetails(data.data)); // push to Redux
+            dispatch(fetchCourseDetailsStop({ isError: isError }))
         }
-        fetchData()
+    }, [data, dispatch]);
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
     }, [id])
 
     return (
@@ -57,7 +63,7 @@ export default function CourseDetailsPage() {
                         className={`${isFixed
                             ? "fixed top-6 right-[10%] w-[28%]" // when fixed
                             : "absolute top-6 right-[10%] w-[28%]" // when absolute
-                            }  h-[70vh]`}
+                            }  h-[100vh]`}
                     >
                         <div className=" p-4 top-0 h-[100vh]">
                             <Student_CourseDetailsPricing />
@@ -67,11 +73,9 @@ export default function CourseDetailsPage() {
 
                 {/* Main content with sidebar */}
 
-                <div className="relative mx-[9%] max-w-7xl flex gap-6 px-6 lg:pr-110 mt-18 ">
+                <div className="relative mx-[9%] max-w-7xl flex gap-6 px-6 lg:mr-135 mt-18">
                     {/* Left column */}
                     <CourseDetailsLayout />
-
-
                     {/* Right column (sidebar) */}
 
                 </div>

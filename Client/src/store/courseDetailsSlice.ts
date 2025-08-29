@@ -36,6 +36,8 @@ export interface Instructor {
     name: string;
     email: string;
     avatarUrl?: string;
+    profession:string
+    updatedAt : true
 }
 
 export interface CourseDetails {
@@ -67,13 +69,13 @@ export interface CourseDetails {
 interface CourseCatalogDetailsState {
     data: CourseDetails | null;
     loading: boolean;
-    error: string | null;
+    error: boolean
 }
 
 const initialState: CourseCatalogDetailsState = {
     data: null,
     loading: false,
-    error: null,
+    error: false,
 };
 
 // --- Slice ---
@@ -83,12 +85,14 @@ const courseCatalogDetailsSlice = createSlice({
     reducers: {
         fetchCourseDetailsStart(state:CourseCatalogDetailsState) {
             state.loading = true
+            state.error = false
         },
         setCourseCatalogDetails(state: CourseCatalogDetailsState, action: PayloadAction<CourseDetails>) {
             state.data = action.payload
         },
-        fetchCourseDetailsStop(state:CourseCatalogDetailsState) {
+        fetchCourseDetailsStop(state:CourseCatalogDetailsState,action:PayloadAction<{isError:boolean}>) {
             state.loading = false
+            state.error = action.payload.isError
         },
 
     },

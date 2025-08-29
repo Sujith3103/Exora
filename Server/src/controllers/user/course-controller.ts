@@ -52,7 +52,9 @@ export const student_GetCourseDetails = async(req: Request, res:Response) => {
 
         const details = await prisma.course.findFirst({
             where: {id:courseId},
-            include:{instructor:true}
+            include:{instructor:{
+                select:{id:true,name:true,email:true,updatedAt:true,role:true,profile:{select:{profession:true}}}
+            }}
         })
 
         if(!details) return res.status(404).json({success:false, message:"course not found"})

@@ -66,6 +66,10 @@ model UserClick {
   @@index([clickType, targetId])
 }
 
+// model Cart{
+  
+// }
+
 model UserPurchase {
   id        String   @id @default(cuid())
   user      User     @relation(fields: [userId], references: [id])

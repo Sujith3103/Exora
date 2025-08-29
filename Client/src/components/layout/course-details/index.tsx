@@ -2,7 +2,7 @@ import CourseDetailsLanding from "@/components/student-view/course-details/detai
 
 const CourseDetailsLayout = () => {
     return (
-        <div>
+        <div className="">
             <CourseDetailsLanding />
             <div>
                 <p>....</p>

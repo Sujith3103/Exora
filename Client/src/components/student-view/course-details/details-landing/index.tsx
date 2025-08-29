@@ -1,9 +1,8 @@
 import { Award, Book, Code, FileDown, Monitor, Video } from 'lucide-react'
-import React from 'react'
 
 const CourseDetailsLanding = () => {
     return (
-        <div>
+        <div className=''>
             <div className="flex mt-8">
                 <div className="flex-1">
                     {/* Placeholder for "What you'll learn" and other content */}
