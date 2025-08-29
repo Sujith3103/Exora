@@ -27,7 +27,7 @@ const Student_CourseDetailsPricing = () => {
                     <Button variant={'outline'} className='border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer'>buy Now</Button>
                     <p className='text-muted-foreground text-[14px] text-center'>30-Day Money-Back Guarantee</p>
                     <p className='text-muted-foreground text-[12px] text-center'>Full Lifetime Access</p>
-                    <div className='flex underline  w-full h-full'>
+                    <div className='flex underline underline-offset-2  w-full h-full'>
                         <Button variant={'outline'} className='hover:bg-gray-200 cursor-pointer hover:rounded-sm border-none'>Share</Button>
                         <Button variant={'outline'} className='hover:bg-gray-200 cursor-pointer hover:rounded-sm border-none'>Gift This Course</Button>
                         <Button variant={'outline'} className='hover:bg-gray-200 cursor-pointer hover:rounded-sm border-none'>Apply Coupon</Button>
@@ -36,7 +36,7 @@ const Student_CourseDetailsPricing = () => {
                         No Coupon is Applied
                     </Card>
                     <div className='flex gap-2 mt-2'>
-                        <Input className='rounded-sm'/>
+                        <Input className='rounded-sm border-gray-400 ' />
                         <Button className='rounded-sm'>Apply</Button>
                     </div>
                 </div>

@@ -18,6 +18,7 @@ import CourseCurriculum from "./components/instructor-view/curriculum"
 import CourseMessage from "./components/instructor-view/course-messages"
 import StudentViewCourseLayout from "./components/layout/courseLayout"
 import CourseDetails from "./pages/student-view/course-detail"
+import Cart from "./pages/student-view/cart"
 
 
 function App() {
@@ -82,6 +83,7 @@ function App() {
           <Route path="courses" element={<StudentViewCourseLayout />}>
           </Route>
           <Route path="course/:id" element={<CourseDetails />}/>
+          <Route path="cart" element={<Cart/>}/>
         </Route>
 
         <Route path="/profile" element={<RouteGuard element={<ProfileLayout />} />} >

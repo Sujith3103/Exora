@@ -74,7 +74,7 @@ interface CourseCatalogDetailsState {
 
 const initialState: CourseCatalogDetailsState = {
     data: null,
-    loading: false,
+    loading: true,
     error: false,
 };
 

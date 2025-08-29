@@ -4,6 +4,7 @@ import profileReducer from './profileSlice'
 import courseReducer from './courseSlice'
 import courseCatalogReducer from './courseCatalogSlice'
 import courseCatalogDetailsReducer from './courseDetailsSlice'
+import cartReducer from './cartSlice'
 
 export const store = configureStore({
     reducer: {
@@ -11,7 +12,8 @@ export const store = configureStore({
         profile: profileReducer,
         course: courseReducer,
         courseCatalog: courseCatalogReducer,
-        courseCatalogDetails: courseCatalogDetailsReducer
+        courseCatalogDetails: courseCatalogDetailsReducer,
+        cart: cartReducer
     }
 })
 

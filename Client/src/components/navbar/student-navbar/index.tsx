@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Bell, CircleUser, GraduationCap, MenuSquareIcon } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../../store";
@@ -17,6 +17,7 @@ const StudentNavbar = () => {
     const [isNavbar, setIsNavBar] = useState(false)
 
     const dispatch = useDispatch<AppDispatch>()
+    const navigate = useNavigate()
 
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
     const user = useSelector((state: RootState) => state.auth.user)
@@ -52,7 +53,8 @@ const StudentNavbar = () => {
                             <Button onClick={handleClick_ChangeRole} className='bg-gray-300 hover:bg-gray-200 text-black hidden md:block'>Teach on Exora</Button>
                     }
 
-                    <button aria-label="Shopping cart" className="relative hover:text-purple-700">
+                    {/* Cart */}
+                    <button aria-label="Shopping cart" className="relative hover:text-purple-700 cursor-pointer" onClick={() => navigate('/cart')}>
                         <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="w-5 h-5" viewBox="0 0 24 24">
                             <circle cx="9" cy="21" r="1"></circle>
                             <circle cx="20" cy="21" r="1"></circle>
@@ -60,6 +62,7 @@ const StudentNavbar = () => {
                         </svg>
                         <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-purple-600 rounded-full text-white text-xs font-semibold px-1.5">2</span>
                     </button>
+
                     {isAuthenticated ?
                         <div className='md:flex hidden items-center gap-5 '>
                             <Bell />
