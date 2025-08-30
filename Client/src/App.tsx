@@ -19,7 +19,7 @@ import CourseMessage from "./components/instructor-view/course-messages"
 import StudentViewCourseLayout from "./components/layout/courseLayout"
 import CourseDetails from "./pages/student-view/course-detail"
 import Cart from "./pages/student-view/cart"
-
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 function App() {
 
@@ -82,8 +82,8 @@ function App() {
         <Route path="/" element={<RouteGuard element={<NavBarLayout />} />} >
           <Route path="courses" element={<StudentViewCourseLayout />}>
           </Route>
-          <Route path="course/:id" element={<CourseDetails />}/>
-          <Route path="cart" element={<Cart/>}/>
+          <Route path="course/:id" element={<CourseDetails />} />
+          <Route path="cart" element={<Cart />} />
         </Route>
 
         <Route path="/profile" element={<RouteGuard element={<ProfileLayout />} />} >
@@ -98,7 +98,7 @@ function App() {
           </Route>
         </Route>
       </Routes>
-
+      <ReactQueryDevtools initialIsOpen={false} />
     </>
   )
 }

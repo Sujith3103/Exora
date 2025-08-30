@@ -2,7 +2,7 @@ import CourseDetailsLayout from "@/components/layout/course-details";
 import Student_CourseDetailsPricing from "@/components/student-view/course-details/course-pricing";
 import CourseDetailsBanner from "@/components/student-view/course-details/details-banner";
 import CourseDetailsBannerSmall from "@/components/student-view/course-details/details-banner/small";
-import { useCourseDetails } from "@/hooks/useCourseDetails";
+import { useCourseDetails } from "@/hooks/queries/useCourseDetails";
 import type { AppDispatch } from "@/store";
 import { fetchCourseDetailsStart, fetchCourseDetailsStop, setCourseCatalogDetails } from "@/store/courseDetailsSlice";
 import { useEffect, useState } from "react";
@@ -13,13 +13,18 @@ import { useParams } from "react-router-dom";
 
 export default function CourseDetailsPage() {
 
-    const { id } = useParams<string>()
 
     const dispatch = useDispatch<AppDispatch>()
     const [isFixed, setIsFixed] = useState(false);
+    const { id } = useParams<string>()
 
     if (!id) return
-    const { data, isError } = useCourseDetails(id)
+    
+    // const { data, isError, isLoading } = useCourseDetails(id)
+
+    // if(data){
+
+    // }
 
     useEffect(() => {
         function handleScroll() {
@@ -33,14 +38,14 @@ export default function CourseDetailsPage() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    useEffect(() => {
-        console.log("coursedetails strt")
-        dispatch(fetchCourseDetailsStart())
-        if (data) {
-            dispatch(setCourseCatalogDetails(data.data)); // push to Redux
-            dispatch(fetchCourseDetailsStop({ isError: isError }))
-        }
-    }, [data, dispatch]);
+    // useEffect(() => {
+    //     console.log("coursedetails strt")
+    //     dispatch(fetchCourseDetailsStart())
+    //     if (data) {
+    //         dispatch(setCourseCatalogDetails(data.data)); // push to Redux
+    //         dispatch(fetchCourseDetailsStop({ isError: isError }))
+    //     }
+    // }, [data, dispatch]);
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'instant' });

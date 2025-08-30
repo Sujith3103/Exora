@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/shadcn-io/spinner'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useCourseDetails } from '@/hooks/useCourseDetails'
+import { useCourseDetails } from '@/hooks/queries/useCourseDetails'
 import type { RootState } from '@/store'
 import { BadgeCheckIcon, Verified } from 'lucide-react'
 import { useSelector } from 'react-redux'
@@ -12,12 +12,15 @@ import { useParams } from 'react-router-dom'
 
 const CourseDetailsBanner = () => {
 
-    const courseDetails = useSelector((state: RootState) => state.courseCatalogDetails.data)
-    const isLoading = useSelector((state: RootState) => state.courseCatalogDetails.loading)
-    const isError = useSelector((state: RootState) => state.courseCatalogDetails.error)
+    // const courseDetails = useSelector((state: RootState) => state.courseCatalogDetails.data)
+    // const isLoading = useSelector((state: RootState) => state.courseCatalogDetails.loading)
+    // const isError = useSelector((state: RootState) => state.courseCatalogDetails.error)
 
     const { id } = useParams<string>()
+
     if (!id) return
+    const { data, isError, isLoading } = useCourseDetails(id)
+    const courseDetails = data?.data
 
     if (isLoading || isError) {
         return (
@@ -28,9 +31,14 @@ const CourseDetailsBanner = () => {
                         <Button className='w-30 bg-[#5022c3] hover:bg-[#5022c3] cursor-pointer text-white' onClick={() => useCourseDetails(id)}>Retry</Button>
                     </div>
                 }
-                <Card className="w-[50%] h-25 absolute ml-[10%] justify-center -bottom-13 flex gap-4 items-center p-0 rounded-xl overflow-hidden shadow-lg">
-                    <Skeleton className='w-[75%] h-4 bg-neutral-200'></Skeleton>
-                    <Skeleton className='w-[75%] h-4 bg-neutral-200'></Skeleton>
+                <Card className="w-[48%] h-25 absolute ml-[13%] -bottom-13 flex flex-row gap-4  p-0 rounded-sm overflow-hidden shadow-lg">
+                    <div className="bg-[#5022c3] w-32 h-full flex flex-col justify-center items-center text-white p-2">
+                    </div>
+                    
+                    <div className='flex flex-col flex-1 justify-center items-center gap-5'>
+                        <Skeleton className='w-[80%] h-4 bg-neutral-300'></Skeleton>
+                        <Skeleton className='w-[75%] h-4 bg-neutral-300'></Skeleton>        
+                    </div>
                 </Card>
             </div>
         )
@@ -49,7 +57,7 @@ const CourseDetailsBanner = () => {
                 <h1 className="text-4xl font-bold mt-1">{courseDetails?.title}</h1>
                 <p className="text-xl">{courseDetails?.subtitle}</p>
                 {/* <div>best seller? trending?</div> */}
-                  <p className="text-sm text-purple-300">Created by <a href="#" className="text-purple-400 hover:underline">Dr.{courseDetails?.instructor.name}, {courseDetails?.instructor.profession || 'Developer and Lead Instructor'}</a></p>
+                <p className="text-sm text-purple-300">Created by <a href="#" className="text-purple-400 hover:underline">Dr.{courseDetails?.instructor.name}, {courseDetails?.instructor.profession || 'Developer and Lead Instructor'}</a></p>
                 {/* <p className="">Created By <span className="underline text-[#c0c4fc]">{courseDetails?.instructor.name}</span></p> */}
                 <Badge
                     variant="secondary"

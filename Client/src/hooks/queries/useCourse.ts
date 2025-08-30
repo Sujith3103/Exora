@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { fetchCourses } from "./api/courseApi"
+import { fetchCourses } from "../api/courseApi"
 import type { CourseQueryOptions } from "@/config/config"
 
 export const useCourses = (queryOptions:CourseQueryOptions) => {

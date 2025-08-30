@@ -4,27 +4,46 @@ import { Input } from '@/components/ui/input'
 import type { RootState } from '@/store'
 import { useSelector } from 'react-redux'
 import { CoursePricingSkeleton } from './course-pricing-Skeleton'
+import { useParams } from 'react-router-dom'
+import { useCourseDetails } from '@/hooks/queries/useCourseDetails'
 
 const Student_CourseDetailsPricing = () => {
 
-    const course = useSelector((state: RootState) => state.courseCatalogDetails.data)
-    const isLoading = useSelector((state:RootState) => state.courseCatalogDetails.loading)
+    // const course = useSelector((state: RootState) => state.courseCatalogDetails.data)
+    // const isLoading = useSelector((state: RootState) => state.courseCatalogDetails.loading)
 
-    if(isLoading){
+
+    const handleClick_addToCart = async () => { 
+
+        
+    }
+    const { id } = useParams<string>()
+
+    if (!id) return
+    const { data, isError, isLoading } = useCourseDetails(id)
+    const course = data?.data
+
+
+    if (isLoading) {
         return <CoursePricingSkeleton />
     }
-    
     return (
         <div className='sticky top-0 p-5 h-full'>
             <Card className='h-full gap-0 pt-0 rounded-none'>
-                <img src={course?.thumbnailUrl} loading='eager' className='p-2 border-b min-w-full min-h-[200px] max-h-[220px] object-cover'/>
+                <img src={course?.thumbnailUrl} loading='eager' className='p-3 border-b min-w-full min-h-[200px] max-h-[220px] object-cover' />
                 <div>
                     {/* something */}
                 </div>
                 <div className='flex flex-col p-5 gap-4'>
                     <span className='text-2xl font-bold'>${course?.pricing}</span>
-                    <Button variant={'outline'} className='border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer'>Add to Cart</Button>
-                    <Button variant={'outline'} className='border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer'>buy Now</Button>
+                    <Button variant={'outline'} className='border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer'
+                        onClick={handleClick_addToCart}
+                    >
+                        Add to Cart</Button>
+                    <Button variant={'outline'} className='border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer'
+
+                    >
+                        buy Now</Button>
                     <p className='text-muted-foreground text-[14px] text-center'>30-Day Money-Back Guarantee</p>
                     <p className='text-muted-foreground text-[12px] text-center'>Full Lifetime Access</p>
                     <div className='flex underline underline-offset-2  w-full h-full'>

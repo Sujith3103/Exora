@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { courseCategories, type CourseQueryOptions } from "@/config/config";
-import { useCourses } from "@/hooks/useCourse";
+import { useCourses } from "@/hooks/queries/useCourse";
 import type { AppDispatch } from "@/store";
 import { setCourseSummary, setPagination } from "@/store/courseCatalogSlice";
 import { AlertCircleIcon, ListFilterIcon } from "lucide-react";

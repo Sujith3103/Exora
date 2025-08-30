@@ -12,7 +12,7 @@ const Cart = () => {
 
   const cartItems: CartItem[] = [
     {
-      id: '123',
+      courseId: '123',
       title: 'Advanced JavaScript: ES6+ and Beyond BeyondBeyond',
       price: 5,
       // discountPrice?: number;
@@ -21,7 +21,7 @@ const Cart = () => {
       addedAt: 12 / 2 / 4
     },
     {
-      id: '123',
+      courseId: '123',
       title: 'JavaScript Essentials for Beginners',
       price: 5,
       // discountPrice?: number;
