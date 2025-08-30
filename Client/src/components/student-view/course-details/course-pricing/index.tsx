@@ -6,27 +6,39 @@ import { useSelector } from 'react-redux'
 import { CoursePricingSkeleton } from './course-pricing-Skeleton'
 import { useParams } from 'react-router-dom'
 import { useCourseDetails } from '@/hooks/queries/useCourseDetails'
+import { addItemToCart } from '@/services/userService'
+import type { CourseDetails } from '@/store/courseDetailsSlice'
+import type { CartItem } from '@/store/cartSlice'
 
 const Student_CourseDetailsPricing = () => {
 
     // const course = useSelector((state: RootState) => state.courseCatalogDetails.data)
     // const isLoading = useSelector((state: RootState) => state.courseCatalogDetails.loading)
+    const user = useSelector((state:RootState) => state.auth.user)
 
-
-    const handleClick_addToCart = async () => { 
-
-        
+    const handleClick_addToCart = async (course:CourseDetails) => { 
+        if(!course.thumbnailUrl) return null
+        const item:CartItem = {
+            title:course.title,
+            courseId:course.id,
+            instructorName:course.instructor.name,
+            price:course.pricing,
+            thumbnailUrl:course.thumbnailUrl,
+            status:'cart',
+            addedAt: Date.now()
+        }
+        console.log(course)
+        addItemToCart(item,user?.id as unknown as string)
     }
     const { id } = useParams<string>()
 
     if (!id) return
     const { data, isError, isLoading } = useCourseDetails(id)
     const course = data?.data
-
-
     if (isLoading) {
         return <CoursePricingSkeleton />
     }
+
     return (
         <div className='sticky top-0 p-5 h-full'>
             <Card className='h-full gap-0 pt-0 rounded-none'>
@@ -37,7 +49,7 @@ const Student_CourseDetailsPricing = () => {
                 <div className='flex flex-col p-5 gap-4'>
                     <span className='text-2xl font-bold'>${course?.pricing}</span>
                     <Button variant={'outline'} className='border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer'
-                        onClick={handleClick_addToCart}
+                        onClick={() => handleClick_addToCart(course)}
                     >
                         Add to Cart</Button>
                     <Button variant={'outline'} className='border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer'

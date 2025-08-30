@@ -1,13 +1,14 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 export interface CartItem {
-    id: string;             
+    courseId: string;             
     title: string;           
     price: number;          
     discountPrice?: number;  
     thumbnailUrl: string;   
     instructorName: string;  
-    addedAt: number;         
+    addedAt: number;   
+    status: 'cart' | 'savedLater'     
 }
 
 
@@ -34,6 +35,9 @@ const cartSlice = createSlice({
             state.error = false
         },
 
+        setCartItemInIndexdb(state:CartSliceState,action:PayloadAction<[]>){
+
+        },
 
 
 

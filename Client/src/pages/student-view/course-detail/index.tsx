@@ -63,6 +63,7 @@ export default function CourseDetailsPage() {
                 <div>
                     <CourseDetailsBannerSmall />
                 </div>
+
                 <div className="w-[28%] shrink-0 lg:inline hidden z-10 ">
                     <div
                         className={`${isFixed
@@ -75,7 +76,7 @@ export default function CourseDetailsPage() {
                         </div>
                     </div>
                 </div>
-
+                
                 {/* Main content with sidebar */}
 
                 <div className="relative mx-[9%] max-w-7xl flex gap-6 px-6 lg:mr-135 mt-18">
