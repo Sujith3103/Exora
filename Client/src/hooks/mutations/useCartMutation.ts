@@ -1,4 +1,5 @@
 import server from '@/api/axiosinstance'
+import { deleteCartItemFromIDB } from '@/lib/indexdb'
 import { addItem, moveToCart, moveToSavedLater, removeItem, type CartItem } from '@/store/cartSlice'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
@@ -27,17 +28,14 @@ const useCartMutation = () => {
 
   const RemoveItem = useMutation({
     mutationFn: async (item: CartItem) => {
-      console.log("removing mutation function called")
       const res = await server.delete(`/user/cart/items/${item.id}`)
       return res.data
     },
 
     onMutate: (item: CartItem) => {
-      console.log("optimistic update happening")
       dispatch(removeItem(item.courseId))
     },
     onError: (_err, item: CartItem) => {
-      console.log("roll back error while removing item")
       dispatch(addItem(item))
     }
 
@@ -45,31 +43,52 @@ const useCartMutation = () => {
 
   const UpdateCartStatus = useMutation({
     mutationFn: async ({ item, status }: { item: CartItem, status: 'ACTIVE' | 'SAVED_LATER' }) => {
-      await server.patch(`/user/cart/items/status/${item.id}`, {status})  
+      await server.patch(`/user/cart/items/status/${item.id}`, { status })
     },
 
     onMutate: ({ item, status }: { item: CartItem, status: 'ACTIVE' | 'SAVED_LATER' }) => {
       if (status === 'SAVED_LATER') {
-        dispatch(moveToSavedLater({item:item.courseId,isAuthenticated:true}))
+        dispatch(moveToSavedLater({ item: item.courseId, isAuthenticated: true }))
       }
       else if (status === 'ACTIVE') {
-        dispatch(moveToCart({item:item.courseId,isAuthenticated:true}))
+        dispatch(moveToCart({ item: item.courseId, isAuthenticated: true }))
       }
     },
 
     onError: (_err, variables) => {
       if (variables.status === 'SAVED_LATER') {
-        dispatch(moveToCart({item:variables.item.courseId,isAuthenticated:true}))
+        dispatch(moveToCart({ item: variables.item.courseId, isAuthenticated: true }))
 
       }
       else if (variables.status === 'ACTIVE') {
-        dispatch(moveToSavedLater({item:variables.item.courseId,isAuthenticated:true}))
+        dispatch(moveToSavedLater({ item: variables.item.courseId, isAuthenticated: true }))
       }
     }
 
   })
 
-  return { addToCart, RemoveItem,UpdateCartStatus }
+  const batchUpdateCart = useMutation({
+    mutationFn: async (items: CartItem[]) => {
+      const res = await server.post('/user/cart/items/batch', items)
+      return res.data.data
+    },
+    onMutate: (items: CartItem[]) => {
+      console.log("mutating")
+      items.forEach((item) => dispatch(addItem(item)))
+    },
+
+    onSuccess: (addedItems: CartItem[]) => {
+      console.log("deleting fro idb")
+      addedItems.forEach((item) => deleteCartItemFromIDB(item.courseId))
+    },
+    onError: (_err, items) => {
+      console.log("error on mutation")
+      items.forEach((item) => dispatch(removeItem(item.courseId)))
+    }
+
+  })
+
+  return { addToCart, RemoveItem, UpdateCartStatus, batchUpdateCart }
 }
 
 export default useCartMutation

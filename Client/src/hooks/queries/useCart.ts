@@ -1,5 +1,5 @@
 import server from "@/api/axiosinstance"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import {  useQuery } from "@tanstack/react-query"
 
 export const useCart = (id: string) => {
 

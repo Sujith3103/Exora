@@ -7,10 +7,11 @@ import { useSelector, useDispatch } from 'react-redux'
 import type { RootState } from '@/store'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import CartDialog from '@/components/student-view/cart-comp/cartDialog'
+import CartDialog from '@/components/student-view/cart-comp/cartDialog/cartDialog'
 import CartItems from '@/components/student-view/cart-comp/cartItem/CartItem'
 import { type CartItem, fetchCart } from '@/store/cartSlice'
 import { getCartItemsFromIDB } from '@/lib/indexdb'
+import CartPageSkeleton from './cartPageSkeleton'
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -18,8 +19,9 @@ const Cart = () => {
 
   const user = useSelector((state: RootState) => state.auth.user);
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
-  const { data: cartData, loading } = useSelector((state: RootState) => state.cart);
+  const { data: cartData } = useSelector((state: RootState) => state.cart);
   const isloading = useSelector((state: RootState) => state.auth.loading)
+  const isLoading = useSelector((state: RootState) => state.cart.loading)
 
   const [triggerCartDialog, setTriggerCartDialog] = useState(false);
   const [cartItemsFromIDB, setCartItemsFromIDB] = useState<CartItem[]>([])
@@ -27,24 +29,22 @@ const Cart = () => {
   useEffect(() => {
     if (!isloading) {
       if (isAuthenticated) {
-        // Step 1: check IDB
+
         getCartItemsFromIDB().then(localItems => {
           dispatch(fetchCart(isAuthenticated ? (user?.id as unknown as string) ?? null : null) as any);
           if (localItems.length > 0) {
-            console.log("local : ",localItems)
-            // Step 2: Ask user via dialog
+
             setCartItemsFromIDB(localItems)
             setTriggerCartDialog(true);
-            // Option A: auto-merge without asking:
-            // dispatch(mergeCarts(user.id, localItems));
+
           } else {
-            // No guest items → just fetch server cart
+
             if (!user?.id) return
             dispatch(fetchCart(isAuthenticated ? (user?.id as unknown as string) ?? null : null) as any);
           }
         });
       } else {
-        // Guest → just load IDB
+
         dispatch(fetchCart(isAuthenticated ? (user?.id as unknown as string) ?? null : null) as any);
       }
     }
@@ -52,11 +52,19 @@ const Cart = () => {
 
   const activeCart = cartData.filter(c => c.status === "ACTIVE");
   const savedItems = cartData.filter(c => c.status === "SAVED_LATER");
-  console.log("cart:",activeCart)
   const totalCartItemsPrice = useMemo(
     () => activeCart.reduce((acc, c) => acc + c.price, 0),
     [activeCart]
   );
+
+
+  useEffect(() => {
+    console.log(cartData)
+  }, [cartData])
+
+  if (isLoading) {
+    return <CartPageSkeleton />
+  }
 
   return (
     <div className='md:px-35 px-5 mt-10'>

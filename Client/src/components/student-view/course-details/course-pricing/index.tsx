@@ -15,7 +15,7 @@ const Student_CourseDetailsPricing = () => {
 
     // const course = useSelector((state: RootState) => state.courseCatalogDetails.data)
     // const isLoading = useSelector((state: RootState) => state.courseCatalogDetails.loading)
-    const user = useSelector((state: RootState) => state.auth.user)
+    // const user = useSelector((state: RootState) => state.auth.user)
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
     const { addToCart } = useCartMutation()
 
@@ -41,7 +41,7 @@ const Student_CourseDetailsPricing = () => {
     const { id } = useParams<string>()
 
     if (!id) return
-    const { data, isError, isLoading } = useCourseDetails(id)
+    const { data, isLoading } = useCourseDetails(id)
     const course = data?.data
     if (isLoading) {
         return <CoursePricingSkeleton />

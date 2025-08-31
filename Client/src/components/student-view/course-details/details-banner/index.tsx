@@ -4,9 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/shadcn-io/spinner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCourseDetails } from '@/hooks/queries/useCourseDetails'
-import type { RootState } from '@/store'
 import { BadgeCheckIcon, Verified } from 'lucide-react'
-import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 
 

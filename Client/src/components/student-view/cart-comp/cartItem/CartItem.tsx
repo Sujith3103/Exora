@@ -18,7 +18,7 @@ const CartItems: React.FC<CartItemProps> = ({ item, status }) => {
 
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
 
-  const {RemoveItem,addToCart,UpdateCartStatus} = useCartMutation()
+  const {RemoveItem,UpdateCartStatus} = useCartMutation()
 
   const handleClick_SaveForLater = () => {
     if (isAuthenticated) {

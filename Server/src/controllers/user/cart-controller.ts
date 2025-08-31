@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import { prisma } from "../../utils/prisma";
 
 
@@ -128,7 +128,7 @@ export const updateCartItemStatus = async (req: Request, res: Response) => {
             return res.status(200).json({
                 success: true,
                 message: "changed status successfully",
-                res:result
+                res: result
             })
         }
 
@@ -141,3 +141,63 @@ export const updateCartItemStatus = async (req: Request, res: Response) => {
     }
 
 }
+
+export const addMultipleItemsToCart = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    const itemsToAdd = req.body as Array<{
+        courseId: string;
+        title: string;
+        price: number;
+        instructorName: string;
+        thumbnailUrl: string;
+        status: 'ACTIVE' | 'SAVED_LATER';
+        addedAt: number;
+    }>;
+    console.log("items to add in array : ",itemsToAdd)
+
+    if (!userId) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    try {
+        // 1️⃣ Ensure cart exists
+        let cart = await prisma.cart.findUnique({ where: { userId } });
+        if (!cart) {
+            cart = await prisma.cart.create({ data: { userId } });
+        }
+
+        // 2️⃣ Get existing courseIds in cart
+        const existingItems = await prisma.cartItem.findMany({
+            where: { cartId: cart.id },
+            select: { courseId: true },
+        });
+        const existingCourseIds = new Set(existingItems.map((i) => i.courseId));
+
+        // 3️⃣ Filter out duplicates
+        const newItems = itemsToAdd.filter((item) => !existingCourseIds.has(item.courseId));
+
+        // 4️⃣ Add new items
+        const createdItems = await prisma.cartItem.createMany({
+            data: newItems.map((item) => ({
+                cartId: cart!.id,
+                courseId: item.courseId,
+                title: item.title,
+                price: item.price,
+                instructorName: item.instructorName,
+                thumbnailUrl: item.thumbnailUrl,
+                status: item.status,
+                addedAt: new Date(item.addedAt),
+            })),
+            skipDuplicates: true, // just in case
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: `${newItems.length} new item(s) added to cart`,
+            data: newItems,
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: 'Failed to add items to cart' });
+    }
+};

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { ChangeRole, EditUserProfile, EditUserSecurity, getUserProfileData, getUserSecurityData } from "../../controllers/user-controllers";
 import { AuthenticateMiddleware } from "../../middleware";
-import { AddItemsToCart, getUserCartDetails, removeItemFromCart, updateCartItemStatus } from "../../controllers/user/cart-controller";
+import { AddItemsToCart, addMultipleItemsToCart, getUserCartDetails, removeItemFromCart, updateCartItemStatus } from "../../controllers/user/cart-controller";
 
 const router = Router()
 
@@ -11,6 +11,8 @@ router.put('/change-role',AuthenticateMiddleware,ChangeRole)
 router.post('/edit-profile',AuthenticateMiddleware,EditUserProfile)
 router.post('/edit-security',AuthenticateMiddleware,EditUserSecurity)
 router.post('/cart/items',AuthenticateMiddleware,AddItemsToCart )
+router.post('/cart/items/batch', AuthenticateMiddleware, addMultipleItemsToCart)
+
 
 router.patch('/cart/items/status/:itemId',AuthenticateMiddleware,updateCartItemStatus)
 

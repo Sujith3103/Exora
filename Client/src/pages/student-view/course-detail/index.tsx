@@ -2,11 +2,7 @@ import CourseDetailsLayout from "@/components/layout/course-details";
 import Student_CourseDetailsPricing from "@/components/student-view/course-details/course-pricing";
 import CourseDetailsBanner from "@/components/student-view/course-details/details-banner";
 import CourseDetailsBannerSmall from "@/components/student-view/course-details/details-banner/small";
-import { useCourseDetails } from "@/hooks/queries/useCourseDetails";
-import type { AppDispatch } from "@/store";
-import { fetchCourseDetailsStart, fetchCourseDetailsStop, setCourseCatalogDetails } from "@/store/courseDetailsSlice";
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 
 
@@ -14,7 +10,6 @@ import { useParams } from "react-router-dom";
 export default function CourseDetailsPage() {
 
 
-    const dispatch = useDispatch<AppDispatch>()
     const [isFixed, setIsFixed] = useState(false);
     const { id } = useParams<string>()
 

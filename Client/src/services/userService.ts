@@ -1,10 +1,6 @@
 import server from "@/api/axiosinstance"
 import type { ClickEvent } from "@/config/config"
-import useCartMutation from "@/hooks/mutations/useCartMutation"
-import { addCartItemToDb, getCartItemsFromIDB } from "@/lib/indexdb"
-import type { RootState } from "@/store"
-import type { CartItem } from "@/store/cartSlice"
-import { useSelector } from "react-redux"
+import {  getCartItemsFromIDB } from "@/lib/indexdb"
 // import { useSelector } from "react-redux";
 // import type { RootState } from "../store";
 

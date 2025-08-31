@@ -2,33 +2,33 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import useCartMutation from "@/hooks/mutations/useCartMutation";
+import  { deleteCartItemFromIDB } from "@/lib/indexdb";
+import type { RootState } from "@/store";
 import type { CartItem } from "@/store/cartSlice";
 import { memo, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 interface CartDialogProps {
   cartItem: CartItem[];
 }
 
 const CartDialog = ({ cartItem }: CartDialogProps) => {
+
+  const { data: cartData } = useSelector((state: RootState) => state.cart);
+
   const [activeCartItems, setActiveCartItems] = useState<CartItem[]>([]);
   const [savedItems, setSavedItems] = useState<CartItem[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isselectall, setIsSelectAll] = useState<boolean>(false)
 
-  useEffect(() => {
-
-    setActiveCartItems(cartItem.filter((c) => c.status === "ACTIVE"));
-    setSavedItems(cartItem.filter((c) => c.status === "SAVED_LATER"));
-
-
-    setSelectedIds(new Set(cartItem.map((c) => c.courseId)));
-  }, [cartItem]);
-
+  const { batchUpdateCart } = useCartMutation()
 
   const toggleSelection = (id: string) => {
     setSelectedIds((prev) => {
@@ -50,11 +50,29 @@ const CartDialog = ({ cartItem }: CartDialogProps) => {
     setIsSelectAll(prev => !prev)
   };
 
-  // Handle click
+  // batch update cart from index db
   const HandleClick_AddItemsToCart = () => {
+
     const selectedItems = cartItem.filter((c) => selectedIds.has(c.courseId));
-    console.log("Selected items:", selectedItems);
+    const filteredItems = selectedItems.filter(
+      (c) => !cartData.some(cart => cart.courseId === c.courseId)
+    );
+
+    batchUpdateCart.mutate(filteredItems)
   };
+
+  const HandleClick_RemoveItemsFromIDB = () => {
+    cartItem.forEach((item) => deleteCartItemFromIDB(item.courseId))
+  }
+
+  useEffect(() => {
+
+    setActiveCartItems(cartItem.filter((c) => c.status === "ACTIVE"));
+    setSavedItems(cartItem.filter((c) => c.status === "SAVED_LATER"));
+
+
+    setSelectedIds(new Set(cartItem.map((c) => c.courseId)));
+  }, [cartItem]);
 
   return (
     <div>
@@ -157,13 +175,21 @@ const CartDialog = ({ cartItem }: CartDialogProps) => {
           </div>
 
           <DialogFooter>
-            <Button variant={'destructive'} className="mr-auto cursor-pointer">Dont Add To Cart</Button>
-            <Button
-              className="w-30 cursor-pointer rounded-sm"
-              onClick={HandleClick_AddItemsToCart}
-            >
-              Add to cart
-            </Button>
+            <DialogClose asChild>
+              <Button variant={'destructive'} className="mr-auto cursor-pointer"
+              onClick={HandleClick_RemoveItemsFromIDB}
+              >
+                Don't Add To Cart
+              </Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button
+                className="w-30 cursor-pointer rounded-sm"
+                onClick={HandleClick_AddItemsToCart}
+              >
+                Add to cart
+              </Button>
+            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>

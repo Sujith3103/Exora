@@ -1,14 +1,11 @@
 // store/cartSlice.ts
 import { createSlice, type PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
-import { getCartItems } from "@/services/userService";
 import { getCartItemsFromIDB, deleteCartItemFromIDB, editCartItemStatusInIDB } from "@/lib/indexdb";
 import server from "@/api/axiosinstance";
-import { useSelector } from "react-redux";
-import type { RootState } from ".";
 
 
 export interface CartItem {
-  id: string
+  id?: string
   courseId: string;
   title: string;
   price: number;
@@ -27,7 +24,7 @@ interface CartSliceState {
 
 const initialCartSliceState: CartSliceState = {
   data: [],
-  loading: false,
+  loading: true,
   error: null,
 };
 // export const mergeCarts = createAsyncThunk<
@@ -62,13 +59,10 @@ export const fetchCart = createAsyncThunk<
     try {
       if (userId) {
         // logged-in → fetch server
-        console.log("id present", userId)
         const items = await server.get('/user/cart');
-        console.log("items in server:", items)
         return items.data.data ?? [];  // ✅ ensure always array
       } else {
         // guest → fetch from IDB
-        console.log("id guest", userId)
         const items = await getCartItemsFromIDB();
         return items ?? [];  // ✅ ensure always array
       }
@@ -122,7 +116,7 @@ const cartSlice = createSlice({
         state.data = action.payload ?? [];
         state.loading = false;
       })
-      .addCase(fetchCart.rejected, (state, action) => {
+      .addCase(fetchCart.rejected, (state) => {
         state.loading = false;
         state.error = "Unknown error";
         // state.error = action.payload ?? "Unknown error";
