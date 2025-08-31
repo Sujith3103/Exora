@@ -1,111 +1,100 @@
+// Cart.tsx
 import { Card } from '@/components/ui/card'
-// import type { RootState } from '@/store'
 import EmptyCartImg from '../../../assets-static/empty-shopping-cart-v2-2x.webp'
-// import { useSelector } from 'react-redux'
 import { Button } from '@/components/ui/button'
-import type { CartItem } from '@/store/cartSlice'
 import { ArrowRight } from 'lucide-react'
-import CartItems from '@/components/student-view/cartItem'
-import { useCart } from '@/hooks/queries/useCart'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import type { RootState } from '@/store'
-import { useEffect, useState } from 'react'
-import { getCartItems } from '@/services/userService'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import CartDialog from '@/components/student-view/cart-comp/cartDialog'
+import CartItems from '@/components/student-view/cart-comp/cartItem'
+import { type CartItem, fetchCart } from '@/store/cartSlice'
+import { getCartItemsFromIDB } from '@/lib/indexdb'
 
 const Cart = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const user = useSelector((state: RootState) => state.auth.user)
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [activeCart, setActiveCart] = useState<CartItem[]>([]);
-  const [savedItems, setSavedItems] = useState<CartItem[]>([]);
-  const [totalCartItemsPrice, setTotalCartItemsPrice] = useState<number>()
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const { data: cartData, loading } = useSelector((state: RootState) => state.cart);
+  const isloading = useSelector((state: RootState) => state.auth.loading)
 
-  //login -> get from server
-  //not login -> get from index db
-  //when user logins first check the indexdb for any stored data
-  //if not login store in the indexdb
-  //create a redux for storing and keeping in the global state
-
-  // const activeCart = cartItems.filter(c => c.status === 'cart')
-  // const savedItems = cartItems.filter(c => c.status === 'savedLater')
+  const [triggerCartDialog, setTriggerCartDialog] = useState(false);
+  const [cartItemsFromIDB,setCartItemsFromIDB] = useState<CartItem[]>([])
 
   useEffect(() => {
-
-
-
-  }, [])
-
-  if (!user?.id) {
-    console.log()
-  }
-  else {
-    const { data, isLoading, isError } = useCart(user?.id as unknown as string)
-    setCartItems(data.data)
-  }
-
-  useEffect(() => {
-    async function fetchCartItems() {
-      const res = await getCartItems(user?.id as unknown as string)
-      if (res) {
-        setActiveCart(res.filter(c => c.status === 'cart'))
-        setSavedItems(res.filter(c => c.status === 'savedLater'))
+    if (!isloading) {
+      if (isAuthenticated) {
+        // Step 1: check IDB
+        getCartItemsFromIDB().then(localItems => {
+          if (localItems.length > 0) {
+            // Step 2: Ask user via dialog
+            setCartItemsFromIDB(localItems)
+            setTriggerCartDialog(true);
+            dispatch(fetchCart(isAuthenticated ? (user?.id as unknown as string) ?? null : null) as any);
+            // Option A: auto-merge without asking:
+            // dispatch(mergeCarts(user.id, localItems));
+          } else {
+            // No guest items → just fetch server cart
+            if (!user?.id) return
+            dispatch(fetchCart(isAuthenticated ? (user?.id as unknown as string) ?? null : null) as any);
+          }
+        });
+      } else {
+        // Guest → just load IDB
+        dispatch(fetchCart(isAuthenticated ? (user?.id as unknown as string) ?? null : null) as any);
       }
     }
-    fetchCartItems()
-  }, [])
+  }, [isAuthenticated, isloading]);
 
-  useEffect(() => {
-    const sum = activeCart.reduce((acc, c) => acc + c.price, 0)
-    setTotalCartItemsPrice(sum)
-  }, [activeCart])
-
-  // let cartItems = data?.data
+  const activeCart = cartData.filter(c => c.status === "cart");
+  const savedItems = cartData.filter(c => c.status === "savedLater");
+  const totalCartItemsPrice = useMemo(
+    () => activeCart.reduce((acc, c) => acc + c.price, 0),
+    [activeCart]
+  );
 
   return (
-    <div className='px-35 mt-10'>
+    <div className='md:px-35 px-5 mt-10'>
+      {triggerCartDialog && <CartDialog cartItem={cartItemsFromIDB}/>}
       <h1 className='text-5xl font-bold'>Shopping Cart</h1>
 
       <div className='flex w-full'>
-        <p className='mt-10 font-bold mb-2'>{activeCart?.length} Courses in Cart</p>
+        <p className='mt-10 font-bold mb-2'>{activeCart.length} Courses in Cart</p>
       </div>
-      <div className='flex w-full h-full'>
 
-        {
-          (activeCart.length === 0 && savedItems.length === 0) && <>
-            <Card className='w-full h-[50vh] items-center'>
-              <img src={EmptyCartImg} className='aspect-video h-[180px] w-[240px]' />
-              <p className='font-semibold'>Your cart is empty. Keep shopping to find a course!</p>
-              <Button className='bg-violet-700 rounded-sm hover:bg-purple-600 h-11 cursor-pointer'>Keep Shopping</Button>
-            </Card>
-          </>
-        }
+      {(activeCart.length === 0 && savedItems.length === 0) && (
+        <Card className='w-full h-[50vh] items-center'>
+          <img src={EmptyCartImg} className='aspect-video h-[180px] w-[240px]' />
+          <p className='font-semibold sm:px-5 px-2'>Your cart is empty. Keep shopping to find a course!</p>
+          <Button onClick={() => navigate('/')} className='bg-violet-700 rounded-sm hover:bg-purple-600 h-11 cursor-pointer'>Keep Shopping</Button>
+        </Card>
+      )}
+
+      <div className='flex w-full h-full'>
         {/* cart items */}
         <div className='w-full'>
-
-          {
-            activeCart?.length > 0 &&
-            <div className=' w-full space-y-3 '>
-              {
-                activeCart?.map((item: CartItem) => (
-                  <CartItems key={item.courseId} item={item} status='cart' setCartItems={setCartItems} setActiveCart={setActiveCart} setSavedItems={setSavedItems} />
-                ))
-              }
+          {activeCart.length > 0 &&
+            <div className='w-full space-y-3'>
+              {activeCart.map((item) => (
+                <CartItems key={item.courseId} item={item} status='cart' />
+              ))}
             </div>
           }
-          <p className='mt-10 font-bold mb-2'>Saved For Later</p>
-          {
-            savedItems.length > 0 && <>
-              {
-                savedItems?.map((item: CartItem) => (
-                  <CartItems key={item.courseId} item={item} status='savedLater' setCartItems={setCartItems} setActiveCart={setActiveCart} setSavedItems={setSavedItems} />
-                ))
-              }
+
+          {savedItems.length > 0 && (
+            <>
+              <p className='mt-10 font-bold mb-2'>Saved For Later</p>
+              {savedItems.map((item) => (
+                <CartItems key={item.courseId} item={item} status='savedLater' />
+              ))}
             </>
-          }
+          )}
         </div>
 
-        {
-          (savedItems.length > 0 || activeCart.length > 0) &&
+        {(savedItems.length > 0 || activeCart.length > 0) && (
           <div className="bg--200 w-1/2">
             <div className='ml-20 px-3'>
               <span className="text-muted-foreground font-bold">Total:</span>
@@ -119,10 +108,10 @@ const Cart = () => {
               <Button variant={'outline'} className="w-full h-12 border-purple-500 mt-5 rounded-sm font-bold text-purple-700 hover:text-purple-700 hover:bg-purple-100 cursor-pointer">Apply Coupon</Button>
             </div>
           </div>
-        }
+        )}
       </div>
-    </div >
+    </div>
   )
 }
 
-export default Cart
+export default Cart;

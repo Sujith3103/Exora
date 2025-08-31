@@ -56,11 +56,13 @@ const AuthPage = () => {
                 const updatedjson = { ...jsonData, rememberMe: formValue.checkbox };
                 response = await server.post('/auth/login', updatedjson);
                 if (response.data.success) {
+                    console.log("the token", response.data)
                     dispatch(loginSuccess({
                         user: response.data.userData,
                         token: response.data.token
                     }))
                     sessionStorage.setItem('token', response.data.token)
+                    sessionStorage.setItem("user", JSON.stringify(response.data.userData));
                     navigate('/')
                 } else {
                     dispatch(loginFailure(response.data.message || "Login failed"));

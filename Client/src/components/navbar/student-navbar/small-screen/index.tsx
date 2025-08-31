@@ -9,7 +9,7 @@ const NavBar_sm = ({ isNavbarOpen, setIsNavbarOpen }: NavBarProps) => {
 
     isNavbarOpen
     return (
-        <div className='absolute backdrop-blur-md w-full h-full'>
+        <div className='absolute backdrop-blur-md  w-full h-full z-50'>
             <div className="flex w-full h-full">
                 <div className="w-1/2 bg-white pl-3">
                     <div className="h-20">

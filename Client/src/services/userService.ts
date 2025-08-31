@@ -44,10 +44,7 @@ export const addItemToCart = async (item: CartItem, id: string) => {
 
     if (id) {
       console.log("id present to add to cart")
-      // await server.post("/cart/add", {
-      //   productId: item.productId,
-      //   quantity: item.quantity,
-      // });
+      await server.post("/cart/add", item);
     } else {
       await addCartItemToDb(item);
     }
