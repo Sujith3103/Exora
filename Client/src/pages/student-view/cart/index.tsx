@@ -8,7 +8,7 @@ import type { RootState } from '@/store'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CartDialog from '@/components/student-view/cart-comp/cartDialog'
-import CartItems from '@/components/student-view/cart-comp/cartItem'
+import CartItems from '@/components/student-view/cart-comp/cartItem/CartItem'
 import { type CartItem, fetchCart } from '@/store/cartSlice'
 import { getCartItemsFromIDB } from '@/lib/indexdb'
 
@@ -22,18 +22,19 @@ const Cart = () => {
   const isloading = useSelector((state: RootState) => state.auth.loading)
 
   const [triggerCartDialog, setTriggerCartDialog] = useState(false);
-  const [cartItemsFromIDB,setCartItemsFromIDB] = useState<CartItem[]>([])
+  const [cartItemsFromIDB, setCartItemsFromIDB] = useState<CartItem[]>([])
 
   useEffect(() => {
     if (!isloading) {
       if (isAuthenticated) {
         // Step 1: check IDB
         getCartItemsFromIDB().then(localItems => {
+          dispatch(fetchCart(isAuthenticated ? (user?.id as unknown as string) ?? null : null) as any);
           if (localItems.length > 0) {
+            console.log("local : ",localItems)
             // Step 2: Ask user via dialog
             setCartItemsFromIDB(localItems)
             setTriggerCartDialog(true);
-            dispatch(fetchCart(isAuthenticated ? (user?.id as unknown as string) ?? null : null) as any);
             // Option A: auto-merge without asking:
             // dispatch(mergeCarts(user.id, localItems));
           } else {
@@ -49,8 +50,9 @@ const Cart = () => {
     }
   }, [isAuthenticated, isloading]);
 
-  const activeCart = cartData.filter(c => c.status === "cart");
-  const savedItems = cartData.filter(c => c.status === "savedLater");
+  const activeCart = cartData.filter(c => c.status === "ACTIVE");
+  const savedItems = cartData.filter(c => c.status === "SAVED_LATER");
+  console.log("cart:",activeCart)
   const totalCartItemsPrice = useMemo(
     () => activeCart.reduce((acc, c) => acc + c.price, 0),
     [activeCart]
@@ -58,7 +60,7 @@ const Cart = () => {
 
   return (
     <div className='md:px-35 px-5 mt-10'>
-      {triggerCartDialog && <CartDialog cartItem={cartItemsFromIDB}/>}
+      {triggerCartDialog && <CartDialog cartItem={cartItemsFromIDB} />}
       <h1 className='text-5xl font-bold'>Shopping Cart</h1>
 
       <div className='flex w-full'>

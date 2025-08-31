@@ -52,6 +52,9 @@ app.use('/api/media', media_route);
 app.use('/api/courses', course_route);
 app.use('/api/instructor/course', instructor_course_route)
 app.use('/api/track-click', trackEvent_route)
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
 
 // -------------------- SUPABASE --------------------
 const supabaseUrl = "https://aywktugruubporzskjdt.supabase.co";

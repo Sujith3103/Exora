@@ -1,9 +1,14 @@
 // store/cartSlice.ts
 import { createSlice, type PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { getCartItems } from "@/services/userService";
-import { getCartItemsFromIDB, deleteCartItemFromIDB, editCartItemStatus } from "@/lib/indexdb";
+import { getCartItemsFromIDB, deleteCartItemFromIDB, editCartItemStatusInIDB } from "@/lib/indexdb";
+import server from "@/api/axiosinstance";
+import { useSelector } from "react-redux";
+import type { RootState } from ".";
+
 
 export interface CartItem {
+  id: string
   courseId: string;
   title: string;
   price: number;
@@ -11,7 +16,7 @@ export interface CartItem {
   thumbnailUrl: string;
   instructorName: string;
   addedAt: number;
-  status: "cart" | "savedLater";
+  status: "ACTIVE" | "SAVED_LATER";
 }
 
 interface CartSliceState {
@@ -57,12 +62,13 @@ export const fetchCart = createAsyncThunk<
     try {
       if (userId) {
         // logged-in → fetch server
-        console.log("id present",userId)
-        const items = await getCartItems(userId);
-        return items ?? [];  // ✅ ensure always array
+        console.log("id present", userId)
+        const items = await server.get('/user/cart');
+        console.log("items in server:", items)
+        return items.data.data ?? [];  // ✅ ensure always array
       } else {
         // guest → fetch from IDB
-        console.log("id guest",userId)
+        console.log("id guest", userId)
         const items = await getCartItemsFromIDB();
         return items ?? [];  // ✅ ensure always array
       }
@@ -85,19 +91,25 @@ const cartSlice = createSlice({
       // ❌ not recommended to call async here
       void deleteCartItemFromIDB(action.payload);
     },
-    moveToSavedLater(state, action: PayloadAction<string>) {
-      const item = state.data.find((i) => i.courseId === action.payload);
+    moveToSavedLater(state, action: PayloadAction<{item:string,isAuthenticated:boolean}>) {
+      const item = state.data.find((i) => i.courseId === action.payload.item);
       if (item) {
-        item.status = "savedLater";
-        void editCartItemStatus(item.courseId, "savedLater");
+        item.status = "SAVED_LATER";
+        if (!action.payload.isAuthenticated) {
+          void editCartItemStatusInIDB(item.courseId, "SAVED_LATER");
+        }
       }
     },
-    moveToCart(state, action: PayloadAction<string>) {
-      const item = state.data.find((i) => i.courseId === action.payload);
+    moveToCart(state, action: PayloadAction<{item:string,isAuthenticated:boolean}>) {
+      const item = state.data.find((i) => i.courseId === action.payload.item);
       if (item) {
-        item.status = "cart";
-        void editCartItemStatus(item.courseId, "cart");
+        item.status = "ACTIVE";
+        if (!action.payload.isAuthenticated) {
+          void editCartItemStatusInIDB(item.courseId, "ACTIVE");
+        }
+
       }
+
     },
   },
   extraReducers: (builder) => {

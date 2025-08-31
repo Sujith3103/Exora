@@ -28,7 +28,7 @@ export async function deleteCartItemFromIDB(courseId: string) {
 }
 
 
-export async function editCartItemStatus(courseId: string, newStatus: "cart" | "savedLater") {
+export async function editCartItemStatusInIDB(courseId: string, newStatus: "ACTIVE" | "SAVED_LATER") {
     console.log("id : ", courseId)
     console.log("status:", newStatus)
     const db = await dbPromise;

@@ -1,5 +1,6 @@
 import server from "@/api/axiosinstance"
 import type { ClickEvent } from "@/config/config"
+import useCartMutation from "@/hooks/mutations/useCartMutation"
 import { addCartItemToDb, getCartItemsFromIDB } from "@/lib/indexdb"
 import type { RootState } from "@/store"
 import type { CartItem } from "@/store/cartSlice"
@@ -39,20 +40,20 @@ export const trackClick = async (clickEvent: ClickEvent) => {
   }
 };
 
-export const addItemToCart = async (item: CartItem, id: string) => {
-  try {
-
-    if (id) {
-      console.log("id present to add to cart")
-      await server.post("/cart/add", item);
-    } else {
-      await addCartItemToDb(item);
-    }
-  } catch (err) {
-    console.error("Error adding item to cart:", err);
-    throw err;
-  }
-};
+// export const addItemToCartIDB = async (item: CartItem) => {
+//   try {
+//     // if (id) {
+//     //   console.log("id present to add to cart")
+//     //   const { addToCart } = useCartMutation()
+//     //   addToCart.mutate(item)
+//     // } else {
+//       await addCartItemToDb(item);
+    
+//   } catch (err) {
+//     console.error("Error adding item to cart:", err);
+//     throw err;
+//   }
+// };
 
 export const getCartItems = async (id: string) => {
 

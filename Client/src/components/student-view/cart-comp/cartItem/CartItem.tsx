@@ -3,8 +3,10 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { CartItem } from '@/store/cartSlice'
 import React from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { removeItem, moveToCart, moveToSavedLater } from '@/store/cartSlice'
+import type { RootState } from '@/store'
+import useCartMutation from '@/hooks/mutations/useCartMutation'
 
 interface CartItemProps {
   item: CartItem;
@@ -13,6 +15,35 @@ interface CartItemProps {
 
 const CartItems: React.FC<CartItemProps> = ({ item, status }) => {
   const dispatch = useDispatch();
+
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
+
+  const {RemoveItem,addToCart,UpdateCartStatus} = useCartMutation()
+
+  const handleClick_SaveForLater = () => {
+    if (isAuthenticated) {
+      UpdateCartStatus.mutate({item:item,status:'SAVED_LATER'})
+    }
+    else{
+      dispatch(moveToSavedLater({item:item.courseId,isAuthenticated:false}))
+    }
+  }
+  const handleClick_MoveToCart = () => {
+    if (isAuthenticated) {
+      UpdateCartStatus.mutate({item:item,status:'ACTIVE'})
+    }
+    else{
+      dispatch(moveToCart({item:item.courseId,isAuthenticated:false}))
+    }
+  }
+
+  const handleClick_RemoveItem = () => {
+    if (isAuthenticated) {
+      RemoveItem.mutate(item)
+    } else {
+      dispatch(removeItem(item.courseId))
+    }
+  }
 
   return (
     <div>
@@ -32,7 +63,7 @@ const CartItems: React.FC<CartItemProps> = ({ item, status }) => {
           <Button
             variant={'ghost'}
             className='text-purple-500 hover:text-purple-500 cursor-pointer'
-            onClick={() => dispatch(removeItem(item.courseId))}
+            onClick={handleClick_RemoveItem}
           >
             Remove
           </Button>
@@ -41,7 +72,7 @@ const CartItems: React.FC<CartItemProps> = ({ item, status }) => {
             <Button
               variant={'ghost'}
               className='text-purple-500 hover:text-purple-500 cursor-pointer'
-              onClick={() => dispatch(moveToSavedLater(item.courseId))}
+              onClick={handleClick_SaveForLater}
             >
               Save for Later
             </Button>
@@ -51,7 +82,7 @@ const CartItems: React.FC<CartItemProps> = ({ item, status }) => {
             <Button
               variant={'ghost'}
               className='text-purple-500 hover:text-purple-500 cursor-pointer'
-              onClick={() => dispatch(moveToCart(item.courseId))}
+              onClick={handleClick_MoveToCart}
             >
               Move to Cart
             </Button>

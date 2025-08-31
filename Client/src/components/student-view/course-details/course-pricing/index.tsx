@@ -6,29 +6,37 @@ import { useSelector } from 'react-redux'
 import { CoursePricingSkeleton } from './course-pricing-Skeleton'
 import { useParams } from 'react-router-dom'
 import { useCourseDetails } from '@/hooks/queries/useCourseDetails'
-import { addItemToCart } from '@/services/userService'
 import type { CourseDetails } from '@/store/courseDetailsSlice'
 import type { CartItem } from '@/store/cartSlice'
+import { addCartItemToDb } from '@/lib/indexdb'
+import useCartMutation from '@/hooks/mutations/useCartMutation'
 
 const Student_CourseDetailsPricing = () => {
 
     // const course = useSelector((state: RootState) => state.courseCatalogDetails.data)
     // const isLoading = useSelector((state: RootState) => state.courseCatalogDetails.loading)
-    const user = useSelector((state:RootState) => state.auth.user)
+    const user = useSelector((state: RootState) => state.auth.user)
+    const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
+    const { addToCart } = useCartMutation()
 
-    const handleClick_addToCart = async (course:CourseDetails) => { 
-        if(!course.thumbnailUrl) return null
-        const item:CartItem = {
-            title:course.title,
-            courseId:course.id,
-            instructorName:course.instructor.name,
-            price:course.pricing,
-            thumbnailUrl:course.thumbnailUrl,
-            status:'cart',
+
+    const handleClick_addToCart = async (course: CourseDetails) => {
+        if (!course.thumbnailUrl) return null
+        const item: CartItem = {
+            title: course.title,
+            courseId: course.id,
+            instructorName: course.instructor.name,
+            price: course.pricing,
+            thumbnailUrl: course.thumbnailUrl,
+            status: 'ACTIVE',
             addedAt: Date.now()
         }
-        console.log(course)
-        addItemToCart(item,user?.id as unknown as string)
+        if (isAuthenticated) {
+            addToCart.mutate(item)
+        }
+        else {
+            addCartItemToDb(item)
+        }
     }
     const { id } = useParams<string>()
 

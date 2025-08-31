@@ -42,6 +42,47 @@ model User {
   courses   Course[]
   clicks    UserClick[]
   purchases UserPurchase[]
+  cart      Cart?
+  cartId    String?
+}
+
+// Prisma Example (SQL-based)
+model Cart {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User?  @relation(fields: [userId], references: [id])
+
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+enum CartItemStatus {
+  ACTIVE // currently in cart
+  SAVED_LATER // saved for later
+  REMOVED // optional, to keep history
+}
+
+model CartItem {
+  id String @id @default(uuid())
+
+  cartId String
+  cart   Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  courseId      String // reference course, but not a relation since we snapshot data
+  quantity      Int    @default(1)
+  price         Float // snapshot price when added
+  discountPrice Float?
+
+  status CartItemStatus @default(ACTIVE)
+
+  title          String
+  thumbnailUrl   String
+  instructorName String
+
+  addedAt DateTime @default(now())
+
+  @@unique([cartId, courseId]) // 👈 ensures no duplicate course in a single cart
 }
 
 model UserClick {
@@ -49,9 +90,9 @@ model UserClick {
   user   User   @relation(fields: [userId], references: [id])
   userId String
 
-  clickType     String // "course" | "category" | "instructor"
-  targetId String // ID of clicked entity (courseId, categoryId, instructorId)
-  action   String @default("click") // "click" | "view" | "enroll" | "share"
+  clickType String // "course" | "category" | "instructor"
+  targetId  String // ID of clicked entity (courseId, categoryId, instructorId)
+  action    String @default("click") // "click" | "view" | "enroll" | "share"
 
   // Optional relations (nullable because depends on type)
   courseId     String?
@@ -65,10 +106,6 @@ model UserClick {
   @@index([targetId, timestamp]) // generic index for popularity/recent activity
   @@index([clickType, targetId])
 }
-
-// model Cart{
-  
-// }
 
 model UserPurchase {
   id        String   @id @default(cuid())
