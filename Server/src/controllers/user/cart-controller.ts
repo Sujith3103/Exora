@@ -4,7 +4,8 @@ import { prisma } from "../../utils/prisma";
 
 export const getUserCartDetails = async (req: Request, res: Response) => {
 
-    const { userId } = req.params
+    const  userId  = req.user?.id
+    console.log("getting user cart details")
 
     try {
 

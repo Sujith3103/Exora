@@ -1,26 +1,16 @@
-// utils/redisStreamSetup.ts
-import { processCounterEvent } from "../consumers/counterConsumer";
+import { processAnalyticsEvent } from "../consumers/analyticsConsumer";
+import { processCounterEvent } from "../consumers/counterConsumer copy";
 import { processDbEvents } from "../consumers/dbConsumer";
 import { redis } from "./redisClient";
 
 export async function setupClickEventStream() {
   try {
-    // Create consumer group for DB updates
-    await redis.xGroupCreate(
-      "click-events-stream",      // stream key
-      "db-consumer-group",        // group name
-      "$",                        // start point (only new messages)
-      { MKSTREAM: true }          // create stream if doesn't exist
-    );
-
-    // Create consumer group for counters
-    await redis.xGroupCreate(
-      "click-events-stream",
-      "counter-consumer-group",
-      "$",
-      { MKSTREAM: true }
-    );
-
+    // Ensure stream and groups exist
+    await Promise.all([
+      redis.xGroupCreate("click-events-stream", "db-consumer-group", "$", { MKSTREAM: true }),
+      redis.xGroupCreate("click-events-stream", "counter-consumer-group", "$", { MKSTREAM: true }),
+      redis.xGroupCreate("click-events-stream", "analytics-consumer-group", "$", { MKSTREAM: true }),
+    ]);
     console.log("✅ Consumer groups ready");
   } catch (err: any) {
     if (err?.message?.includes("BUSYGROUP")) {
@@ -30,7 +20,10 @@ export async function setupClickEventStream() {
     }
   }
 
-   processDbEvents()
-   processCounterEvent()
+  // ✅ Only start consumers after groups are ready
+  await Promise.all([
+    // processDbEvents(),
+    processCounterEvent(),
+    processAnalyticsEvent(),
+  ]);
 }
-

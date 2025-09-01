@@ -3,7 +3,6 @@ import {  useQuery } from "@tanstack/react-query"
 
 export const useCart = (id: string) => {
 
-    console.log("cart query being called")
     return useQuery({
         queryKey: ['cart', id],
         queryFn: async () => {

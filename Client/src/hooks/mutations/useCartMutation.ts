@@ -73,16 +73,13 @@ const useCartMutation = () => {
       return res.data.data
     },
     onMutate: (items: CartItem[]) => {
-      console.log("mutating")
       items.forEach((item) => dispatch(addItem(item)))
     },
 
     onSuccess: (addedItems: CartItem[]) => {
-      console.log("deleting fro idb")
       addedItems.forEach((item) => deleteCartItemFromIDB(item.courseId))
     },
     onError: (_err, items) => {
-      console.log("error on mutation")
       items.forEach((item) => dispatch(removeItem(item.courseId)))
     }
 

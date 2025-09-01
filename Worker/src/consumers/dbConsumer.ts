@@ -40,7 +40,7 @@ function parseClickEvent(record: RedisStreamMessage): ClickEvent {
     timestamp: raw.timestamp || new Date().toISOString(),
     metadata,
   };
-}
+} 
 
 let isRunning = true;
 

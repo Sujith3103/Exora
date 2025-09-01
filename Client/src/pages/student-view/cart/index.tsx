@@ -57,11 +57,6 @@ const Cart = () => {
     [activeCart]
   );
 
-
-  useEffect(() => {
-    console.log(cartData)
-  }, [cartData])
-
   if (isLoading) {
     return <CartPageSkeleton />
   }
