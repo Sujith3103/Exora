@@ -42,7 +42,7 @@ const CourseTabs = () => {
                                 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform 
                                 data-[state=active]:after:scale-x-100"
                         >
-                            Trending
+                            Trending    
                         </TabsTrigger>
                         <TabsTrigger
                             value="popular"

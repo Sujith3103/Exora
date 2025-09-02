@@ -32,15 +32,12 @@ const Cart = () => {
 
         getCartItemsFromIDB().then(localItems => {
           dispatch(fetchCart(isAuthenticated ? (user?.id as unknown as string) ?? null : null) as any);
+          console.log("dispatch 1")
+          //if something in local indexdb
           if (localItems.length > 0) {
-
             setCartItemsFromIDB(localItems)
             setTriggerCartDialog(true);
 
-          } else {
-
-            if (!user?.id) return
-            dispatch(fetchCart(isAuthenticated ? (user?.id as unknown as string) ?? null : null) as any);
           }
         });
       } else {
@@ -48,7 +45,7 @@ const Cart = () => {
         dispatch(fetchCart(isAuthenticated ? (user?.id as unknown as string) ?? null : null) as any);
       }
     }
-  }, [isAuthenticated, isloading]);
+  }, [isloading]);
 
   const activeCart = cartData.filter(c => c.status === "ACTIVE");
   const savedItems = cartData.filter(c => c.status === "SAVED_LATER");

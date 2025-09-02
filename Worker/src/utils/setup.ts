@@ -24,6 +24,6 @@ export async function setupClickEventStream() {
   await Promise.all([
     // processDbEvents(),
     processCounterEvent(),
-    // processAnalyticsEvent(),
+    processAnalyticsEvent(),
   ]);
 }

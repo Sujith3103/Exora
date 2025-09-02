@@ -2,6 +2,7 @@ import CourseDetailsLayout from "@/components/layout/course-details";
 import Student_CourseDetailsPricing from "@/components/student-view/course-details/course-pricing";
 import CourseDetailsBanner from "@/components/student-view/course-details/details-banner";
 import CourseDetailsBannerSmall from "@/components/student-view/course-details/details-banner/small";
+import { useCart } from "@/hooks/queries/useCart";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -14,12 +15,6 @@ export default function CourseDetailsPage() {
     const { id } = useParams<string>()
 
     if (!id) return
-    
-    // const { data, isError, isLoading } = useCourseDetails(id)
-
-    // if(data){
-
-    // }
 
     useEffect(() => {
         function handleScroll() {
@@ -32,15 +27,6 @@ export default function CourseDetailsPage() {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
-
-    // useEffect(() => {
-    //     console.log("coursedetails strt")
-    //     dispatch(fetchCourseDetailsStart())
-    //     if (data) {
-    //         dispatch(setCourseCatalogDetails(data.data)); // push to Redux
-    //         dispatch(fetchCourseDetailsStop({ isError: isError }))
-    //     }
-    // }, [data, dispatch]);
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'instant' });
@@ -71,7 +57,7 @@ export default function CourseDetailsPage() {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Main content with sidebar */}
 
                 <div className="relative mx-[9%] max-w-7xl flex gap-6 px-6 lg:mr-135 mt-18">

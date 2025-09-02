@@ -66,7 +66,6 @@ router.post("", async (req: Request, res: Response) => {
             }
         });
 
-        console.log(result)
 
         // await enqueueClickEvent(clickEvent);
 
@@ -86,7 +85,6 @@ router.get("/trending/:categoryId", async (req: Request, res: Response) => {
     const courseScoreMap = new Map<string, number>();
     for (let i = 0; i < bucketsToCheck; i++) {
         const bucketKey = `trending:category:${categoryId}:${hourBucket as unknown as string}`;
-        console.log("housr: ", hourBucket)
         const rawTop = (await redis.sendCommand([
             "ZREVRANGE",
             bucketKey,
@@ -126,7 +124,6 @@ router.get("/trending/:categoryId", async (req: Request, res: Response) => {
 
     const trendingIds = courseScores.map(c => c.courseId)
 
-    console.log(trendingIds)
     const trendingList = await fetchcourse(trendingIds)
 
     res.status(200).json({

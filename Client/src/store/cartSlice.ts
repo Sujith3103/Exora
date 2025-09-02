@@ -18,12 +18,14 @@ export interface CartItem {
 
 interface CartSliceState {
   data: CartItem[];
+  itemIds: Set<string> | null
   loading: boolean;
   error: string | null;
 }
 
 const initialCartSliceState: CartSliceState = {
   data: [],
+  itemIds: null,
   loading: true,
   error: null,
 };
@@ -71,7 +73,6 @@ export const fetchCart = createAsyncThunk<
     }
   }
 );
-
 
 const cartSlice = createSlice({
   name: "cart",

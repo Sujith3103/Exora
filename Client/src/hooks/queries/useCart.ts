@@ -1,15 +1,15 @@
 import server from "@/api/axiosinstance"
-import {  useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 
-export const useCart = (id: string) => {
+export const useCart = () => {
 
     return useQuery({
-        queryKey: ['cart', id],
+        queryKey: ['cart'],
         queryFn: async () => {
-            const res: any = await server.get(`/user/cart/${id}`)
+            const res: any = await server.get(`/user/cart`)
             return res.data
         },
-        refetchOnMount:true
+        staleTime: Infinity
     })
 
 }

@@ -56,7 +56,7 @@ export default function TrendingCourses() {
                 }
                 <CarouselContent className="h-[55vh]">
                     {trending?.map((course, idx) => (
-                        <CarouselItem
+                               <CarouselItem
                             key={idx}
                             className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 "
                         >

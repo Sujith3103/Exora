@@ -31,7 +31,9 @@ const useCartMutation = () => {
       const res = await server.delete(`/user/cart/items/${item.id}`)
       return res.data
     },
-
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart"] })
+    },
     onMutate: (item: CartItem) => {
       dispatch(removeItem(item.courseId))
     },
@@ -53,6 +55,10 @@ const useCartMutation = () => {
       else if (status === 'ACTIVE') {
         dispatch(moveToCart({ item: item.courseId, isAuthenticated: true }))
       }
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart"] })
     },
 
     onError: (_err, variables) => {
@@ -78,6 +84,7 @@ const useCartMutation = () => {
 
     onSuccess: (addedItems: CartItem[]) => {
       addedItems.forEach((item) => deleteCartItemFromIDB(item.courseId))
+      queryClient.invalidateQueries({ queryKey: ["cart"] })
     },
     onError: (_err, items) => {
       items.forEach((item) => dispatch(removeItem(item.courseId)))
