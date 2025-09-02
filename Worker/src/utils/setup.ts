@@ -1,5 +1,5 @@
 import { processAnalyticsEvent } from "../consumers/analyticsConsumer";
-import { processCounterEvent } from "../consumers/counterConsumer copy";
+import { processCounterEvent } from "../consumers/counterConsumer";
 import { processDbEvents } from "../consumers/dbConsumer";
 import { redis } from "./redisClient";
 
@@ -24,6 +24,6 @@ export async function setupClickEventStream() {
   await Promise.all([
     // processDbEvents(),
     processCounterEvent(),
-    processAnalyticsEvent(),
+    // processAnalyticsEvent(),
   ]);
 }

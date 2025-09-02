@@ -84,10 +84,9 @@ router.get("/trending/:categoryId", async (req: Request, res: Response) => {
     const bucketsToCheck = 6;
 
     const courseScoreMap = new Map<string, number>();
-
     for (let i = 0; i < bucketsToCheck; i++) {
         const bucketKey = `trending:category:${categoryId}:${hourBucket as unknown as string}`;
-
+        console.log("housr: ", hourBucket)
         const rawTop = (await redis.sendCommand([
             "ZREVRANGE",
             bucketKey,
@@ -96,7 +95,6 @@ router.get("/trending/:categoryId", async (req: Request, res: Response) => {
             "WITHSCORES"
         ])) as string[];
 
-        // console.log(rawTop)
         if (rawTop && rawTop.length > 0) {
             for (let j = 0; j < rawTop.length; j += 2) {
                 const courseId = rawTop[j].split(":")[1];
@@ -109,17 +107,34 @@ router.get("/trending/:categoryId", async (req: Request, res: Response) => {
         hourBucket--;
     }
 
-    console.log(courseScoreMap)
     const courseScores = Array.from(courseScoreMap.entries())
         .map(([courseId, score]) => ({ courseId, score }))
         .sort((a, b) => b.score - a.score)
-        .slice(0, 5);
+        .slice(0, 10);
+
+    async function fetchcourse(trendingIds:any) {
+        return await prisma.course.findMany({
+            where: { id: {in: trendingIds} },
+            select:{
+                thumbnailUrl:true,
+                title:true,
+                instructor:{select:{name:true}},
+                pricing:true
+            }
+        });
+    }
+
+    const trendingIds = courseScores.map(c => c.courseId)
+
+    console.log(trendingIds)
+    const trendingList = await fetchcourse(trendingIds)
 
     res.status(200).json({
         success: true,
         categoryId,
-        courseScores,
+        trendingList,
     });
+
 });
 
 function scoreCourse(course: any, categoryPref: any, instructorPref: any) {
@@ -127,7 +142,7 @@ function scoreCourse(course: any, categoryPref: any, instructorPref: any) {
     const instScore = instructorPref.get(course.instructorId) ?? 0;
 
     // popularity normalization (example: log scale)
-    const clicks =  course.CourseAnalytics?.clicks?course.CourseAnalytics.clicks : 0
+    const clicks = course.CourseAnalytics?.clicks ? course.CourseAnalytics.clicks : 0
     const popularity = Math.log(1 + clicks)
 
     // freshness (0..1 based on createdAt)
@@ -168,7 +183,7 @@ router.get("/for-you/:userId", async (req: Request, res: Response) => {
         orderBy: { timestamp: "desc" },
         take: 500, // safety cap
     })
-    if(clicks.length === 0) return res.json("nothing")
+    if (clicks.length === 0) return res.json("nothing")
     const seenCourseIds = new Set<string>();
     for (const c of clicks) {
         // if data landed as targetId for course clicks, capture that too
@@ -229,15 +244,15 @@ router.get("/for-you/:userId", async (req: Request, res: Response) => {
             // id: { notIn: Array.from(seenCourseIds) }, // exclude already seen
             category: {
                 in: interestedCategories, // restrict to categories user interacted with
-            },    
+            },
         },
         select: {
-            id:true,
-            category:true,
-            createdAt:true,
-            title:true,
-            instructorId:true,
-            instructor: {select:{id:true,name:true}},
+            id: true,
+            category: true,
+            createdAt: true,
+            title: true,
+            instructorId: true,
+            instructor: { select: { id: true, name: true } },
             CourseAnalytics: true, // so you can use popularity/trending scores
         },
         take: 1000, // cap so you don't overload memory
@@ -263,15 +278,15 @@ router.get("/for-you/:userId", async (req: Request, res: Response) => {
 
 })
 
-router.get("/for-you/:userId/delete",async (req: Request, res: Response) => { 
+router.get("/for-you/:userId/delete", async (req: Request, res: Response) => {
 
-    const {userId} = req.params
+    const { userId } = req.params
 
     const result = await prisma.userClick.deleteMany({
-        where:{userId:userId}
+        where: { userId: userId }
     })
 
-    res.json({result})
+    res.json({ result })
 })
 
 export default router;

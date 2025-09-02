@@ -18,7 +18,7 @@ type RedisStreamResponse = {
 const BATCH_SIZE = 10;
 const BLOCK_MS = 5000;
 const CONCURRENCY = 5;
-const hourBucket = dayjs().utc().format("YYYYMM")
+const hourBucket = dayjs().utc().format("YYYYMMDDHH")
 // e.g., "2025082611"
 // const TRENDING_KEY = "trending:courses"; // sorted set: courseId -> score
 const DEDUP_KEY = "dedup:clicks";        // hash: messageId -> processed flag

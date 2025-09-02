@@ -37,7 +37,7 @@ export default function StudentViewCourses(queryOptions: CourseQueryOptions) {
   if (isError) return <p>Error loading courses</p>;
 
   return (
-    <div className="lg:px-15 p-5 md:pt-10 flex flex-col">
+    <div className=" flex flex-col mt-15">
       {/* Title */}
       <p className="text-2xl font-serif font-bold">
         All {courseCategories.find((c) => c.id === queryOptions.category)?.label ?? "Courses"} Courses

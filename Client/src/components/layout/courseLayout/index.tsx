@@ -1,4 +1,5 @@
 import CategoryBar from '@/components/student-view/courses/categorybar';
+import CourseTabs from '@/components/student-view/courses/courseTabs/courseTabs';
 import type { CourseQueryOptions } from '@/config/config';
 import StudentViewCourses from '@/pages/student-view/courses'
 import { useSearchParams } from 'react-router-dom';
@@ -19,11 +20,19 @@ const StudentViewCourseLayout = () => {
     }
 
     return (
-        <div className='h-full w-full'>
+        <>
             <CategoryBar />
 
-            <StudentViewCourses {...queryOptions} />
-        </div>
+            <div className='h-full w-full xl:px-20 px-10'>
+
+                <p className='text-4xl font-bold font-serif  mt-[4%]'>Development Courses</p>
+                <div className=' mt-13'>
+                    <CourseTabs />
+                </div>
+
+                <StudentViewCourses {...queryOptions} />
+            </div>
+        </>
     )
 }
 

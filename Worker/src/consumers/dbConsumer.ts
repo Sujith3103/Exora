@@ -40,7 +40,7 @@ function parseClickEvent(record: RedisStreamMessage): ClickEvent {
     timestamp: raw.timestamp || new Date().toISOString(),
     metadata,
   };
-} 
+}
 
 let isRunning = true;
 
@@ -63,10 +63,10 @@ export async function processDbEvents() {
       if (!Array.isArray(response) || response.length === 0) continue;
 
       const streams = response as RedisStreamResponse;
-      console.log("db",response)
+      console.log("db", response)
       for (const streamData of streams) {
         // Process messages concurrently with a limit
-        await pMap(streamData.messages, async (record:any) => {
+        await pMap(streamData.messages, async (record: any) => {
           const clickEvent = parseClickEvent(record);
 
           // Transaction: insert and trim old clicks
@@ -76,8 +76,8 @@ export async function processDbEvents() {
                 clickType: clickEvent.type,
                 targetId: clickEvent.targetId,
                 userId: clickEvent.userId,
-                categoryId:clickEvent.categoryId,
-                instructorId:clickEvent.instructorId || null
+                categoryId: clickEvent.categoryId,
+                instructorId: clickEvent.instructorId || null
               },
             });
 
@@ -89,6 +89,9 @@ export async function processDbEvents() {
                 WHERE "userId" = ${clickEvent.userId}
               ) sub WHERE rn > 150
             )`;
+          }, {
+            timeout: 15000,  // 15 seconds
+            maxWait: 5000    // optional: how long to wait for connection
           });
 
           // Acknowledge message

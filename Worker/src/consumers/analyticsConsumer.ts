@@ -70,6 +70,10 @@ export const processAnalyticsEvent = async () => {
                 await pMap(streamData.messages, async (record: any) => {
                     const clickEvent = parseClickEvent(record)
 
+                    if (clickEvent.type === 'category') {
+                        await redis.xAck("click-events-stream", "analytics-consumer-group", record.id);
+                        return;
+                    }
 
                     await prisma.$transaction(async (tx) => {
 
@@ -81,7 +85,7 @@ export const processAnalyticsEvent = async () => {
                             console.warn(`Skipping analytics for unknown courseId ${clickEvent.targetId}`);
                             return;
                         }
-                        
+
                         await tx.courseAnalytics.upsert({
                             where: { courseId: clickEvent.targetId },
                             update: {
@@ -99,6 +103,9 @@ export const processAnalyticsEvent = async () => {
                         await redis.xAck("click-events-stream", "analytics-consumer-group", record.id);
 
                         console.log("Processed analytics:", clickEvent);
+                    }, {
+                        timeout: 15000,  // 15 seconds
+                        maxWait: 5000    // optional: how long to wait for connection
                     })
 
                 })
