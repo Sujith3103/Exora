@@ -32,7 +32,6 @@ const Cart = () => {
 
         getCartItemsFromIDB().then(localItems => {
           dispatch(fetchCart(isAuthenticated ? (user?.id as unknown as string) ?? null : null) as any);
-          console.log("dispatch 1")
           //if something in local indexdb
           if (localItems.length > 0) {
             setCartItemsFromIDB(localItems)

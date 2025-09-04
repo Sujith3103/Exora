@@ -15,7 +15,7 @@ type RedisStreamResponse = {
 
 const BATCH_SIZE = 10;
 const BLOCK_MS = 5000;
-const CONCURRENCY = 5; // number of messages to process in parallel
+const CONCURRENCY = 5; 
 
 let isRunning = true;
 

@@ -10,15 +10,14 @@ import {
 import { useTrending } from "@/hooks/queries/useCourseTabs";
 import { useSearchParams } from "react-router-dom";
 import TrendingCoursesSkeleton from "./trendingkeleton";
-import { useEffect } from "react";
 
-type Course = {
-    id: string;
-    title: string;
-    thumbnailUrl: string;
-    instructor: { name: string };
-    pricing: number;
-};
+// type Course = {
+//     id: string;
+//     title: string;
+//     thumbnailUrl: string;
+//     instructor: { name: string };
+//     pricing: number;
+// };
 
 
 

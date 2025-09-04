@@ -1,30 +1,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useTrending } from "@/hooks/queries/useCourseTabs"
-import { useEffect } from "react"
-import { useParams, useSearchParams } from "react-router-dom"
 import Trending from "./trending/trending";
 import Popular from "./popular/popular";
 
 
-interface CourseTabData {
-    thumbnailUrl: string;
-    title: string;
-    pricing: number;
-    instructor: {
-        name: string;
-    } | null;  // null if no instructor
-}
 
 const CourseTabs = () => {
-
-    const [searchParams] = useSearchParams()
-
-    const category = searchParams.get('category')
-
-    if (!category) return
-    const { data: trending, isLoading, isError } = useTrending(category)
-
-    console.log(trending)
 
     return (
         <div>

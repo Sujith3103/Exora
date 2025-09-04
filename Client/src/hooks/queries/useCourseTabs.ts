@@ -36,7 +36,3 @@ export const useNew = (category: string) =>
       return data as CourseTabData[];
     },
   });
-
-
-
-            const res = await server.get('/track-click/trending/web-development')

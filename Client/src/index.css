@@ -161,6 +161,9 @@
 
 }
 
+@theme {
+  --font-display: "Epunda Slab"; 
+}
 
 @layer base {
   * {

@@ -1,4 +1,4 @@
-import { BookOpen, FileText, House, BookMarked, MenuIcon, MessageCircle } from 'lucide-react'
+import { BookOpen, FileText, House, BookMarked, MenuIcon, MessageCircle, Ticket } from 'lucide-react'
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store";
 import { Link } from 'react-router-dom';
@@ -20,6 +20,12 @@ const SideBar = () => {
             title: 'Courses',
             link: 'instructor/courses',
             role: 'instructor'
+        },
+        {
+            icon: <Ticket/>,
+            title:'Coupons',
+            link:'instructor/coupons',
+            role:'instructor'
         }
     ]
 

@@ -2,7 +2,6 @@ import CourseDetailsLayout from "@/components/layout/course-details";
 import Student_CourseDetailsPricing from "@/components/student-view/course-details/course-pricing";
 import CourseDetailsBanner from "@/components/student-view/course-details/details-banner";
 import CourseDetailsBannerSmall from "@/components/student-view/course-details/details-banner/small";
-import { useCart } from "@/hooks/queries/useCart";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 

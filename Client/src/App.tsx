@@ -15,6 +15,8 @@ import StudentViewCourseLayout from "./components/layout/courseLayout"
 import CourseDetails from "./pages/student-view/course-detail"
 import Cart from "./pages/student-view/cart"
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import Instructor_CourseInfo from "./components/instructor-view/course-info/courseInfo"
+import CouponPage from "./pages/instructor-view/coupons/coupon"
 
 function App() {
 
@@ -45,8 +47,11 @@ function App() {
             <Route path="course-landing/:id" element={<CourseLanding />} />
             <Route path="course-curriculum/:id" element={<CourseCurriculum />} />
             <Route path="course-message/:id" element={<CourseMessage />} />
+            <Route path="course-info/:id" element={<Instructor_CourseInfo />} />
           </Route>
         </Route>
+        <Route path="/profile/instructor/coupons" element={<RouteGuard element={<CouponPage />} />}/>
+
       </Routes>
       <ReactQueryDevtools initialIsOpen={false} />
     </>

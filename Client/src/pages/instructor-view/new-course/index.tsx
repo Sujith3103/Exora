@@ -10,6 +10,7 @@ import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { validateCourse } from "./hooks"
+import Instructor_CourseInfo from "@/components/instructor-view/course-info/courseInfo"
 
 const NewCourse = () => {
 
@@ -33,7 +34,6 @@ const NewCourse = () => {
 
         if (courseData) {
             const valid = validateCourse({ courseData, sections });
-            console.log(valid)
             setIsValid(valid.valid)
         }
 
@@ -41,17 +41,16 @@ const NewCourse = () => {
             courseInformation: courseData
         })
         if (response.data.success) {
-            console.log("updated course", response.data)
         }
     }
 
-    const handleClick_PublishCourse = async() => {
-        try{
+    const handleClick_PublishCourse = async () => {
+        try {
             const response = await server.patch(`/instructor/course/${id}/publish`)
-            if(response.data.success){
+            if (response.data.success) {
                 console.log("course published")
             }
-        }catch(err){
+        } catch (err) {
             console.log(err)
         }
     }
@@ -67,18 +66,14 @@ const NewCourse = () => {
             dispatch(setCourseInformation({ fromServer: true, data: response.data.course }))
         }
         dispatch(courseSliceLoadingStop())
-        console.log(response.data)
     }
 
     const FetchSectionsWhenIdle = () => {
         if ('requestIdleCallback' in window) {
             requestIdleCallback(async () => {
-                console.log("fetching sections")
                 dispatch(courseSliceLoadingStart())
                 const response = await server.get(`/instructor/course/get-all-sections/${id}`)
                 if (response.data.success) {
-                    console.log("fetched sections", response.data)
-
                     dispatch(setCourseSection(response.data.sections))
                 }
                 dispatch(courseSliceLoadingStop())
@@ -99,10 +94,19 @@ const NewCourse = () => {
         <div className="p-5">
             <Tabs defaultValue={fetchComponentInUrl()}>
                 <div className="flex">
-                    <TabsList className="space-x-2">
-                        <TabsTrigger onClick={() => navigate(`/profile/instructor/courses/edit/course-landing/${id}`)} value="course-landing">course-landing</TabsTrigger>
-                        <TabsTrigger onClick={() => navigate(`/profile/instructor/courses/edit/course-curriculum/${id}`)} value="course-curriculum">course-curriculum</TabsTrigger>
-                        <TabsTrigger onClick={() => navigate(`/profile/instructor/courses/edit/course-message/${id}`)} value="course-message">course-message</TabsTrigger>
+                    <TabsList className="flex justify-start rounded-none bg-transparent p-0">
+                        <TabsTrigger
+                            className="relative bg-transparent rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black  data-[state=active]:font-semibold  after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform  data-[state=active]:after:scale-x-100"
+                            onClick={() => navigate(`/profile/instructor/courses/edit/course-landing/${id}`)} value="course-landing">course-landing</TabsTrigger>
+                        <TabsTrigger
+                            className="relative bg-transparent rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black  data-[state=active]:font-semibold  after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform  data-[state=active]:after:scale-x-100"
+                            onClick={() => navigate(`/profile/instructor/courses/edit/course-curriculum/${id}`)} value="course-curriculum">course-curriculum</TabsTrigger>
+                        <TabsTrigger
+                            className="relative bg-transparent rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black  data-[state=active]:font-semibold  after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform  data-[state=active]:after:scale-x-100"
+                            onClick={() => navigate(`/profile/instructor/courses/edit/course-message/${id}`)} value="course-message">course-message</TabsTrigger>
+                        <TabsTrigger
+                            className="relative bg-transparent rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black  data-[state=active]:font-semibold  after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform  data-[state=active]:after:scale-x-100"
+                            onClick={() => navigate(`/profile/instructor/courses/edit/course-info/${id}`)} value="course-info">course-info</TabsTrigger>
                     </TabsList>
                     {
                         fetchComponentInUrl() != 'course-curriculum' && isValid ? (
@@ -122,6 +126,9 @@ const NewCourse = () => {
                 </TabsContent>
                 <TabsContent value="course-message">
                     <CourseMessage />
+                </TabsContent>
+                <TabsContent value="course-info">
+                    <Instructor_CourseInfo />
                 </TabsContent>
             </Tabs >
         </div >

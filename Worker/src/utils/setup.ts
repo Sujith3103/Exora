@@ -18,11 +18,11 @@ export async function setupClickEventStream() {
     } else {
       throw err;
     }
-  }
+  } 
 
   // ✅ Only start consumers after groups are ready
   await Promise.all([
-    // processDbEvents(),
+    processDbEvents(),
     processCounterEvent(),
     processAnalyticsEvent(),
   ]);

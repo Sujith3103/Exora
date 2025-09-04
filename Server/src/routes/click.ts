@@ -138,7 +138,7 @@ function scoreCourse(course: any, categoryPref: any, instructorPref: any) {
     const catScore = categoryPref.get(course.category) ?? 0;
     const instScore = instructorPref.get(course.instructorId) ?? 0;
 
-    // popularity normalization (example: log scale)
+    // popularity normalization 
     const clicks = course.CourseAnalytics?.clicks ? course.CourseAnalytics.clicks : 0
     const popularity = Math.log(1 + clicks)
 
@@ -154,7 +154,6 @@ function scoreCourse(course: any, categoryPref: any, instructorPref: any) {
         0.05 * freshness
     );
 }
-
 
 router.get("/for-you/:userId", async (req: Request, res: Response) => {
 
@@ -178,12 +177,12 @@ router.get("/for-you/:userId", async (req: Request, res: Response) => {
             targetId: true,
         },
         orderBy: { timestamp: "desc" },
-        take: 500, // safety cap
+        take: 500, 
     })
+
     if (clicks.length === 0) return res.json("nothing")
     const seenCourseIds = new Set<string>();
     for (const c of clicks) {
-        // if data landed as targetId for course clicks, capture that too
         if (c.targetId) {
             seenCourseIds.add(c.targetId);
             // console.log(seenCourseIds)
@@ -238,9 +237,9 @@ router.get("/for-you/:userId", async (req: Request, res: Response) => {
     const candidates = await prisma.course.findMany({
         where: {
             status: "published",
-            // id: { notIn: Array.from(seenCourseIds) }, // exclude already seen
+            // id: { notIn: Array.from(seenCourseIds) },
             category: {
-                in: interestedCategories, // restrict to categories user interacted with
+                in: interestedCategories, 
             },
         },
         select: {
@@ -250,9 +249,9 @@ router.get("/for-you/:userId", async (req: Request, res: Response) => {
             title: true,
             instructorId: true,
             instructor: { select: { id: true, name: true } },
-            CourseAnalytics: true, // so you can use popularity/trending scores
+            CourseAnalytics: true, 
         },
-        take: 1000, // cap so you don't overload memory
+        take: 1000, 
     });
 
     const scored = candidates.map(c => ({

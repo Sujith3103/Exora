@@ -62,7 +62,6 @@ const Lecture = ({ lecture, index }: LectureProp) => {
             const response = await server.patch(`/instructor/course/${lecture.sectionId}/lectures/${lecture.id}/title`, { title })
             inputRef.current = null
 
-            console.log("updated title:", response.data)
             if (response.data.success) {
                 dispatch(updateLectureTitle({ lectureId: lecture.id, sectionId: lecture.sectionId, title: response.data.lecture.title }))
             }
@@ -81,7 +80,6 @@ const Lecture = ({ lecture, index }: LectureProp) => {
             const response = await server.delete(`/instructor/course/${lecture.sectionId}/lectures/${lecture.id}`)
 
             if (response.data.success) {
-                console.log("deleted")
                 dispatch(deleteLecture(lecture))
             }
 
@@ -107,7 +105,6 @@ const Lecture = ({ lecture, index }: LectureProp) => {
     }
 
     useEffect(() => {
-        console.log("this ran")
         if (lecture.lectureAssets?.status === 'failed') {
             setisFailedAsset(true)
         }

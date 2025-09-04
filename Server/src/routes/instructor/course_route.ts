@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { AddNewCourse, CreateLecture, createResource, CreateSection, deleteCourse, deleteLecture, deleteResource, deleteSection, GetAllCourses, GetAllSections, getCourseLanding, publishCourse, updateCourseLanding, UpdateLectureTitle, UpdateSectionTitle } from "../../controllers/instructor/course-controller";
+import { AddNewCourse, CreateLecture, createResource, CreateSection, deleteCourse, deleteLecture, deleteResource, deleteSection, GetAllCourses, GetAllSections, getCourseLanding, getCourseTitles, publishCourse, updateCourseLanding, UpdateLectureTitle, UpdateSectionTitle } from "../../controllers/instructor/course-controller";
 import { AuthenticateMiddleware } from "../../middleware";
 
 import multer from "multer";
@@ -29,6 +29,7 @@ router.delete('/:courseId',AuthenticateMiddleware,deleteCourse)
 router.get('/get-all-sections/:id', AuthenticateMiddleware, GetAllSections)
 router.get('/get-all-courses', AuthenticateMiddleware, GetAllCourses)
 router.get('/:courseId/landing', AuthenticateMiddleware, getCourseLanding)
+router.get('/titles', AuthenticateMiddleware, getCourseTitles)
 // router.get('/sections/:sectionId/lectures', AuthenticateMiddleware, )
 
 

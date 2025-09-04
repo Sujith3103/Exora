@@ -146,6 +146,33 @@ const getNextLectureOrder = async (sectionId: string) => {
     return lastLecture ? lastLecture.order + 1 : 1;
 }
 
+export const getCourseTitles = async (req: Request, res: Response) => {
+
+    const userId = req.user?.id
+
+    try {
+
+        const result = await prisma.course.findMany({
+            where: { instructorId: userId },
+            select: { id: true, title: true }
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: "fetched courses title successfully",
+            data: result
+        })
+
+    } catch (err) { 
+        console.log(err)
+        return res.status(500).json({
+            success: false,
+            message: "error in fetching titles"
+        })
+
+    }
+
+}
 
 //update
 export const updateCourseLanding = async (req: Request, res: Response) => {
@@ -446,7 +473,7 @@ export const deleteCourse = async (req: Request, res: Response) => {
                 success: true,
                 message: "delete course successfully"
             })
-        }else{
+        } else {
 
         }
 

@@ -35,7 +35,7 @@ const ProfileLayout = () => {
   return (
     <div className="flex flex-col lg:flex-row min-h-screen ">
       {/* Mobile top bar */}
-      <div className="flex items-center justify-between  bg-blue- 200 p-3 lg:hidden">
+      <div className="flex items-center jus/tify-between  bg-blue- 200 p-3 lg:hidden">
         <button onClick={() => setSidebarOpen(!sidebarOpen)}>
           <Menu size={24} />
         </button>
@@ -45,7 +45,7 @@ const ProfileLayout = () => {
       {/* Sidebar */}
       <div className='relative w-[232px] '>
         <Card
-          className={`fixed top-0 left-0 bottom-0 z-10  w-[232px] bg-gray-200 p-3
+          className={`fixed top-0 left-0 bottom-0 z-10  w-[232px] bg-gray-200 p-3 rounded-none
            flex flex-col           
            transform transition-transform duration-300
             ${!sidebarOpen ? '-translate-x-full lg:translate-x-0' : ''}

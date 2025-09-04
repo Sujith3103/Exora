@@ -182,7 +182,7 @@ const courseSlice = createSlice({
             }
         },
         //-------------------------------------------------Course Curriculum----------------------------------------------------------------------
-
+        
         setCourseSection(state: courseState, action: PayloadAction<Section[]>) {
             state.sections = [...action.payload]
 
