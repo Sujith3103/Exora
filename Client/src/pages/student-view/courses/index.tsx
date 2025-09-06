@@ -52,7 +52,7 @@ export default function StudentViewCourses(queryOptions: CourseQueryOptions) {
       {/* Filter & Sort Controls */}
       <div className="flex gap-4 mt-5">
         <Button
-          className="bg-white text-black hover:bg-white border border-gray-200 w-30 p-7"
+          className="bg-white text-black hover:bg-neutral-100 border border-gray-200 w-30 p-7 cursor-pointer"
           onClick={() => setShowFilter((prev) => !prev)}
         >
           <ListFilterIcon /> Filter

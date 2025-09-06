@@ -56,7 +56,6 @@ const AuthPage = () => {
                 const updatedjson = { ...jsonData, rememberMe: formValue.checkbox };
                 response = await server.post('/auth/login', updatedjson);
                 if (response.data.success) {
-                    console.log("the token", response.data)
                     dispatch(loginSuccess({
                         user: response.data.userData,
                         token: response.data.token

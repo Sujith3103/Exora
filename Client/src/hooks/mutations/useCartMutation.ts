@@ -15,7 +15,7 @@ const useCartMutation = () => {
       return data
     },
     onMutate: (item: CartItem) => {
-      dispatch(addItem(item))
+      dispatch(addItem(item)) 
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] })

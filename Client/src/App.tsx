@@ -17,6 +17,7 @@ import Cart from "./pages/student-view/cart"
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import Instructor_CourseInfo from "./components/instructor-view/course-info/courseInfo"
 import CouponPage from "./pages/instructor-view/coupons/coupon"
+import { Toaster } from "./components/ui/sonner"
 
 function App() {
 
@@ -50,10 +51,21 @@ function App() {
             <Route path="course-info/:id" element={<Instructor_CourseInfo />} />
           </Route>
         </Route>
-        <Route path="/profile/instructor/coupons" element={<RouteGuard element={<CouponPage />} />}/>
+        <Route path="/profile/instructor/coupons" element={<RouteGuard element={<CouponPage />} />} />
 
       </Routes>
       <ReactQueryDevtools initialIsOpen={false} />
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          classNames: {
+            toast: "group relative rounded-md shadow-md",
+            closeButton: "pointer-events-auto z-50",
+            error: "border-2 border-red-500 bg-red-50 text-red-700",
+            success: "border-2 border-green-500 bg-green-50 text-green-700",
+          },
+        }}
+      />
     </>
   )
 }

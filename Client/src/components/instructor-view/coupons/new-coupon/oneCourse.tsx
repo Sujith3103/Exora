@@ -23,7 +23,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { useCourseTitles } from "@/hooks/queries/useCourseTitls"
-import { useMediaQuery } from "./useMediaQuery"
+import { useMediaQuery } from "../../../../hooks/queries/useMediaQuery"
 
 type Course = {
     id: string

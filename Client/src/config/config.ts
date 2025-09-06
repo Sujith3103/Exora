@@ -1,3 +1,4 @@
+import type { couponForm } from "@/components/instructor-view/coupons/new-coupon/newCoupon";
 
 export const languageOptions = [
   { id: "english", label: "English" },
@@ -70,3 +71,11 @@ export type ClickMetaData = {
   [key: string]: any;
 };
 
+export type Coupon = couponForm & {
+  id: string
+  userId: string
+  totalRevenue: number
+  timesUsed: number
+  createdAt: Date
+  updatedAt: Date
+}

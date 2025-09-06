@@ -2,8 +2,8 @@ name: Keep Backend Warm
 
 on:
   schedule:
-    - cron: "*/1 * * * *" # every 5 minutes
-  workflow_dispatch: # allows manual trigger
+    - cron: "*/1 * * * *" 
+  workflow_dispatch: 
 
 jobs:
   ping:

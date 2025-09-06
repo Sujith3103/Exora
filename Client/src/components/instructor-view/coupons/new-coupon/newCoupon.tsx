@@ -5,7 +5,9 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Controller, useForm } from "react-hook-form"
 import { SelectOneCourse } from "./oneCourse"
-import { LucideMoveRight } from "lucide-react"
+import { LucideMoveRight, X } from "lucide-react"
+import { toast } from "sonner"
+import useCouponMutation from "@/hooks/mutations/useCouponMutation"
 
 type NewCouponprop = {
 
@@ -13,27 +15,31 @@ type NewCouponprop = {
 
 }
 
-type couponForm = {
+export type couponForm = {
   title: string,
   code: string,
   discountType: "percentage" | "fixed",
   discount: number,
   noOfCoupons: number,
   limitPerUser: number,
-  onlyFor: string,
+  onlyFor: 'tier_3' | 'tier_1' | 'tier_2',
   autoApply: boolean,
   validUntil: Date,
-  applyTo: 'one_course' | 'all_courses',
+  validFrom: Date,
+  applyTo: 'oneCourse' | 'allCourses',
   courseId?: string
 }
 
 const NewCoupon = ({ isScheduling }: NewCouponprop) => {
 
+  const { addNewCoupon } = useCouponMutation()
+
   const { control, handleSubmit, watch, register, formState: { errors } } = useForm<couponForm>({
     defaultValues: {
-      applyTo: 'all_courses',
+      applyTo: 'allCourses',
       discountType: 'percentage',
       autoApply: true,
+      onlyFor: 'tier_3',
       courseId: ''
     }
   })
@@ -42,9 +48,39 @@ const NewCoupon = ({ isScheduling }: NewCouponprop) => {
   // const discount = watch('discount')
   const discountType = watch('discountType')
 
+  const checkValidDates = (data: couponForm): boolean => {
+    console.log("checking valid dates");
+    const now = new Date();
+
+    // Coupon should always expire in the future
+    if (new Date(data.validUntil).getTime() <= now.getTime()) {
+      return false;
+    }
+
+    if (isScheduling) {
+      // Scheduled coupons must start in the future
+      if (new Date(data.validFrom).getTime() < now.getTime()) {
+        return false;
+      }
+      // validUntil must also be after validFrom
+      if (new Date(data.validUntil).getTime() <= new Date(data.validFrom).getTime()) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const onSubmit = (data: couponForm) => {
-    console.log("Form submitted:", data)
-  }
+    const isValidDates = checkValidDates(data);
+
+    if (!isValidDates) {
+      return toast.error('enter a valid date', { style: { justifyContent: 'center' }, duration: 2000 })
+    }
+    console.log(data)
+    addNewCoupon.mutate(data)
+
+  };
 
   return (
 
@@ -118,14 +154,20 @@ const NewCoupon = ({ isScheduling }: NewCouponprop) => {
         </div>
 
         {/* no of coupons and limits */}
-        <div className="flex sm:flex-row flex-col w-full justify-between sm:gap-0 gap-7">
+        <div className="flex sm:flex-row flex-col w-full sm:gap-0 gap-7 pb-3">
           <div className="w-[180px] h-[36px] sm:mr-13 space-y-2">
             <Label>No of Coupons</Label>
-            <Input {...register('noOfCoupons', { min: { value: 50, message: 'must be atleast 50' } })} />
+            <Input {...register('noOfCoupons', { min: { value: 50, message: 'must be atleast 50' }, required: 'no of coupons are required' })} />
+            {errors.noOfCoupons && (
+              <p className="text-sm text-red-500">{errors.noOfCoupons.message}</p>
+            )}
           </div>
           <div className="sm:flex-1 space-y-2 w-[18px]">
             <Label>Limit per User</Label>
-            <Input {...register('limitPerUser', { required: true, min: { value: 1, message: 'atleast 1' } })} />
+            <Input {...register('limitPerUser', { required: 'limit per user is required', min: { value: 1, message: 'atleast 1' } })} />
+            {errors.limitPerUser && (
+              <p className="text-sm text-red-500">{errors.limitPerUser.message}</p>
+            )}
           </div>
         </div>
 
@@ -185,28 +227,32 @@ const NewCoupon = ({ isScheduling }: NewCouponprop) => {
 
         {/* all courses or one course */}
         <div className="flex sm:flex-row flex-col sm:items-center">
-          <div className=" w-[180px] ">
-            <Controller
-              name="applyTo"
-              control={control}
-              render={({ field }) =>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="apply to" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="one_course">One Course only</SelectItem>
-                      <SelectItem value="all_courses">All Courses</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              }
-            />
+
+          <div className="mb-1">
+            <Label>Apply to</Label>
+            <div className=" w-[180px] space-y-2 ">
+              <Controller
+                name="applyTo"
+                control={control}
+                render={({ field }) =>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="apply to" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="oneCourse">One Course only</SelectItem>
+                        <SelectItem value="allCourses">All Courses</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                }
+              />
+            </div>
           </div>
 
           {/* specifc course */}
-          {applyTo === 'one_course' &&
+          {applyTo === 'oneCourse' &&
             <>
               <LucideMoveRight className="ml-3" />
               <div className="w-[223px] ml-auto">
@@ -228,15 +274,23 @@ const NewCoupon = ({ isScheduling }: NewCouponprop) => {
           }
         </div>
         <div className="flex w-full">
+
+
           <div className="space-y-2 w-[180px]">
-            <Label>Valid From</Label>
-            <Input type="date" />
+            <Label>Valid Until</Label>
+            <Input type="datetime-local" {...register('validUntil', { required: 'valid until is required' })} />
+            {errors.validUntil && (
+              <p className="text-sm text-red-500">{errors.validUntil.message}</p>
+            )}
           </div>
           {
             isScheduling &&
             <div className="space-y-2 w-[231px] ml-auto">
-              <Label>Valid Until</Label>
-              <Input type="date" />
+              <Label>Valid from</Label>
+              <Input type="datetime-local" {...register('validFrom', { required: 'valid from is required' })} />
+              {errors.validFrom && (
+                <p className="text-sm text-red-500">{errors.validFrom.message}</p>
+              )}
             </div>
           }
         </div>
