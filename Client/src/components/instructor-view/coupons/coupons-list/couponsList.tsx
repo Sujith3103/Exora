@@ -1,9 +1,17 @@
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import type { Coupon } from '@/config/config'
 import { useCoupon } from '@/hooks/queries/useCoupon'
+import { useEffect, useState } from 'react'
 
-const CouponsList = ({ isScheduling }: { isScheduling: boolean }) => {
+type CouponListProps = {
+    isScheduling: boolean,
+    coupons: Coupon[],
+    isLoading: boolean,
+    error: Error | null
+}
 
-    const { data: coupons, isLoading, error } = useCoupon()
+const CouponsList = ({ isScheduling, coupons, error, isLoading }: CouponListProps) => {
+
 
     return (
         <div>
@@ -20,6 +28,9 @@ const CouponsList = ({ isScheduling }: { isScheduling: boolean }) => {
                         <TableHead className="text-center">Only for</TableHead>
                         <TableHead className="text-center">Times Used</TableHead>
                         <TableHead className="text-center">Revenue</TableHead>
+                        {
+                            isScheduling && <TableHead className="text-center">Valid From</TableHead>
+                        }
                         <TableHead className="text-center">Valid Until</TableHead>
                         <TableHead className="text-center">Apply To</TableHead>
                         <TableHead className="text-center">Status</TableHead>
@@ -39,6 +50,11 @@ const CouponsList = ({ isScheduling }: { isScheduling: boolean }) => {
                             <TableCell className="text-center">{coupon.onlyFor}</TableCell>
                             <TableCell className="text-center">{coupon.timesUsed}</TableCell>
                             <TableCell className="text-center">{coupon.totalRevenue}</TableCell>
+                            {
+                                isScheduling && <TableCell className="text-center">
+                                    {new Date(coupon.validFrom).toLocaleDateString()}
+                                </TableCell>
+                            }
                             <TableCell className="text-center">
                                 {new Date(coupon.validUntil).toLocaleDateString()}
                             </TableCell>

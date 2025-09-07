@@ -39,11 +39,13 @@ model User {
   security   UserSecurity?
 
   // Relation to courses (instructor)
-  courses   Course[]
-  clicks    UserClick[]
-  purchases UserPurchase[]
-  cart      Cart?
-  cartId    String?
+  courses           Course[]
+  clicks            UserClick[]
+  purchases         UserPurchase[]
+  cart              Cart?
+  cartId            String?
+  coupons           Coupon[]
+  CouponApplication CouponApplication[]
 }
 
 // Prisma Example (SQL-based)
@@ -182,6 +184,60 @@ model Course {
   CourseAnalytics CourseAnalytics?
 
   @@map("courses")
+}
+
+enum DiscountType {
+  percentage
+  fixed
+}
+
+enum OnlyFor {
+  tier_1
+  tier_2
+  tier_3
+}
+
+enum ApplyTo {
+  allCourses
+  oneCourse
+}
+
+model Coupon {
+  id                String              @id @default(uuid())
+  title             String
+  code              String              @unique
+  discountType      DiscountType
+  discount          Int
+  noOfCoupons       Int
+  limitPerUser      Int
+  onlyFor           OnlyFor
+  autoApply         Boolean
+  timesUsed         Int                 @default(0)
+  totalRevenue      Int
+  courseId          String
+  applyTo           ApplyTo
+  validUntil        DateTime
+  validFrom         DateTime            @default(now())
+  user              User                @relation(fields: [userId], references: [id])
+  userId            String
+  CouponApplication CouponApplication[]
+}
+
+model CouponApplication {
+  id        String                  @id @default(uuid())
+  coupon    Coupon                  @relation(fields: [couponId], references: [id])
+  couponId  String
+  user      User                    @relation(fields: [userId], references: [id])
+  userId    String
+  appliedAt DateTime                @default(now())
+  orderId   String? // null if user never checked out
+  status    CouponApplicationStatus @default(APPLIED)
+}
+
+enum CouponApplicationStatus {
+  APPLIED // user applied coupon
+  REDEEMED // user completed checkout
+  ABANDONED // user applied but never purchased
 }
 
 model CourseAnalytics {

@@ -2,16 +2,38 @@ import CouponsList from "@/components/instructor-view/coupons/coupons-list/coupo
 import NewCoupon from "@/components/instructor-view/coupons/new-coupon/newCoupon"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import type { Coupon } from "@/config/config"
+import { useCoupon } from "@/hooks/queries/useCoupon"
 import { ChevronLeft } from "lucide-react"
+import { useEffect, useState } from "react"
 
 const CouponPage = () => {
 
-    // useEffect(() => {
-    //     toast("the event has been created", {
-    //         style: { justifyContent:'center'}
-    //     });
-    // }, []);
+    const { data: coupons, isLoading, error } = useCoupon()
+    const [activeCoupons, setActiveCoupons] = useState<Coupon[]>([])
+    const [scheduledCoupons, setScheduledCoupons] = useState<Coupon[]>([])
 
+
+    useEffect(() => {
+        if (!coupons) return
+
+        const now = new Date()
+
+        const active: Coupon[] = []
+        const scheduled: Coupon[] = []
+
+        coupons.forEach(coupon => {
+            if (new Date(coupon.validFrom) <= now) {
+                active.push(coupon)
+            } else {
+                scheduled.push(coupon)
+            }
+        })
+
+        setActiveCoupons(active)
+        setScheduledCoupons(scheduled)
+
+    }, [coupons])
 
 
     return (
@@ -41,7 +63,7 @@ const CouponPage = () => {
                 {/* some chart like stuff */}
             </div>
 
-            <CouponsList isScheduling={true} />
+            <CouponsList coupons={activeCoupons} error={error} isLoading={isLoading} isScheduling={true} />
 
             <div className="flex items-center w-full mt-20 ">
                 <h1 className="text-2xl font-bold font-display">No Coupons Scheduled</h1>
@@ -60,7 +82,7 @@ const CouponPage = () => {
                 </Dialog>
             </div>
 
-            <CouponsList isScheduling={true} />
+            <CouponsList  coupons={scheduledCoupons} error={error} isLoading={isLoading} isScheduling={true} />
 
 
         </div>

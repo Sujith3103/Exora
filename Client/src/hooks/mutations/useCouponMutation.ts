@@ -46,10 +46,20 @@ const useCouponMutation = () => {
                 return [...(old || []), { ...coupon, id: 'temp-id' }]
             })
 
-            return {previousCoupons}
-            
+            return { previousCoupons }
+
+        },
+        onError: (_err, _newCoupon, context) => {
+            // Rollback if error
+            queryClient.setQueryData(['coupons'], context?.previousCoupons)
+        },
+        onSettled: () => {
+            // Ensure data is in sync
+            queryClient.invalidateQueries({ queryKey: ['coupons'] })
         }
     })
+
+        
 
     return { addNewCoupon }
 

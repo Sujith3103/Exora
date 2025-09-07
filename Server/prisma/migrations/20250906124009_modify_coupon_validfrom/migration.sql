@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "public"."Coupon" ALTER COLUMN "validFrom" SET DEFAULT CURRENT_TIMESTAMP;

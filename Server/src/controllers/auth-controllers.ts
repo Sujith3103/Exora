@@ -108,7 +108,7 @@ export const loginUser = async (req: any, res: any) => {
         const accessToken = jwt.sign(
             { ...userData },
             process.env.JWT_SECRET,
-            { expiresIn: '30min' }
+            { expiresIn: '2h' }
         );
 
         const userSecurityDetails = await prisma.userSecurity.findUnique({
