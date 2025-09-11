@@ -1,4 +1,4 @@
-import { BookOpen, FileText, House, BookMarked, MenuIcon, MessageCircle, Ticket } from 'lucide-react'
+import { BookOpen, FileText, House, BookMarked, MenuIcon, MessageCircle, Ticket, TrendingUp, BarChart } from 'lucide-react'
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store";
 import { Link } from 'react-router-dom';
@@ -22,9 +22,15 @@ const SideBar = () => {
             role: 'instructor'
         },
         {
-            icon: <Ticket/>,
-            title:'Coupons',
-            link:'instructor/coupons',
+            icon: <Ticket />,
+            title: 'Coupons',
+            link: 'instructor/coupons',
+            role: 'instructor'
+        },
+        {
+            icon: <BarChart />,
+            title:'Analytics',
+            link:'instructor/analytics/revenue',
             role:'instructor'
         }
     ]
@@ -69,15 +75,15 @@ const SideBar = () => {
                     ))
                 }
                 {
-                    user?.role === "INSTRUCTOR"?
-                    Instructor_sideBarItems.map((items, index) => (
-                        <Link key={index} className='flex items-center gap-2 mt-4' to={`${items.link}`}>
+                    user?.role === "INSTRUCTOR" ?
+                        Instructor_sideBarItems.map((items, index) => (
+                            <Link key={index} className='flex items-center gap-2 mt-4' to={`${items.link}`}>
 
-                            {items.icon}
-                            <p>{items.title}</p>
+                                {items.icon}
+                                <p>{items.title}</p>
 
-                        </Link>
-                    )):null
+                            </Link>
+                        )) : null
                 }
             </div>
 

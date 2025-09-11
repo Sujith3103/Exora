@@ -3,6 +3,7 @@ import { deleteCartItemFromIDB } from '@/lib/indexdb'
 import { addItem, moveToCart, moveToSavedLater, removeItem, type CartItem } from '@/store/cartSlice'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
+import { toast } from 'sonner'
 
 const useCartMutation = () => {
 
@@ -15,14 +16,17 @@ const useCartMutation = () => {
       return data
     },
     onMutate: (item: CartItem) => {
-      dispatch(addItem(item)) 
+      dispatch(addItem(item))
+      toast.loading('adding to cart', { style: { justifyContent: 'center' } })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] })
+      toast.success('added to cart', { style: { justifyContent: 'center' }, duration: 1000 })
     },
     onError: (_err, item: CartItem) => {
       // Rollback: remove item from Redux
       dispatch(removeItem(item.courseId));
+      toast.error('failed to add to cart', { style: { justifyContent: 'center' } })
     },
   })
 
@@ -33,12 +37,18 @@ const useCartMutation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] })
+      toast.dismiss()
+      toast.success('removed item successfully', { style: { justifyContent: 'center' }, duration: 1000 })
     },
     onMutate: (item: CartItem) => {
       dispatch(removeItem(item.courseId))
+      toast.loading('Removing from cart', { style: { justifyContent: 'center' } })
+
     },
     onError: (_err, item: CartItem) => {
       dispatch(addItem(item))
+      toast.dismiss()
+      toast.error("failed to remove item", { style: { justifyContent: 'center' } })
     }
 
   })
@@ -55,10 +65,13 @@ const useCartMutation = () => {
       else if (status === 'ACTIVE') {
         dispatch(moveToCart({ item: item.courseId, isAuthenticated: true }))
       }
+      toast.loading('updating cart', { style: { justifyContent: 'center' } })
     },
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] })
+      toast.dismiss()
+      toast.success('updated cart successfully', { style: { justifyContent: 'center' }, duration: 1000 })
     },
 
     onError: (_err, variables) => {
@@ -69,8 +82,9 @@ const useCartMutation = () => {
       else if (variables.status === 'ACTIVE') {
         dispatch(moveToSavedLater({ item: variables.item.courseId, isAuthenticated: true }))
       }
+      toast.dismiss()
+      toast.error('failed to update', { style: { justifyContent: 'center' } })
     }
-
   })
 
   const batchUpdateCart = useMutation({
@@ -80,16 +94,20 @@ const useCartMutation = () => {
     },
     onMutate: (items: CartItem[]) => {
       items.forEach((item) => dispatch(addItem(item)))
+      toast.loading('adding to cart', { style: { justifyContent: 'center' } })
     },
 
     onSuccess: (addedItems: CartItem[]) => {
       addedItems.forEach((item) => deleteCartItemFromIDB(item.courseId))
       queryClient.invalidateQueries({ queryKey: ["cart"] })
+      toast.dismiss()
+      toast.success('added to cart successfully', { style: { justifyContent: 'center' }, duration: 1000 })
     },
     onError: (_err, items) => {
       items.forEach((item) => dispatch(removeItem(item.courseId)))
+      toast.dismiss()
+      toast.error('failed to add to cart', { style: { justifyContent: 'center' } })
     }
-
   })
 
   return { addToCart, RemoveItem, UpdateCartStatus, batchUpdateCart }

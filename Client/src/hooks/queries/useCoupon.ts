@@ -9,7 +9,6 @@ export const useCoupon = () => {
         queryKey: ['coupon'],
         queryFn: async () => {
             const res = await server.get('/instructor/coupon')
-            console.log("resL ",res.data)
             return res.data.data as Coupon[]
         },
         staleTime:1000 * 60 * 5

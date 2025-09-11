@@ -18,6 +18,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import Instructor_CourseInfo from "./components/instructor-view/course-info/courseInfo"
 import CouponPage from "./pages/instructor-view/coupons/coupon"
 import { Toaster } from "./components/ui/sonner"
+import AnalyticsLayout from "./components/layout/analytics/analyticsLayout"
+import Revenue from "./pages/instructor-view/revenue/revenue"
 
 function App() {
 
@@ -52,6 +54,9 @@ function App() {
           </Route>
         </Route>
         <Route path="/profile/instructor/coupons" element={<RouteGuard element={<CouponPage />} />} />
+        <Route path="/profile/instructor/analytics" element={<RouteGuard element={<AnalyticsLayout />} />}>
+          <Route path="revenue" element={<Revenue />} />
+        </Route>
 
       </Routes>
       <ReactQueryDevtools initialIsOpen={false} />
