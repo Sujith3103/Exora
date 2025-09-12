@@ -23,7 +23,6 @@ export const createNewCoupon = async (req: Request, res: Response) => {
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" })
 
     const coupon: couponForm = req.body
-
     try {
         const result = await prisma.coupon.create({
             data: {
@@ -82,4 +81,59 @@ export const getAllCoupons = async (req: Request, res: Response) => {
             message: "failed to fetch coupons"
         })
     }
-}   
+}
+
+export const editCoupon = async (req: Request, res: Response) => {
+    const couponId = req.params.couponId;
+    const coupon = req.body;
+    const userId = req.user?.id;
+
+    try {
+        await prisma.coupon.update({
+            where: { id: couponId },
+            data: {
+                ...coupon,
+                validFrom: new Date(coupon.validFrom),   // ✅ ensures correct Date type
+                validUntil: new Date(coupon.validUntil), // ✅
+            },
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: "Updated the coupon",
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to edit coupon",
+        });
+    }
+};
+
+
+export const deleteCoupon = async (req: Request, res: Response) => {
+
+    const userId = req.user?.id
+    const couponId = req.params.couponId
+
+    try {
+
+        const result = await prisma.coupon.delete({
+            where: { id: String(couponId), userId: userId }
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: "deleted the coupon successfully"
+        })
+
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({
+            success: false,
+            message: "failed to delete coupon"
+        })
+    }
+
+}

@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { student_GetAllCourses, student_GetCourseDetails } from "../../controllers/user/course-controller";
+import { purchaseCourse, student_GetAllCourses, student_GetCourseDetails } from "../../controllers/user/course-controller";
+import { AuthenticateMiddleware } from "../../middleware";
 
 const router = Router()
 
 router.get('/', student_GetAllCourses)
 
 router.get('/:courseId',student_GetCourseDetails)
+router.get('/:courseId/purchase',AuthenticateMiddleware,purchaseCourse)
 
 export default router

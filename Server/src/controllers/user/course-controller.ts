@@ -73,3 +73,21 @@ export const student_GetCourseDetails = async(req: Request, res:Response) => {
         })
     }
 }
+
+export const purchaseCourse = async(req:Request,res:Response) => {
+
+    const userId = req.user?.id
+    const courseId = req.params
+
+    try{
+
+        // const res = await prisma.userPurchase.create({
+        //     data:{
+                
+        //     }
+        // })
+
+    }catch(err){
+
+    }
+}

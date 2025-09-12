@@ -110,16 +110,18 @@ model UserClick {
 }
 
 model UserPurchase {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  course    Course   @relation(fields: [courseId], references: [id])
-  courseId  String
-  price     Int
-  timestamp DateTime @default(now())
+  id     String @id @default(cuid()) // Unique purchase ID
+  user   User   @relation(fields: [userId], references: [id]) // Who bought
+  userId String
 
-  @@index([userId, timestamp])
-  @@index([courseId, timestamp])
+  course   Course @relation(fields: [courseId], references: [id]) // What course
+  courseId String
+
+  price     Decimal  @db.Decimal(10, 2)
+  timestamp DateTime @default(now()) // When purchase happened
+
+  @@index([userId, timestamp]) // For querying purchases per user over time
+  @@index([courseId, timestamp]) // For querying purchases per course over time
 }
 
 model UserProfile {
@@ -180,8 +182,10 @@ model Course {
   instructorId String
 
   // Relations
-  sections        Section[] // A course has many sections
-  CourseAnalytics CourseAnalytics?
+  sections               Section[] // A course has many sections
+  CourseAnalytics        CourseAnalytics?
+  courseRevenueAnalytics CourseRevenueAnalytics?
+  revenueHistory         CourseRevenueHistory?
 
   @@map("courses")
 }
@@ -249,6 +253,28 @@ model CourseAnalytics {
   clicks      Int      @default(0)
   trending    Float    @default(0.0)
   lastUpdated DateTime @updatedAt
+}
+
+model CourseRevenueAnalytics {
+  id       String @id @default(uuid())
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String @unique
+
+  totalRevenue Int   @default(0) // sum of purchases
+  totalEnrolls Int   @default(0) // count of purchases
+  avgPrice     Float @default(0.0) // revenue / enrolls
+
+  lastUpdated DateTime @updatedAt
+}
+
+model CourseRevenueHistory {
+  id       String @id @default(uuid())
+  courseId String @unique
+  Course   Course @relation(fields: [courseId], references: [id])
+  
+  period      DateTime // e.g. "2025-09-01" (first day of month)
+  revenue     Int      @default(0) // sum of prices
+  enrollments Int      @default(0) // count of purchases
 }
 
 enum CourseStatus {

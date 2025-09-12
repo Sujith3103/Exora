@@ -1,6 +1,7 @@
 // db.ts
 import type { CartItem } from '@/store/cartSlice';
 import { openDB } from 'idb';
+import { toast } from 'sonner';
 
 export const dbPromise = openDB('Exora', 1, {
     upgrade(db) {
@@ -14,6 +15,7 @@ export const dbPromise = openDB('Exora', 1, {
 export async function addCartItemToDb(item: CartItem) {
     const db = await dbPromise;
     console.log("index db : ", db)
+    toast.success('Course added to cart',{style:{justifyContent:'center'},duration:1000})
     return db.add('cart', item);
 }
 
@@ -24,6 +26,7 @@ export async function getCartItemsFromIDB() {
 
 export async function deleteCartItemFromIDB(courseId: string) {
     const db = await dbPromise;
+    toast.success('Course deleted from cart')
     return db.delete('cart', courseId);
 }
 
@@ -34,7 +37,7 @@ export async function editCartItemStatusInIDB(courseId: string, newStatus: "ACTI
     const db = await dbPromise;
 
     // 1. Get the existing item by key
-    const existingItem = await db.get("cart", courseId ); // "cart" is the store name
+    const existingItem = await db.get("cart", courseId); // "cart" is the store name
 
     if (!existingItem) {
         throw new Error(`Cart item with id ${courseId} not found`);

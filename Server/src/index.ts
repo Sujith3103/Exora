@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
-import { PrismaClient } from "@prisma/client";
 import http from "http";
 import { Server } from "socket.io";
 import multer from "multer";
@@ -30,6 +29,7 @@ declare module 'express-serve-static-core' {
 //routes 
 import auth_route from './routes/auth_route';
 import user_route from './routes/user/user_route';
+import cart_route from './routes/user/cart_route';
 import media_route from './routes/media_route'
 import instructor_course_route from './routes/instructor/course_route'
 import coupon_route from './routes/instructor/coupon_route'
@@ -49,6 +49,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', auth_route);
 app.use('/api/user', user_route);
+app.use('/api/user/cart',cart_route );
 app.use('/api/media', media_route);
 app.use('/api/courses', course_route);
 app.use('/api/instructor/course', instructor_course_route)
