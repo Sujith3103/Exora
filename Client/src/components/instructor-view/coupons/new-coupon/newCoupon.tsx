@@ -8,14 +8,20 @@ import { SelectOneCourse } from "./oneCourse"
 import { LucideMoveRight, X } from "lucide-react"
 import { toast } from "sonner"
 import useCouponMutation from "@/hooks/mutations/useCouponMutation"
+import type { Coupon } from "@/config/config"
+import { useEffect } from "react"
 
 type NewCouponprop = {
 
   isScheduling: boolean
-
+  isEdit: boolean
+  coupon: Coupon | null
+  isDialogOpen: boolean,
+  setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export type couponForm = {
+  id?: string,
   title: string,
   code: string,
   discountType: "percentage" | "fixed",
@@ -24,15 +30,15 @@ export type couponForm = {
   limitPerUser: number,
   onlyFor: 'tier_3' | 'tier_1' | 'tier_2',
   autoApply: boolean,
-  validUntil: Date,
-  validFrom: Date,
+  validUntil: string,
+  validFrom: string,
   applyTo: 'oneCourse' | 'allCourses',
   courseId?: string
 }
 
-const NewCoupon = ({ isScheduling }: NewCouponprop) => {
+const NewCoupon = ({ isScheduling, isEdit, coupon, isDialogOpen, setIsDialogOpen }: NewCouponprop) => {
 
-  const { addNewCoupon } = useCouponMutation()
+  const { addNewCoupon, editCoupon } = useCouponMutation()
 
   const { control, handleSubmit, watch, register, formState: { errors } } = useForm<couponForm>({
     defaultValues: {
@@ -40,30 +46,38 @@ const NewCoupon = ({ isScheduling }: NewCouponprop) => {
       discountType: 'percentage',
       autoApply: true,
       onlyFor: 'tier_3',
-      courseId: ''
+      courseId: '',
+      ...coupon,
+      validFrom: coupon?.validFrom
+        ? new Date(coupon.validFrom).toISOString().slice(0, 16)
+        : "",
+      validUntil: coupon?.validUntil
+        ? new Date(coupon.validUntil).toISOString().slice(0, 16)
+        : "",
+
     }
   })
 
   const applyTo = watch("applyTo")
-  // const discount = watch('discount')
+
   const discountType = watch('discountType')
 
   const checkValidDates = (data: couponForm): boolean => {
-    console.log("checking valid dates");
     const now = new Date();
 
+    const validFrom = new Date(data.validFrom + ":00");   // append seconds
+    const validUntil = new Date(data.validUntil + ":00"); // append seconds
+
     // Coupon should always expire in the future
-    if (new Date(data.validUntil).getTime() <= now.getTime()) {
+    if (validUntil.getTime() <= now.getTime()) {
       return false;
     }
 
     if (isScheduling) {
-      // Scheduled coupons must start in the future
-      if (new Date(data.validFrom).getTime() < now.getTime()) {
+      if (validFrom.getTime() < now.getTime()) {
         return false;
       }
-      // validUntil must also be after validFrom
-      if (new Date(data.validUntil).getTime() <= new Date(data.validFrom).getTime()) {
+      if (validUntil.getTime() <= validFrom.getTime()) {
         return false;
       }
     }
@@ -71,16 +85,28 @@ const NewCoupon = ({ isScheduling }: NewCouponprop) => {
     return true;
   };
 
+
   const onSubmit = (data: couponForm) => {
-    const isValidDates = checkValidDates(data);
-
-    if (!isValidDates) {
-      return toast.error('enter a valid date', { style: { justifyContent: 'center' }, duration: 2000 })
+    if (!checkValidDates(data)) {
+      return toast.error('Enter a valid date', { style: { justifyContent: 'center' }, duration: 2000 })
     }
-    console.log(data)
-    addNewCoupon.mutate(data)
 
-  };
+    setIsDialogOpen(false)
+
+    if (isEdit && coupon) {
+      editCoupon.mutate(data, {
+        onError: () => {
+          setIsDialogOpen(true)
+        }
+      })
+    } else {
+      addNewCoupon.mutate(data, {
+        onError: () => {
+          setIsDialogOpen(true)
+        }
+      })
+    }
+  }
 
   return (
 
@@ -284,10 +310,12 @@ const NewCoupon = ({ isScheduling }: NewCouponprop) => {
             )}
           </div>
           {
-            isScheduling &&
+            (isScheduling || isEdit) &&
             <div className="space-y-2 w-[231px] ml-auto">
               <Label>Valid from</Label>
-              <Input type="datetime-local" {...register('validFrom', { required: 'valid from is required' })} />
+              <Input type="datetime-local" {...register('validFrom', { required: 'valid from is required' })}
+
+              />
               {errors.validFrom && (
                 <p className="text-sm text-red-500">{errors.validFrom.message}</p>
               )}

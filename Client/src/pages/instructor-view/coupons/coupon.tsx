@@ -23,7 +23,7 @@ const CouponPage = () => {
         const scheduled: Coupon[] = []
 
         coupons.forEach(coupon => {
-            if (new Date(coupon.validFrom) <= now) {
+            if (new Date(coupon.validFrom ?? 0) <= now) {
                 active.push(coupon)
             } else {
                 scheduled.push(coupon)
@@ -55,7 +55,7 @@ const CouponPage = () => {
                         onEscapeKeyDown={(e) => e.preventDefault()}
                     >
                         <DialogTitle>New Coupon</DialogTitle>
-                        <NewCoupon isScheduling={false} />
+                        <NewCoupon isScheduling={false} isEdit={false} coupon={null}/>
                     </DialogContent>
                 </Dialog>
             </div>
@@ -77,7 +77,7 @@ const CouponPage = () => {
                         onInteractOutside={(e) => e.preventDefault()}
                         onEscapeKeyDown={(e) => e.preventDefault()}
                     >
-                        <NewCoupon isScheduling={true} />
+                        <NewCoupon isScheduling={true} isEdit={false} coupon={null}/>
                     </DialogContent>
                 </Dialog>
             </div>

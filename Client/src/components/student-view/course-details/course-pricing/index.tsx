@@ -12,6 +12,7 @@ import { addCartItemToDb } from '@/lib/indexdb'
 import type { RootState } from '@/store'
 import type { CourseDetails } from '@/store/courseDetailsSlice'
 import type { CartItem } from '@/store/cartSlice'
+import server from '@/api/axiosinstance'
 
 const Student_CourseDetailsPricing = () => {
     const [cartItemsId, setCartitemsId] = useState<Set<string>>()
@@ -23,13 +24,18 @@ const Student_CourseDetailsPricing = () => {
 
     const navigate = useNavigate()
 
-    // Load cart item ids
-    useEffect(() => {
-        if (itemsInCart?.data) {
-            const itemsIds = new Set(itemsInCart.data.map((item: any) => item.courseId))
-            setCartitemsId(itemsIds as Set<string>)
+    const handleClick_BuyNow = async() => {
+        try{
+
+            const res = await server.post('')
+
+        }catch(err){
+
         }
-    }, [itemsInCart])
+    }
+
+    // Load cart item ids
+
 
     // Handle add to cart
     const handleClick_addToCart = async (course: CourseDetails) => {
@@ -51,6 +57,14 @@ const Student_CourseDetailsPricing = () => {
             addCartItemToDb(item)
         }
     }
+
+    useEffect(() => {
+        if (itemsInCart?.data) {
+            const itemsIds = new Set(itemsInCart.data.map((item: any) => item.courseId))
+            setCartitemsId(itemsIds as Set<string>)
+        }
+    }, [itemsInCart])
+
 
     if (!id) return null
 
@@ -100,6 +114,7 @@ const Student_CourseDetailsPricing = () => {
                     <Button
                         variant="outline"
                         className="border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer"
+                        onClick={() => handleClick_BuyNow}
                     >
                         Buy Now
                     </Button>
