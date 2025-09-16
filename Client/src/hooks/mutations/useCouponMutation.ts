@@ -13,6 +13,12 @@ type validateCouponProps = {
     isAuthenticated: boolean,
     userId: string,
 }
+type validateCouponOnLoginProps = {
+    courseId: string,
+    instructorId: string,
+    isAuthenticated?: boolean,
+    userId: string,
+}
 // {
 //     "success": true,
 //     "message": "created a coupon successfully",
@@ -42,11 +48,10 @@ const useCouponMutation = () => {
 
     const addNewCoupon = useMutation({
         mutationFn: async (coupon: couponForm) => {
-            // const res = await server.post('/instructor/coupon', coupon)
-            // return res.data
+            const res = await server.post('/instructor/coupon', coupon)
+            return res.data
         },
         onMutate: async (coupon) => {
-
             toast.loading('creating new coupon', { style: { justifyContent: 'center' } })
             await queryClient.cancelQueries({ queryKey: ['coupons'] })
 
@@ -151,12 +156,12 @@ const useCouponMutation = () => {
     })
 
     const validateCoupon = useMutation({
-        mutationFn: async ({ coupon, courseId, instructorId, isAuthenticated, userId }: validateCouponProps) => {   
+        mutationFn: async ({ coupon, courseId, instructorId, isAuthenticated, userId }: validateCouponProps) => {
             const res = await server.post(`/validate/coupon`, {
                 courseId: courseId,
                 instructorId: instructorId,
                 coupon: coupon,
-                isAuthenticated,
+                isAuthenticated: isAuthenticated,
                 userId,
             });
             return res.data
@@ -171,7 +176,22 @@ const useCouponMutation = () => {
         },
     })
 
-    return { addNewCoupon, editCoupon, deleteCoupon, validateCoupon }
+    const validateCouponOnLogin = useMutation({
+        mutationFn: async ({ courseId, instructorId, userId, isAuthenticated }: validateCouponOnLoginProps) => {
+            console.log(courseId,instructorId,userId,isAuthenticated)
+            const res = await server.post('/validate/coupon/on-login', {
+                courseId: courseId,
+                instructorId: instructorId,
+                userId: userId,
+                isAuthenticated: isAuthenticated
+            })
+            console.log("REs:" ,res)
+            return res.data
+        },
+        
+    })
+
+    return { addNewCoupon, editCoupon, deleteCoupon, validateCoupon,validateCouponOnLogin }
 
 }
 

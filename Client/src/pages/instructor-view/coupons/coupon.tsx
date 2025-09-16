@@ -12,7 +12,7 @@ const CouponPage = () => {
     const { data: coupons, isLoading, error } = useCoupon()
     const [activeCoupons, setActiveCoupons] = useState<Coupon[]>([])
     const [scheduledCoupons, setScheduledCoupons] = useState<Coupon[]>([])
-
+    const [isDialogOpen,setIsDialogOpen] = useState<boolean>(false)
 
     useEffect(() => {
         if (!coupons) return
@@ -45,7 +45,7 @@ const CouponPage = () => {
                 <h1 className="text-3xl font-bold font-display mt-3">Coupon Management</h1>
 
                 {/* dialog */}
-                <Dialog>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger className="ml-auto rounded-sm" asChild>
                         <Button className="ml-auto rounded-sm">Create New Coupon</Button>
                     </DialogTrigger>
@@ -55,7 +55,7 @@ const CouponPage = () => {
                         onEscapeKeyDown={(e) => e.preventDefault()}
                     >
                         <DialogTitle>New Coupon</DialogTitle>
-                        <NewCoupon isScheduling={false} isEdit={false} coupon={null} />
+                        <NewCoupon isScheduling={false} isEdit={false} coupon={null} isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen}/>
                     </DialogContent>
                 </Dialog>
             </div>
@@ -77,9 +77,9 @@ const CouponPage = () => {
                         onInteractOutside={(e) => e.preventDefault()}
                         onEscapeKeyDown={(e) => e.preventDefault()}
                     >
-                        <NewCoupon isScheduling={true} isEdit={false} coupon={null}/>
+                        <NewCoupon isScheduling={true} isEdit={false} coupon={null} isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen}/>
                     </DialogContent>
-                </Dialog>
+                </Dialog>   
             </div>
 
             <CouponsList  coupons={scheduledCoupons} error={error} isLoading={isLoading} isScheduling={true} />

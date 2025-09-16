@@ -90,18 +90,23 @@ const NewCoupon = ({ isScheduling, isEdit, coupon, setIsDialogOpen }: NewCouponp
       return toast.error('Enter a valid date', { style: { justifyContent: 'center' }, duration: 2000 })
     }
 
-    setIsDialogOpen(false)
-
     if (isEdit && coupon) {
       editCoupon.mutate(data, {
         onError: () => {
           setIsDialogOpen(true)
+        },
+        onSuccess:()=>{
+          setIsDialogOpen(false)
         }
       })
     } else {
       addNewCoupon.mutate(data, {
         onError: () => {
+          toast.dismiss()
           setIsDialogOpen(true)
+        },
+        onSuccess:()=>{
+          setIsDialogOpen(false)
         }
       })
     }
@@ -165,7 +170,7 @@ const NewCoupon = ({ isScheduling, isEdit, coupon, setIsDialogOpen }: NewCouponp
                   }
                 }
                 if (discountType === "fixed") {
-                  if (val < 50 || val > 4000) {
+                  if (val < 2 || val > 30) {
                     return "Fixed discount must be between 50 and 4000"
                   }
                 }

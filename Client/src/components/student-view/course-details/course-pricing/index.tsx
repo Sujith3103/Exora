@@ -18,10 +18,10 @@ import type { CourseDetails } from "@/store/courseDetailsSlice";
 import type { CartItem } from "@/store/cartSlice";
 
 import server from "@/api/axiosinstance";
-import { useValidateCoupon } from "@/hooks/queries/useValidateCoupon";
 import useCouponMutation from "@/hooks/mutations/useCouponMutation";
 import { number } from "echarts";
 import { useQueryClient } from "@tanstack/react-query";
+import { AlertCircle } from "lucide-react";
 
 type validateCouponProps = {
     courseId: string,
@@ -68,13 +68,14 @@ const Student_CourseDetailsPricing = () => {
     const inputRef = useRef<HTMLInputElement>(null);
     const course = data?.data;
 
-    const { validateCoupon } = useCouponMutation()
+    const { validateCoupon, validateCouponOnLogin } = useCouponMutation()
 
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
     const userId = useSelector((state: RootState) => state.auth.user?.id);
 
     const [cartItemsId, setCartItemsId] = useState<Set<string>>();
     const [isCouponApplyLoading, setIsCouponApplyLoading] = useState(false);
+    const [isCouponFetching, setIsCouponFetching] = useState(true);
     const [couponData, setCouponData] = useState<Coupon>()
     const [discountedPrice, setDiscountedPrice] = useState({
         originalPrice: 0,
@@ -113,7 +114,6 @@ const Student_CourseDetailsPricing = () => {
 
     const calculateCouponDiscount = (coursePrice: number, coupon: Coupon) => {
         let finalPrice = coursePrice
-        console.log(coupon)
         if (coupon.discountType === "percentage") {
             finalPrice = coursePrice - (coursePrice * coupon.discount) / 100
         } else if (coupon.discountType === "fixed") {
@@ -128,8 +128,6 @@ const Student_CourseDetailsPricing = () => {
             discountApplied: coursePrice - finalPrice,
             finalPrice,
         })
-        console.log("price cal")
-        setIsCouponApplyLoading(false)
 
         return {
             originalPrice: coursePrice,
@@ -148,7 +146,7 @@ const Student_CourseDetailsPricing = () => {
             isAuthenticated: isAuthenticated,
             userId: userId as unknown as string
         }
-        if(inputRef.current){
+        if (inputRef.current) {
             inputRef.current.value = ''
         }
         const res = validateCoupon.mutate(validateCouponProps, {
@@ -156,7 +154,7 @@ const Student_CourseDetailsPricing = () => {
                 if (data.success) {
                     queryClient.setQueryData(['validate-coupon', data.data.userId, data.data.title], data)
                     setCouponData(data.data)
-                    calculateCouponDiscount(course.pricing,data.data)
+                    calculateCouponDiscount(course.pricing, data.data)
                     toast.dismiss()
                     toast.success(data.message, {
                         style: { justifyContent: "center" },
@@ -171,6 +169,8 @@ const Student_CourseDetailsPricing = () => {
                         duration: 2000,
                     });
                 }
+                setIsCouponApplyLoading(false)
+                setIsCouponFetching(false)
             }
         })
     }
@@ -188,13 +188,27 @@ const Student_CourseDetailsPricing = () => {
         if (course?.id && params) {
             handleValidateCoupon()
         }
-    }, [course])
+        else if (course?.id && !params) {
+            setIsCouponFetching(true)
+            console.log("true mf")
+            validateCouponOnLogin.mutate({ courseId: course.id, instructorId: course.instructor.id, userId: userId as unknown as string, isAuthenticated: isAuthenticated }, {
+                onSettled: (data) => {
+                    if (data.success) {
+                        setCouponData(data.data)
+                        calculateCouponDiscount(course.pricing, data.data)
+                        setSearchParams({couponCode:data.data.code})
+                    }
 
+                    setIsCouponFetching(false)
+                }
+            })
+        }
+    }, [course])
 
     // ─── Render ─────────────────────────────────────────────
 
     if (!id) return null;
-    if (isLoading || isCouponApplyLoading) return <CoursePricingSkeleton />;
+    if (isLoading || isCouponFetching) return <CoursePricingSkeleton />;
     if (!course) return null;
 
     return (
@@ -211,10 +225,17 @@ const Student_CourseDetailsPricing = () => {
                 <div className="flex flex-col px-5 gap-4">
                     {
                         couponData ? (
-                            <p className="text-2xl font-bold flex items-center gap-3">${discountedPrice.finalPrice ? discountedPrice.finalPrice : course.pricing}
-                                <s className="text-sm text-muted-foreground font-semibold">${discountedPrice.originalPrice}</s>
-                                <span className="text-sm font-normal font-serif">{couponData?.discountType === 'fixed' ? `flat` : `${couponData?.discount}%`} off</span>
-                            </p>
+                            <>
+                                <p className="text-2xl font-bold flex items-center gap-3">${discountedPrice.finalPrice ? discountedPrice.finalPrice : course.pricing}
+                                    <s className="text-sm text-muted-foreground font-semibold">${discountedPrice.originalPrice}</s>
+                                    <span className="text-sm font-normal font-serif">{couponData?.discountType === 'fixed' ? `$${couponData.discount} flat` : `${couponData?.discount}%`} off</span>
+                                </p>
+                                <p className="italic text-red-500 flex items-center gap-1">
+                                    <AlertCircle size={14}/>
+                                    {couponData.onlyFor === 'tier_1' ? `Exclusive ${couponData?.discountType === 'fixed' ? `$${couponData.discount} flat off for new users` : `${couponData?.discount}% off for new users`} ` : null}
+                            
+                                    </p>
+                            </>
                         ) : (
                             <p className="text-2xl font-bold flex items-center">${course.pricing}</p>
                         )
@@ -288,12 +309,12 @@ const Student_CourseDetailsPricing = () => {
 
                     <div className="flex gap-2 mt-2">
                         <Input className="rounded-sm border-gray-400" ref={inputRef}
-                            
+
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     // refetch()
                                     handleValidateCoupon()
-                                    console.log("cause clicked enter so refetch")
+
                                 }
                             }}
                         />
@@ -303,8 +324,8 @@ const Student_CourseDetailsPricing = () => {
                             disabled={isCouponApplyLoading}
                             onClick={() => {
                                 // refetch()
+                                setIsCouponApplyLoading(true)
                                 handleValidateCoupon()
-                                console.log("refetch cause he clicked ")
                             }}
                         >
                             Apply
