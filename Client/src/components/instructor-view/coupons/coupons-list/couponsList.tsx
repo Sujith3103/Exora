@@ -1,9 +1,8 @@
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Table, TableBody, TableCaption, TableCell,  TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Coupon } from '@/config/config'
-import { useCoupon } from '@/hooks/queries/useCoupon'
 import { Edit, Trash } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import NewCoupon from '../new-coupon/newCoupon'
 import useCouponMutation from '@/hooks/mutations/useCouponMutation'
 
@@ -26,7 +25,6 @@ const CouponsList = ({ isScheduling, coupons, error, isLoading }: CouponListProp
     }
 
     const handleClick_Delete = (coupon: any) => {
-
         deleteCoupon.mutate(coupon)
     }
 
@@ -34,7 +32,7 @@ const CouponsList = ({ isScheduling, coupons, error, isLoading }: CouponListProp
     return (
         <div className="w-full overflow-x-auto">
             <Table className="mt-5 min-w-[1200px]">
-                <TableCaption>A list of your recent invoices.</TableCaption>
+                <TableCaption>A list of your recent Coupons</TableCaption>
                 <TableHeader>
                     <TableRow>
                         <TableHead className="lg:w-[100px] w-[60px] text-left">Title</TableHead>

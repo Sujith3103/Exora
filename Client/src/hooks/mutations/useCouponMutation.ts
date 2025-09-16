@@ -3,9 +3,16 @@ import type { couponForm } from "@/components/instructor-view/coupons/new-coupon
 import type { Coupon } from "@/config/config"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useDispatch } from "react-redux"
+import { useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 
-
+type validateCouponProps = {
+    courseId: string,
+    instructorId: string,
+    coupon: string,
+    isAuthenticated: boolean,
+    userId: string,
+}
 // {
 //     "success": true,
 //     "message": "created a coupon successfully",
@@ -31,6 +38,7 @@ const useCouponMutation = () => {
 
     const queryClient = useQueryClient()
     const dispatch = useDispatch()
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const addNewCoupon = useMutation({
         mutationFn: async (coupon: couponForm) => {
@@ -142,7 +150,28 @@ const useCouponMutation = () => {
         }
     })
 
-    return { addNewCoupon, editCoupon, deleteCoupon }
+    const validateCoupon = useMutation({
+        mutationFn: async ({ coupon, courseId, instructorId, isAuthenticated, userId }: validateCouponProps) => {   
+            const res = await server.post(`/validate/coupon`, {
+                courseId: courseId,
+                instructorId: instructorId,
+                coupon: coupon,
+                isAuthenticated,
+                userId,
+            });
+            return res.data
+        },
+        onMutate: () => {
+            toast.loading('validating coupon', { style: { justifyContent: 'center' } })
+        },
+
+        onError: () => {
+            toast.dismiss()
+            toast.error("Failed to apply coupon", { style: { justifyContent: 'center' }, duration: 2000 });
+        },
+    })
+
+    return { addNewCoupon, editCoupon, deleteCoupon, validateCoupon }
 
 }
 

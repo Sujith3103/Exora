@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux"
 import type { AppDispatch, RootState } from "../../store"
-import { Navigate, useLocation } from "react-router-dom"
+import { Navigate, useLocation, useNavigate } from "react-router-dom"
 import { useEffect } from "react"
 import { isloading, loginSuccess, logout } from "@/store/authSlice"
 import server from "@/api/axiosinstance"
@@ -14,6 +14,7 @@ const RouteGuard = ({ element }: any) => {
 
     const location = useLocation()
     const dispatch = useDispatch<AppDispatch>()
+    const navigate = useNavigate()
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -68,7 +69,7 @@ const RouteGuard = ({ element }: any) => {
     }
 
     if (isAuthenticated && location.pathname.includes('auth')) {
-        return <Navigate to={'/'} />
+        return navigate(-1)
     }
 
     if (isAuthenticated && location.pathname.includes('instructor') && user?.role != 'INSTRUCTOR') {

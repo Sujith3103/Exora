@@ -1,5 +1,4 @@
 import server from "@/api/axiosinstance"
-import type { couponForm } from "@/components/instructor-view/coupons/new-coupon/newCoupon"
 import type { Coupon } from "@/config/config"
 import { useQuery } from "@tanstack/react-query"
 

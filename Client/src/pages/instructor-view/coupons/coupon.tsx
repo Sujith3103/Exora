@@ -55,7 +55,7 @@ const CouponPage = () => {
                         onEscapeKeyDown={(e) => e.preventDefault()}
                     >
                         <DialogTitle>New Coupon</DialogTitle>
-                        <NewCoupon isScheduling={false} isEdit={false} coupon={null}/>
+                        <NewCoupon isScheduling={false} isEdit={false} coupon={null} />
                     </DialogContent>
                 </Dialog>
             </div>

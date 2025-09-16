@@ -14,4 +14,4 @@ export const useCourseDetails = (id: string) => {
         refetchOnWindowFocus: false,
         staleTime: 1000 * 120
     })
-}
+}   

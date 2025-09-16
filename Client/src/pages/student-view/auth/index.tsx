@@ -3,7 +3,7 @@ import { type AppDispatch } from "@/store"
 import { loginFailure, loginSuccess } from "@/store/authSlice"
 import { useEffect, useState } from "react"
 import { useDispatch } from "react-redux"
-import { Link, useLocation, useNavigate } from "react-router-dom"
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
 
 //SHADCN COMPONENTS
 import { Button } from "@/components/ui/button"
@@ -16,9 +16,13 @@ import StudentNavbar from "@/components/navbar/student-navbar"
 
 const AuthPage = () => {
 
+    // Login page (after successful login)
+
     const location = useLocation();
     const dispatch = useDispatch<AppDispatch>()
     const navigate = useNavigate()
+
+    const redirect = new URLSearchParams(location.search).get("redirect") || "";
 
     const initialFormValue = {
         name: "",
@@ -47,7 +51,9 @@ const AuthPage = () => {
                 response = await server.post('/auth/register', jsonData);
                 if (response.data.success) {
                     setFormValue(initialFormValue)
+
                     navigate('/auth/login')
+
                 }
                 else {
                     setIsError("User already exists")
@@ -56,13 +62,19 @@ const AuthPage = () => {
                 const updatedjson = { ...jsonData, rememberMe: formValue.checkbox };
                 response = await server.post('/auth/login', updatedjson);
                 if (response.data.success) {
+                    if (redirect) {
+                        const safeRedirect = redirect.startsWith("/") ? redirect : `/${redirect}`;
+                        console.log("redirecting to:", safeRedirect);
+                        navigate(safeRedirect);
+                    } else {
+                        navigate("/courses?category=web-development&page=1&limit=10");
+                    }   
                     dispatch(loginSuccess({
                         user: response.data.userData,
                         token: response.data.token
                     }))
                     sessionStorage.setItem('token', response.data.token)
                     sessionStorage.setItem("user", JSON.stringify(response.data.userData));
-                    navigate('/')
                 } else {
                     dispatch(loginFailure(response.data.message || "Login failed"));
                 }
@@ -78,8 +90,8 @@ const AuthPage = () => {
         setIsLoading(false)
     };
 
-
     useEffect(() => {
+        console.log(redirect)
         const pathSegments = window.location.pathname.split('/');
         const action = pathSegments[2];
         setActiveTab(action)

@@ -9,7 +9,6 @@ import { LucideMoveRight, X } from "lucide-react"
 import { toast } from "sonner"
 import useCouponMutation from "@/hooks/mutations/useCouponMutation"
 import type { Coupon } from "@/config/config"
-import { useEffect } from "react"
 
 type NewCouponprop = {
 
@@ -36,7 +35,7 @@ export type couponForm = {
   courseId?: string
 }
 
-const NewCoupon = ({ isScheduling, isEdit, coupon, isDialogOpen, setIsDialogOpen }: NewCouponprop) => {
+const NewCoupon = ({ isScheduling, isEdit, coupon, setIsDialogOpen }: NewCouponprop) => {
 
   const { addNewCoupon, editCoupon } = useCouponMutation()
 
