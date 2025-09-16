@@ -33,6 +33,7 @@ import cart_route from './routes/user/cart_route';
 import media_route from './routes/media_route'
 import instructor_course_route from './routes/instructor/course_route'
 import coupon_route from './routes/instructor/coupon_route'
+import validateCoupon_route from './routes/user/coupon_route'
 import course_route from './routes/user/course_route'
 import trackEvent_route from './routes/click'
 import { connectRedis, redis } from "./utils/redisClient";
@@ -54,6 +55,7 @@ app.use('/api/media', media_route);
 app.use('/api/courses', course_route);
 app.use('/api/instructor/course', instructor_course_route)
 app.use('/api/instructor/coupon',coupon_route)
+app.use('/api/validate/coupon',validateCoupon_route)
 app.use('/api/track-click', trackEvent_route)
 app.get("/health", (req, res) => {
   res.status(200).send("OK");

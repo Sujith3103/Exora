@@ -13,4 +13,5 @@ router.get('/',AuthenticateMiddleware,getAllCoupons)
 
 router.delete('/:couponId',AuthenticateMiddleware,deleteCoupon)
 
+
 export default router
