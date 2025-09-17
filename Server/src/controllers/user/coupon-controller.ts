@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../../utils/prisma";
+import { startOfMonth } from "date-fns";
+import { success } from "zod";
 
 
 const isValidDate = (validFrom: Date, validUntil: Date): boolean => {
@@ -22,6 +24,8 @@ const isMaxCouponLimitReached = (couponLimit: number, couponsUsed: number): bool
 const isLimitPerUser = async (couponId: string, limitPerUser: number, userId: string | undefined): Promise<boolean> => {
 
     const isAuthticated = Boolean(userId)
+    const month = startOfMonth(new Date())
+
     try {
 
         if (!isAuthticated) {
@@ -37,13 +41,6 @@ const isLimitPerUser = async (couponId: string, limitPerUser: number, userId: st
         }
 
         else {
-            await prisma.couponApplication.create({
-                data: {
-                    couponId: couponId,
-                    userId: userId!,
-                    status: 'APPLIED'
-                }
-            })
             return false
         }
 
@@ -84,7 +81,7 @@ const checkTier = async (item: any, userId: string | undefined) => {
                 userId: userId
             }
         })
-        
+
 
         if (item.onlyFor === 'tier_3') {
             return false
@@ -119,6 +116,13 @@ export const valideateCouponOnLogin = async (req: Request, res: Response) => {
         })
         let found = false
 
+        if (coupons.length === 0) {
+            return res.json({
+                success: false,
+                message: 'no coupons'
+            })
+        }
+
         for (let item of coupons) {
 
             if (found) break
@@ -136,10 +140,16 @@ export const valideateCouponOnLogin = async (req: Request, res: Response) => {
             }
         }
 
+        if (!found) {
+            return res.json({
+                success: false
+            })
+        }
+
     } catch (err) {
         console.log(err)
         return res.status(500).json({
-            message:"failed to fetch coupons"
+            message: "failed to fetch coupons"
         })
     }
 
@@ -148,6 +158,7 @@ export const valideateCouponOnLogin = async (req: Request, res: Response) => {
 export const validateCoupon = async (req: Request, res: Response) => {
 
     const { courseId, coupon, instructorId, userId, isAuthenticated } = req.body
+    const month = startOfMonth(new Date())
 
     try {
         const coupons = await prisma.coupon.findMany({
@@ -187,7 +198,7 @@ export const validateCoupon = async (req: Request, res: Response) => {
                 })
             }
 
-            else if (await isCourseType(item, courseId)) {
+            else if (isCourseType(item, courseId)) {
                 return res.json({
                     success: false,
                     message: 'coupon not valid for this course'
@@ -196,17 +207,44 @@ export const validateCoupon = async (req: Request, res: Response) => {
 
             else {
                 if (isAuthenticated) {
-                    await prisma.couponApplication.create({
-                        data: {
-                            couponId: item.id,
-                            userId: userId,
-                            status: 'APPLIED',
-                        }
+
+                    await prisma.$transaction(async (tx) => {
+
+                        const inserting = await tx.couponApplication.upsert({
+                            where: {
+                                couponId_month: {
+                                    couponId: item.id,
+                                    month: month
+                                }
+                            },
+                            update: {
+                                appliedCount: {
+                                    increment: 1
+                                }
+                            },
+                            create: {
+                                couponId: item.id,
+                                instructorId: instructorId,
+                                status: 'APPLIED',
+                                month: month,
+                                appliedCount:1
+                            }
+                        })
+
+                        await tx.coupon.update({
+                            where: { userId:instructorId, id: item.id },
+                            data: {
+                                timesApplied: {
+                                    increment: 1
+                                }
+                            }
+                        })
+                        console.log("inserted: ", inserting)
                     })
                 }
                 return res.json({
                     success: true,
-                    message: 'coupon is valid',
+                    message: 'coupon is applied',
                     data: item
                 })
             }

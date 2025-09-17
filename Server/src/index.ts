@@ -53,13 +53,15 @@ app.use('/api/user', user_route);
 app.use('/api/user/cart',cart_route );
 app.use('/api/media', media_route);
 app.use('/api/courses', course_route);
-app.use('/api/instructor/course', instructor_course_route)
-app.use('/api/instructor/coupon',coupon_route)
 app.use('/api/validate/coupon',validateCoupon_route)
 app.use('/api/track-click', trackEvent_route)
 app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
+
+//instructor
+app.use('/api/instructor/course', instructor_course_route)
+app.use('/api/instructor/coupon',coupon_route)
 
 // -------------------- SUPABASE --------------------
 const supabaseUrl = "https://aywktugruubporzskjdt.supabase.co";

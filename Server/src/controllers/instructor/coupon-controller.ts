@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../../utils/prisma";
 import { success } from "zod";
+import { addMonths, startOfMonth, subMonths } from "date-fns";
 
 export type couponForm = {
     title: string,
@@ -13,6 +14,7 @@ export type couponForm = {
     autoApply: boolean,
     validUntil: Date,
     validFrom: Date,
+    timesApplied: number,
     applyTo: 'oneCourse' | 'allCourses',
     courseId?: string
 }
@@ -137,3 +139,71 @@ export const deleteCoupon = async (req: Request, res: Response) => {
     }
 
 }
+export const getCouponAnalytics = async (req: Request, res: Response) => {
+    const userId = req.user?.id
+
+    // first day of previous month
+    const prevMonthStart = startOfMonth(subMonths(new Date(), 1)); // Aug 1
+    const currMonthStart = startOfMonth(new Date());
+    const nextMonthStart = startOfMonth(addMonths(new Date(), 1)); // Oct 1
+
+    const rangeStart = prevMonthStart;   // Aug 1
+    const rangeEnd = nextMonthStart;     // Oct 1
+    console.log("range start : ", rangeStart)
+    try {
+
+        const applications = await prisma.couponApplication.findMany({
+            where: {
+                instructorId: userId,
+                month: {
+                    gte: rangeStart, // Aug 1
+                    lt: rangeEnd   // Oct 1
+                }
+            },
+            include: { coupon: true }
+        })
+
+        let totalTimesApplied = 0
+        let timesAppliedThisMonth = 0
+        let timesAppliedPrevMonth = 0
+
+        let revenueByCoupon = 0
+        let timesRedeemed = 0
+
+        let conversionRate = 0
+
+        let once = 0
+        for (let item of applications) {
+            if (!once) {
+                totalTimesApplied = item.coupon.timesApplied!
+
+                once = 1
+            }
+
+            if (item.month.getTime() === prevMonthStart.getTime()) {
+                timesAppliedPrevMonth += item.appliedCount;
+            }
+
+            else if (item.month.getTime() === currMonthStart.getTime()) {
+                timesAppliedThisMonth += item.appliedCount;
+            }
+        }
+
+        // console.log(applications)
+        res.status(200).json({
+            success: true,
+            message: "fetched coupon analytics successfully",
+            data: {
+                totalTimesApplied,
+                timesAppliedThisMonth,
+                timesAppliedPrevMonth,
+                revenueByCoupon,
+                timesRedeemed,
+                conversionRate
+            }
+        })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Something went wrong" })
+    }
+}   
