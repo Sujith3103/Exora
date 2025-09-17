@@ -1,18 +1,24 @@
+import CouponAnalytics from "@/components/instructor-view/coupons/coupon-analytics/couponAnalytics"
 import CouponsList from "@/components/instructor-view/coupons/coupons-list/couponsList"
 import NewCoupon from "@/components/instructor-view/coupons/new-coupon/newCoupon"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import type { Coupon } from "@/config/config"
 import { useCoupon } from "@/hooks/queries/useCoupon"
+import { useCouponAnalytics } from "@/hooks/queries/useCouponAnalytics"
 import { ChevronLeft } from "lucide-react"
 import { useEffect, useState } from "react"
+
+
 
 const CouponPage = () => {
 
     const { data: coupons, isLoading, error } = useCoupon()
     const [activeCoupons, setActiveCoupons] = useState<Coupon[]>([])
     const [scheduledCoupons, setScheduledCoupons] = useState<Coupon[]>([])
-    const [isDialogOpen,setIsDialogOpen] = useState<boolean>(false)
+    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
+
+    const { data, isLoading: isCouponAnalyticsLoading } = useCouponAnalytics()
 
     useEffect(() => {
         if (!coupons) return
@@ -21,7 +27,7 @@ const CouponPage = () => {
 
         const active: Coupon[] = []
         const scheduled: Coupon[] = []
-
+        // console.log("calculating the active coupons")
         coupons.forEach(coupon => {
             if (new Date(coupon.validFrom ?? 0) <= now) {
                 active.push(coupon)
@@ -38,11 +44,27 @@ const CouponPage = () => {
 
     return (
         <div className="p-5 px-10 w-full">
+            <>
+            </>
             <Button variant={'ghost'} className="cursor-pointer"
                 onClick={() => history.back()}
             ><ChevronLeft /> Back</Button>
+            <div>
+                <h1 className="text-3xl font-bold font-display mt-3">Coupon Analytics</h1>
+                {
+                    isCouponAnalyticsLoading ? <>
+                    
+                    </> : (
+                        <CouponAnalytics conversionRate={data?.conversionRate ?? 0} revenueByCoupon={data?.revenueByCoupon ?? 0} totalTimesApplied={data?.totalTimesApplied ?? 0} timesRedeemed={data?.timesRedeemed ?? 0}
+                            timesAppliedPrevMonth={data?.timesAppliedPrevMonth ?? 0} timesAppliedThisMonth={data?.timesAppliedThisMonth ?? 0}
+                        />
+                    )
+                }
+            </div>
             <div className="flex items-center w-full ">
                 <h1 className="text-3xl font-bold font-display mt-3">Coupon Management</h1>
+
+                {/* coupon analytics */}
 
                 {/* dialog */}
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -55,7 +77,7 @@ const CouponPage = () => {
                         onEscapeKeyDown={(e) => e.preventDefault()}
                     >
                         <DialogTitle>New Coupon</DialogTitle>
-                        <NewCoupon isScheduling={false} isEdit={false} coupon={null} isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen}/>
+                        <NewCoupon isScheduling={false} isEdit={false} coupon={null} isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
                     </DialogContent>
                 </Dialog>
             </div>
@@ -63,7 +85,7 @@ const CouponPage = () => {
                 {/* some chart like stuff */}
             </div>
 
-            <CouponsList coupons={activeCoupons} error={error} isLoading={isLoading} isScheduling={true} />
+            <CouponsList coupons={activeCoupons} error={error} isLoading={isLoading} isScheduling={false} />
 
             <div className="flex items-center w-full mt-20 ">
                 <h1 className="text-2xl font-bold font-display">No Coupons Scheduled</h1>
@@ -77,12 +99,12 @@ const CouponPage = () => {
                         onInteractOutside={(e) => e.preventDefault()}
                         onEscapeKeyDown={(e) => e.preventDefault()}
                     >
-                        <NewCoupon isScheduling={true} isEdit={false} coupon={null} isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen}/>
+                        <NewCoupon isScheduling={true} isEdit={false} coupon={null} isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
                     </DialogContent>
-                </Dialog>   
+                </Dialog>
             </div>
 
-            <CouponsList  coupons={scheduledCoupons} error={error} isLoading={isLoading} isScheduling={true} />
+            <CouponsList coupons={scheduledCoupons} error={error} isLoading={isLoading} isScheduling={true} />
 
 
         </div>

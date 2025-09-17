@@ -43,6 +43,7 @@ const CouponsList = ({ isScheduling, coupons, error, isLoading }: CouponListProp
                         <TableHead className="text-center">Limit/user</TableHead>
                         <TableHead className="text-center">Only for</TableHead>
                         <TableHead className="text-center">Times Used</TableHead>
+                        <TableHead className="text-center">Times Applied</TableHead>
                         <TableHead className="text-center">Revenue</TableHead>
                         {isScheduling && (
                             <TableHead className="text-center">Valid From</TableHead>
@@ -66,6 +67,7 @@ const CouponsList = ({ isScheduling, coupons, error, isLoading }: CouponListProp
                             <TableCell className="text-center">{coupon.limitPerUser}</TableCell>
                             <TableCell className="text-center">{coupon.onlyFor}</TableCell>
                             <TableCell className="text-center">{coupon.timesUsed}</TableCell>
+                            <TableCell className="text-center">{coupon.timesApplied}</TableCell>
                             <TableCell className="text-center">{coupon.totalRevenue}</TableCell>
                             {isScheduling && (
                                 <TableCell className="text-center">

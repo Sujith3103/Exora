@@ -196,7 +196,7 @@ const Student_CourseDetailsPricing = () => {
                     if (data.success) {
                         setCouponData(data.data)
                         calculateCouponDiscount(course.pricing, data.data)
-                        setSearchParams({couponCode:data.data.code})
+                        setSearchParams({ couponCode: data.data.code })
                     }
 
                     setIsCouponFetching(false)
@@ -230,11 +230,16 @@ const Student_CourseDetailsPricing = () => {
                                     <s className="text-sm text-muted-foreground font-semibold">${discountedPrice.originalPrice}</s>
                                     <span className="text-sm font-normal font-serif">{couponData?.discountType === 'fixed' ? `$${couponData.discount} flat` : `${couponData?.discount}%`} off</span>
                                 </p>
-                                <p className="italic text-red-500 flex items-center gap-1">
-                                    <AlertCircle size={14}/>
-                                    {couponData.onlyFor === 'tier_1' ? `Exclusive ${couponData?.discountType === 'fixed' ? `$${couponData.discount} flat off for new users` : `${couponData?.discount}% off for new users`} ` : null}
-                            
+                                {
+                                    couponData.autoApply &&
+                                    <p className="italic text-red-500 flex items-center gap-1">
+                                       {
+                                       ( couponData.onlyFor === 'tier_1' || couponData.onlyFor === 'tier_2' ) && 
+                                        <AlertCircle size={14} />
+                                       }
+                                        {couponData.onlyFor === 'tier_1' ? `Exclusive ${couponData?.discountType === 'fixed' ? `$${couponData.discount} flat off for new users` : `${couponData?.discount}% off for new users`} ` : null}
                                     </p>
+                                }
                             </>
                         ) : (
                             <p className="text-2xl font-bold flex items-center">${course.pricing}</p>

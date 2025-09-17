@@ -76,6 +76,7 @@ export type Coupon = couponForm & {
   userId: string
   totalRevenue: number
   timesUsed: number
+  timesApplied: number
   createdAt: Date
   updatedAt: Date
 }

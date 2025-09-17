@@ -178,7 +178,6 @@ const useCouponMutation = () => {
 
     const validateCouponOnLogin = useMutation({
         mutationFn: async ({ courseId, instructorId, userId, isAuthenticated }: validateCouponOnLoginProps) => {
-            console.log(courseId,instructorId,userId,isAuthenticated)
             const res = await server.post('/validate/coupon/on-login', {
                 courseId: courseId,
                 instructorId: instructorId,
