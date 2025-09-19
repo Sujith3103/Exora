@@ -149,7 +149,6 @@ export const getCouponAnalytics = async (req: Request, res: Response) => {
 
     const rangeStart = prevMonthStart;   // Aug 1
     const rangeEnd = nextMonthStart;     // Oct 1
-    console.log("range start : ", rangeStart)
     try {
 
         const applications = await prisma.couponApplication.findMany({

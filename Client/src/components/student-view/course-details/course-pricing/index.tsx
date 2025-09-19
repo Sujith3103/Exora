@@ -11,7 +11,7 @@ import { CoursePricingSkeleton } from "./course-pricing-Skeleton";
 import { useCourseDetails } from "@/hooks/queries/useCourseDetails";
 import { useCart } from "@/hooks/queries/useCart";
 import useCartMutation from "@/hooks/mutations/useCartMutation";
-import { addCartItemToDb } from "@/lib/indexdb";
+import { addCartItemToDb, getCartItemsFromIDB } from "@/lib/indexdb";
 
 import type { RootState } from "@/store";
 import type { CourseDetails } from "@/store/courseDetailsSlice";
@@ -22,6 +22,7 @@ import useCouponMutation from "@/hooks/mutations/useCouponMutation";
 import { number } from "echarts";
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertCircle } from "lucide-react";
+import usePurchaseMutation from "@/hooks/mutations/usePurchaseMutation";
 
 type validateCouponProps = {
     courseId: string,
@@ -61,7 +62,7 @@ const Student_CourseDetailsPricing = () => {
     const queryClient = useQueryClient()
 
 
-    const { data: itemsInCart } = useCart();
+    const { data: itemsInCart, refetch, isLoading: isFetchingCartItems } = useCart();
 
     const { addToCart } = useCartMutation();
     const { data, isLoading } = useCourseDetails(id || "");
@@ -69,6 +70,7 @@ const Student_CourseDetailsPricing = () => {
     const course = data?.data;
 
     const { validateCoupon, validateCouponOnLogin } = useCouponMutation()
+    const { purchaseCourse } = usePurchaseMutation()
 
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
     const userId = useSelector((state: RootState) => state.auth.user?.id);
@@ -85,16 +87,35 @@ const Student_CourseDetailsPricing = () => {
 
     // ─── Handlers ───────────────────────────────────────────
 
-    const handleBuyNow = () => {
+    const handleBuyNow = async () => {
         if (!course) return;
 
         if (!isAuthenticated) {
             return navigate(`/auth/login?redirect=/course/${course.id}`);
         }
 
-        // TODO: Implement actual buy now flow
-        toast.info("Proceeding to checkout...");
+        if (couponData) {
+            const finalPrice = calculateCouponDiscount(course.pricing, couponData)
+            purchaseCourse.mutate({
+                courseId: course.id,
+                ...finalPrice
+            })
+
+        }
+
     };
+
+    async function fetchCartItems() {
+        if (isAuthenticated) {
+            const ids = new Set(itemsInCart.data.map((item: any) => item.courseId));
+            setCartItemsId(ids as Set<string>);
+        } else {
+            const data = await getCartItemsFromIDB()
+            const ids = new Set(data.map((item: any) => item.courseId));
+            setCartItemsId(ids)
+        }
+
+    }
 
     const handleAddToCart = (course: CourseDetails) => {
         if (!course.thumbnailUrl) return;
@@ -110,6 +131,7 @@ const Student_CourseDetailsPricing = () => {
         };
 
         isAuthenticated ? addToCart.mutate(item) : addCartItemToDb(item);
+        fetchCartItems()
     };
 
     const calculateCouponDiscount = (coursePrice: number, coupon: Coupon) => {
@@ -178,10 +200,8 @@ const Student_CourseDetailsPricing = () => {
     // ─── Effects ────────────────────────────────────────────
 
     useEffect(() => {
-        if (itemsInCart?.data) {
-            const ids = new Set(itemsInCart.data.map((item: any) => item.courseId));
-            setCartItemsId(ids as Set<string>);
-        }
+
+        fetchCartItems()
     }, [itemsInCart]);
 
     useEffect(() => {
@@ -190,7 +210,7 @@ const Student_CourseDetailsPricing = () => {
         }
         else if (course?.id && !params) {
             setIsCouponFetching(true)
-            console.log("true mf")
+
             validateCouponOnLogin.mutate({ courseId: course.id, instructorId: course.instructor.id, userId: userId as unknown as string, isAuthenticated: isAuthenticated }, {
                 onSettled: (data) => {
                     if (data.success) {
@@ -204,6 +224,15 @@ const Student_CourseDetailsPricing = () => {
             })
         }
     }, [course])
+
+    useEffect(() => {
+        async function refetchCart() {
+            if (isAuthenticated) {
+                await refetch()
+            }
+        }
+        refetchCart()
+    }), [isAuthenticated]
 
     // ─── Render ─────────────────────────────────────────────
 
@@ -233,10 +262,10 @@ const Student_CourseDetailsPricing = () => {
                                 {
                                     couponData.autoApply &&
                                     <p className="italic text-red-500 flex items-center gap-1">
-                                       {
-                                       ( couponData.onlyFor === 'tier_1' || couponData.onlyFor === 'tier_2' ) && 
-                                        <AlertCircle size={14} />
-                                       }
+                                        {
+                                            (couponData.onlyFor === 'tier_1' || couponData.onlyFor === 'tier_2') &&
+                                            <AlertCircle size={14} />
+                                        }
                                         {couponData.onlyFor === 'tier_1' ? `Exclusive ${couponData?.discountType === 'fixed' ? `$${couponData.discount} flat off for new users` : `${couponData?.discount}% off for new users`} ` : null}
                                     </p>
                                 }
@@ -251,7 +280,7 @@ const Student_CourseDetailsPricing = () => {
                     {cartItemsId?.has(id) ? (
                         <Button
                             variant="outline"
-                            className="border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700"
+                            className="border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer"
                             onClick={() => navigate("/cart")}
                         >
                             View in Cart
@@ -259,8 +288,9 @@ const Student_CourseDetailsPricing = () => {
                     ) : (
                         <Button
                             variant="outline"
-                            className="border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700"
+                            className="border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer"
                             onClick={() => handleAddToCart(course)}
+                            disabled={isFetchingCartItems}
                         >
                             Add to Cart
                         </Button>
@@ -269,7 +299,7 @@ const Student_CourseDetailsPricing = () => {
                     {/* Buy Now */}
                     <Button
                         variant="outline"
-                        className="border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700"
+                        className="border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer"
                         onClick={handleBuyNow}
                     >
                         Buy Now

@@ -21,11 +21,13 @@ const useCartMutation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] })
+      toast.dismiss()
       toast.success('added to cart', { style: { justifyContent: 'center' }, duration: 1000 })
     },
     onError: (_err, item: CartItem) => {
       // Rollback: remove item from Redux
       dispatch(removeItem(item.courseId));
+      toast.dismiss()
       toast.error('failed to add to cart', { style: { justifyContent: 'center' } })
     },
   })
@@ -107,6 +109,9 @@ const useCartMutation = () => {
       items.forEach((item) => dispatch(removeItem(item.courseId)))
       toast.dismiss()
       toast.error('failed to add to cart', { style: { justifyContent: 'center' } })
+    },
+    onSettled:() => {
+      toast.dismiss()
     }
   })
 

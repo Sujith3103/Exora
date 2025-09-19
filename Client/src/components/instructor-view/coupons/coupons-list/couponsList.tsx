@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { Table, TableBody, TableCaption, TableCell,  TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Coupon } from '@/config/config'
 import { Edit, Trash } from 'lucide-react'
 import { useState } from 'react'
@@ -17,7 +17,7 @@ const CouponsList = ({ isScheduling, coupons, error, isLoading }: CouponListProp
 
     const { deleteCoupon } = useCouponMutation()
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
-    const [couponEditing,setCouponEditing] = useState<Coupon>()
+    const [couponEditing, setCouponEditing] = useState<Coupon>()
 
     const handleClick_Edit = (coupon: Coupon) => {
         setCouponEditing(coupon)
@@ -71,11 +71,13 @@ const CouponsList = ({ isScheduling, coupons, error, isLoading }: CouponListProp
                             <TableCell className="text-center">{coupon.totalRevenue}</TableCell>
                             {isScheduling && (
                                 <TableCell className="text-center">
-                                    {new Date(coupon.validFrom).toLocaleDateString()}
+                                    {new Date(coupon.validUntil).toISOString().split("T")[0]
+                                    }
                                 </TableCell>
                             )}
                             <TableCell className="text-center">
-                                {new Date(coupon.validUntil).toLocaleDateString()}
+                                {new Date(coupon.validUntil).toISOString().split("T")[0]
+                                }
                             </TableCell>
                             <TableCell className="text-center">{coupon.applyTo}</TableCell>
                             <TableCell className="text-center">active</TableCell>

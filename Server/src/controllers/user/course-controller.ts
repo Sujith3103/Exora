@@ -78,9 +78,16 @@ export const purchaseCourse = async(req:Request,res:Response) => {
 
     const userId = req.user?.id
     const courseId = req.params
+    const {originalPrice,discountApplied,finalPrice} = req.body
 
     try{
 
+        //create a user purchase
+        //update user recommendation?
+        
+
+        console.log(userId,courseId)
+        console.log(originalPrice,discountApplied,finalPrice)
         // const res = await prisma.userPurchase.create({
         //     data:{
                 

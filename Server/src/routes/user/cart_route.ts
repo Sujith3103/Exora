@@ -4,16 +4,16 @@ import { AddItemsToCart, addMultipleItemsToCart, getUserCartDetails, removeItemF
 
 const router = Router()
 
-router.post('/cart/items',AuthenticateMiddleware,AddItemsToCart )
-router.post('/cart/items/batch', AuthenticateMiddleware, addMultipleItemsToCart)
+router.post('/items',AuthenticateMiddleware,AddItemsToCart )
+router.post('/items/batch', AuthenticateMiddleware, addMultipleItemsToCart)
 
-router.patch('/cart/items/status/:itemId',AuthenticateMiddleware,updateCartItemStatus)
+router.patch('/items/status/:itemId',AuthenticateMiddleware,updateCartItemStatus)
 
 //get - cart
-router.get('/cart',AuthenticateMiddleware,getUserCartDetails)
+router.get('',AuthenticateMiddleware,getUserCartDetails)
 
 // Remove item from cart
-router.delete('/cart/items/:itemId',AuthenticateMiddleware, removeItemFromCart)
+router.delete('/items/:itemId',AuthenticateMiddleware, removeItemFromCart)
 
 
 export default router

@@ -7,6 +7,6 @@ const router = Router()
 router.get('/', student_GetAllCourses)
 
 router.get('/:courseId',student_GetCourseDetails)
-router.get('/:courseId/purchase',AuthenticateMiddleware,purchaseCourse)
+router.post('/:courseId/purchase',AuthenticateMiddleware,purchaseCourse)
 
 export default router

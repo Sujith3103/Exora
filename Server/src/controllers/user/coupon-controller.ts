@@ -239,7 +239,6 @@ export const validateCoupon = async (req: Request, res: Response) => {
                                 }
                             }
                         })
-                        console.log("inserted: ", inserting)
                     })
                 }
                 return res.json({
