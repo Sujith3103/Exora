@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,82 +13,83 @@ import { CoursePricingSkeleton } from "./course-pricing-Skeleton";
 import { useCourseDetails } from "@/hooks/queries/useCourseDetails";
 import { useCart } from "@/hooks/queries/useCart";
 import useCartMutation from "@/hooks/mutations/useCartMutation";
-import { addCartItemToDb, getCartItemsFromIDB } from "@/lib/indexdb";
+import useCouponMutation from "@/hooks/mutations/useCouponMutation";
+import usePurchaseMutation from "@/hooks/mutations/usePurchaseMutation";
 
+import { addCartItemToDb, getCartItemsFromIDB } from "@/lib/indexdb";
 import type { RootState } from "@/store";
 import type { CourseDetails } from "@/store/courseDetailsSlice";
 import type { CartItem } from "@/store/cartSlice";
 
-import server from "@/api/axiosinstance";
-import useCouponMutation from "@/hooks/mutations/useCouponMutation";
-import { number } from "echarts";
-import { useQueryClient } from "@tanstack/react-query";
-import { AlertCircle } from "lucide-react";
-import usePurchaseMutation from "@/hooks/mutations/usePurchaseMutation";
 
-type validateCouponProps = {
-    courseId: string,
-    instructorId: string,
-    coupon: string,
-    isAuthenticated: boolean,
-    userId: string,
-}
+// ─── Types ──────────────────────────────────────────────
+
+type ValidateCouponProps = {
+    courseId: string;
+    instructorId: string;
+    coupon: string;
+    isAuthenticated: boolean;
+    userId: string;
+    isApplying? : boolean
+};
 
 type Coupon = {
-    id: string
-    title: string
-    code: string
-    discountType: "percentage" | "fixed" // add more if backend supports
-    discount: number
-    noOfCoupons: number
-    limitPerUser: number
-    onlyFor: "tier_1" | "tier_2" | "tier_3" | "all" // guess from your system
-    autoApply: boolean
-    timesUsed: number
-    totalRevenue: number
-    courseId: string
-    applyTo: "oneCourse" | "allCourses" // extend if needed
-    validUntil: string // ISO date string
-    validFrom: string  // ISO date string
-    userId: string
-}
+    id: string;
+    title: string;
+    code: string;
+    discountType: "percentage" | "fixed";
+    discount: number;
+    noOfCoupons: number;
+    limitPerUser: number;
+    onlyFor: "tier_1" | "tier_2" | "tier_3" | "all";
+    autoApply: boolean;
+    timesUsed: number;
+    totalRevenue: number;
+    courseId: string;
+    applyTo: "oneCourse" | "allCourses";
+    validUntil: string;
+    validFrom: string;
+    userId: string;
+};
 
+
+// ─── Component ─────────────────────────────────────────
 
 const Student_CourseDetailsPricing = () => {
-
-
+    // ─── Hooks / Setup ───────────────────────────────────
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const params = searchParams.get('couponCode')
-    const queryClient = useQueryClient()
+    const queryClient = useQueryClient();
+    const inputRef = useRef<HTMLInputElement>(null);
 
+    const params = searchParams.get("couponCode");
 
     const { data: itemsInCart, refetch, isLoading: isFetchingCartItems } = useCart();
-
     const { addToCart } = useCartMutation();
     const { data, isLoading } = useCourseDetails(id || "");
-    const inputRef = useRef<HTMLInputElement>(null);
     const course = data?.data;
-
-    const { validateCoupon, validateCouponOnLogin } = useCouponMutation()
-    const { purchaseCourse } = usePurchaseMutation()
+    const { validateCoupon, validateCouponOnLogin } = useCouponMutation();
+    const { purchaseCourse } = usePurchaseMutation();
 
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
     const userId = useSelector((state: RootState) => state.auth.user?.id);
 
+    // ─── State ───────────────────────────────────────────
     const [cartItemsId, setCartItemsId] = useState<Set<string>>();
     const [isCouponApplyLoading, setIsCouponApplyLoading] = useState(false);
     const [isCouponFetching, setIsCouponFetching] = useState(true);
-    const [couponData, setCouponData] = useState<Coupon>()
+    const [couponData, setCouponData] = useState<Coupon>();
     const [discountedPrice, setDiscountedPrice] = useState({
         originalPrice: 0,
         discountApplied: 0,
         finalPrice: 0,
-    })
+    });
 
-    // ─── Handlers ───────────────────────────────────────────
 
+    // ─── Handlers ────────────────────────────────────────
+
+    /** Handle Buy Now */
     const handleBuyNow = async () => {
         if (!course) return;
 
@@ -95,28 +98,27 @@ const Student_CourseDetailsPricing = () => {
         }
 
         if (couponData) {
-            const finalPrice = calculateCouponDiscount(course.pricing, couponData)
+            const finalPrice = calculateCouponDiscount(course.pricing, couponData);
             purchaseCourse.mutate({
                 courseId: course.id,
-                ...finalPrice
-            })
-
+                ...finalPrice,
+            });
         }
-
     };
 
+    /** Fetch cart items for both logged in / guest */
     async function fetchCartItems() {
         if (isAuthenticated) {
             const ids = new Set(itemsInCart.data.map((item: any) => item.courseId));
             setCartItemsId(ids as Set<string>);
         } else {
-            const data = await getCartItemsFromIDB()
+            const data = await getCartItemsFromIDB();
             const ids = new Set(data.map((item: any) => item.courseId));
-            setCartItemsId(ids)
+            setCartItemsId(ids);
         }
-
     }
 
+    /** Add course to cart */
     const handleAddToCart = (course: CourseDetails) => {
         if (!course.thumbnailUrl) return;
 
@@ -131,110 +133,123 @@ const Student_CourseDetailsPricing = () => {
         };
 
         isAuthenticated ? addToCart.mutate(item) : addCartItemToDb(item);
-        fetchCartItems()
+        fetchCartItems();
     };
 
+    /** Calculate price after coupon discount */
     const calculateCouponDiscount = (coursePrice: number, coupon: Coupon) => {
-        let finalPrice = coursePrice
+        let finalPrice = coursePrice;
+
         if (coupon.discountType === "percentage") {
-            finalPrice = coursePrice - (coursePrice * coupon.discount) / 100
+            finalPrice = coursePrice - (coursePrice * coupon.discount) / 100;
         } else if (coupon.discountType === "fixed") {
-            finalPrice = coursePrice - coupon.discount
+            finalPrice = coursePrice - coupon.discount;
         }
 
-        // avoid negative prices
-        if (finalPrice < 0) finalPrice = 0
+        if (finalPrice < 0) finalPrice = 0;
 
         setDiscountedPrice({
             originalPrice: coursePrice,
             discountApplied: coursePrice - finalPrice,
             finalPrice,
-        })
+        });
 
         return {
             originalPrice: coursePrice,
             discountApplied: coursePrice - finalPrice,
             finalPrice,
-        }
-    }
+        };
+    };
 
+    /** Validate coupon */
+    const handleValidateCoupon = (isApplying:boolean) => {
+        const couponCode =
+            inputRef.current?.value || searchParams.get("couponCode") || "";
 
-    const handleValidateCoupon = () => {
-        const couponCode = inputRef.current?.value || searchParams.get("couponCode") || ""
-        const validateCouponProps: validateCouponProps = {
+        const validateCouponProps: ValidateCouponProps = {
             coupon: couponCode,
             courseId: course.id,
             instructorId: course.instructor.id,
-            isAuthenticated: isAuthenticated,
-            userId: userId as unknown as string
-        }
+            isAuthenticated,
+            userId: userId as unknown as string,
+            isApplying:isApplying
+        };
+
         if (inputRef.current) {
-            inputRef.current.value = ''
+            inputRef.current.value = "";
         }
-        const res = validateCoupon.mutate(validateCouponProps, {
+
+        validateCoupon.mutate(validateCouponProps, {
             onSettled: (data) => {
                 if (data.success) {
-                    queryClient.setQueryData(['validate-coupon', data.data.userId, data.data.title], data)
-                    setCouponData(data.data)
-                    calculateCouponDiscount(course.pricing, data.data)
-                    toast.dismiss()
-                    toast.success(data.message, {
-                        style: { justifyContent: "center" },
-                        duration: 2500,
-                    })
+                    queryClient.setQueryData(
+                        ["validate-coupon", data.data.userId, data.data.title],
+                        data
+                    );
+                    setCouponData(data.data);
+                    calculateCouponDiscount(course.pricing, data.data);
+
+                    toast.dismiss();
+                    toast.success(data.message, { style: { justifyContent: "center" }, duration: 2500 });
+
                     setSearchParams({ couponCode: data.data.code });
+                } else {
+                    toast.dismiss();
+                    toast.error(data.message, { style: { justifyContent: "center" }, duration: 2000 });
                 }
-                else if (!data.success) {
-                    toast.dismiss()
-                    toast.error(data.message, {
-                        style: { justifyContent: "center" },
-                        duration: 2000,
-                    });
-                }
-                setIsCouponApplyLoading(false)
-                setIsCouponFetching(false)
-            }
-        })
-    }
+                setIsCouponApplyLoading(false);
+                setIsCouponFetching(false);
+            },
+        });
+    };
 
-    // ─── Effects ────────────────────────────────────────────
 
+    // ─── Effects ─────────────────────────────────────────
+
+    /** Fetch cart items */
     useEffect(() => {
-
-        fetchCartItems()
+        fetchCartItems();
     }, [itemsInCart]);
 
+    /** Validate or auto-apply coupon */
     useEffect(() => {
         if (course?.id && params) {
-            handleValidateCoupon()
-        }
-        else if (course?.id && !params) {
-            setIsCouponFetching(true)
+            handleValidateCoupon(false);
+        } else if (course?.id && !params) {
+            setIsCouponFetching(true);
 
-            validateCouponOnLogin.mutate({ courseId: course.id, instructorId: course.instructor.id, userId: userId as unknown as string, isAuthenticated: isAuthenticated }, {
-                onSettled: (data) => {
-                    if (data.success) {
-                        setCouponData(data.data)
-                        calculateCouponDiscount(course.pricing, data.data)
-                        setSearchParams({ couponCode: data.data.code })
-                    }
-
-                    setIsCouponFetching(false)
+            validateCouponOnLogin.mutate(
+                {
+                    courseId: course.id,
+                    instructorId: course.instructor.id,
+                    userId: userId as unknown as string,
+                    isAuthenticated,
+                },
+                {   
+                    onSettled: (data) => {
+                        if (data.success) {
+                            setCouponData(data.data);
+                            calculateCouponDiscount(course.pricing, data.data);
+                            setSearchParams({ couponCode: data.data.code });
+                        }
+                        setIsCouponFetching(false);
+                    },
                 }
-            })
+            );
         }
-    }, [course])
+    }, [course]);
 
+    /** Refetch cart on login */
     useEffect(() => {
         async function refetchCart() {
             if (isAuthenticated) {
-                await refetch()
+                await refetch();
             }
         }
-        refetchCart()
-    }), [isAuthenticated]
+        refetchCart();
+    }, [isAuthenticated]);
 
-    // ─── Render ─────────────────────────────────────────────
+    // ─── Render ──────────────────────────────────────────
 
     if (!id) return null;
     if (isLoading || isCouponFetching) return <CoursePricingSkeleton />;
@@ -243,40 +258,49 @@ const Student_CourseDetailsPricing = () => {
     return (
         <div className="sticky top-0 p-5 h-full">
             <Card className="h-full pt-0 rounded-none">
-                {/* Thumbnail */}
+
+                {/* ─── Thumbnail ─── */}
                 <img
                     src={course.thumbnailUrl}
                     loading="eager"
                     className="p-3 border-b min-w-full min-h-[200px] max-h-[220px] object-cover"
                 />
 
-                {/* Pricing Section */}
+                {/* ─── Pricing Section ─── */}
                 <div className="flex flex-col px-5 gap-4">
-                    {
-                        couponData ? (
-                            <>
-                                <p className="text-2xl font-bold flex items-center gap-3">${discountedPrice.finalPrice ? discountedPrice.finalPrice : course.pricing}
-                                    <s className="text-sm text-muted-foreground font-semibold">${discountedPrice.originalPrice}</s>
-                                    <span className="text-sm font-normal font-serif">{couponData?.discountType === 'fixed' ? `$${couponData.discount} flat` : `${couponData?.discount}%`} off</span>
+                    {couponData ? (
+                        <>
+                            <p className="text-2xl font-bold flex items-center gap-3">
+                                ${discountedPrice.finalPrice || course.pricing}
+                                <s className="text-sm text-muted-foreground font-semibold">
+                                    ${discountedPrice.originalPrice}
+                                </s>
+                                <span className="text-sm font-normal font-serif">
+                                    {couponData.discountType === "fixed"
+                                        ? `$${couponData.discount} flat`
+                                        : `${couponData.discount}%`}{" "}
+                                    off
+                                </span>
+                            </p>
+
+                            {couponData.autoApply && (
+                                <p className="italic text-red-500 flex items-center gap-1">
+                                    {(couponData.onlyFor === "tier_1" ||
+                                        couponData.onlyFor === "tier_2") && <AlertCircle size={14} />}
+                                    {couponData.onlyFor === "tier_1"
+                                        ? `Exclusive ${couponData.discountType === "fixed"
+                                            ? `$${couponData.discount} flat off for new users`
+                                            : `${couponData.discount}% off for new users`
+                                        }`
+                                        : null}
                                 </p>
-                                {
-                                    couponData.autoApply &&
-                                    <p className="italic text-red-500 flex items-center gap-1">
-                                        {
-                                            (couponData.onlyFor === 'tier_1' || couponData.onlyFor === 'tier_2') &&
-                                            <AlertCircle size={14} />
-                                        }
-                                        {couponData.onlyFor === 'tier_1' ? `Exclusive ${couponData?.discountType === 'fixed' ? `$${couponData.discount} flat off for new users` : `${couponData?.discount}% off for new users`} ` : null}
-                                    </p>
-                                }
-                            </>
-                        ) : (
-                            <p className="text-2xl font-bold flex items-center">${course.pricing}</p>
-                        )
+                            )}
+                        </>
+                    ) : (
+                        <p className="text-2xl font-bold flex items-center">${course.pricing}</p>
+                    )}
 
-                    }
-
-                    {/* Add to Cart */}
+                    {/* ─── Add To Cart ─── */}
                     {cartItemsId?.has(id) ? (
                         <Button
                             variant="outline"
@@ -296,7 +320,7 @@ const Student_CourseDetailsPricing = () => {
                         </Button>
                     )}
 
-                    {/* Buy Now */}
+                    {/* ─── Buy Now ─── */}
                     <Button
                         variant="outline"
                         className="border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer"
@@ -305,7 +329,7 @@ const Student_CourseDetailsPricing = () => {
                         Buy Now
                     </Button>
 
-                    {/* Extra Info */}
+                    {/* ─── Extra Info ─── */}
                     <p className="text-muted-foreground text-[14px] text-center">
                         30-Day Money-Back Guarantee
                     </p>
@@ -313,7 +337,7 @@ const Student_CourseDetailsPricing = () => {
                         Full Lifetime Access
                     </p>
 
-                    {/* Actions */}
+                    {/* ─── Actions ─── */}
                     <div className="flex underline underline-offset-2 w-full h-full">
                         <Button variant="outline" className="hover:bg-gray-200 border-none">
                             Share
@@ -321,19 +345,17 @@ const Student_CourseDetailsPricing = () => {
                         <Button variant="outline" className="hover:bg-gray-200 border-none">
                             Gift This Course
                         </Button>
-                        <Button
-                            variant="outline"
-                            className="hover:bg-gray-200 border-none"
-                        // onClick={() => refetch()}
-                        >
+                        <Button variant="outline" className="hover:bg-gray-200 border-none">
                             Apply Coupon
                         </Button>
                     </div>
 
-                    {/* Coupon Section */}
+                    {/* ─── Coupon Section ─── */}
                     {couponData ? (
                         <Card className="border-2 border-dotted text-[#9194ac] text-[13px] p-2 px-4 gap-1 rounded-none">
-                            <p><span className="font-bold">{couponData.code}</span> is applied</p>
+                            <p>
+                                <span className="font-bold">{couponData.code}</span> is applied
+                            </p>
                             <p>Udemy Coupon</p>
                         </Card>
                     ) : (
@@ -342,14 +364,14 @@ const Student_CourseDetailsPricing = () => {
                         </Card>
                     )}
 
+                    {/* ─── Coupon Input ─── */}
                     <div className="flex gap-2 mt-2">
-                        <Input className="rounded-sm border-gray-400" ref={inputRef}
-
+                        <Input
+                            className="rounded-sm border-gray-400"
+                            ref={inputRef}
                             onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    // refetch()
-                                    handleValidateCoupon()
-
+                                if (e.key === "Enter") {
+                                    handleValidateCoupon(true);
                                 }
                             }}
                         />
@@ -358,9 +380,8 @@ const Student_CourseDetailsPricing = () => {
                                 }`}
                             disabled={isCouponApplyLoading}
                             onClick={() => {
-                                // refetch()
-                                setIsCouponApplyLoading(true)
-                                handleValidateCoupon()
+                                setIsCouponApplyLoading(true);
+                                handleValidateCoupon(true);
                             }}
                         >
                             Apply

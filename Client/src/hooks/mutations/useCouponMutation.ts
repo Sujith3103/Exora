@@ -12,6 +12,8 @@ type validateCouponProps = {
     coupon: string,
     isAuthenticated: boolean,
     userId: string,
+    isApplying?: boolean
+
 }
 type validateCouponOnLoginProps = {
     courseId: string,
@@ -134,13 +136,14 @@ const useCouponMutation = () => {
     })
 
     const validateCoupon = useMutation({
-        mutationFn: async ({ coupon, courseId, instructorId, isAuthenticated, userId }: validateCouponProps) => {
+        mutationFn: async ({ coupon, courseId, instructorId, isAuthenticated, userId, isApplying }: validateCouponProps) => {
             const res = await server.post(`/validate/coupon`, {
                 courseId: courseId,
                 instructorId: instructorId,
                 coupon: coupon,
                 isAuthenticated: isAuthenticated,
                 userId,
+                isApplying
             });
             return res.data
         },
@@ -164,10 +167,10 @@ const useCouponMutation = () => {
             })
             return res.data
         },
-        
+
     })
 
-    return { addNewCoupon, editCoupon, deleteCoupon, validateCoupon,validateCouponOnLogin }
+    return { addNewCoupon, editCoupon, deleteCoupon, validateCoupon, validateCouponOnLogin }
 
 }
 

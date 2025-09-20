@@ -38,14 +38,15 @@ model User {
   profile    UserProfile?
   security   UserSecurity?
 
+  usersomehing                 String?
   // Relation to courses (instructor)
-  courses           Course[]
-  clicks            UserClick[]
+  courses                      Course[]
+  clicks                       UserClick[]
   // purchases         UserPurchase[]
-  cart              Cart?
-  cartId            String?
-  coupons           Coupon[]
-  studentCouponApplications CouponApplication[] @relation("StudentApplications")
+  cart                         Cart?
+  cartId                       String?
+  coupons                      Coupon[]
+  studentCouponApplications    CouponApplication[] @relation("StudentApplications")
   instructorCouponApplications CouponApplication[] @relation("InstructorApplications")
 
   UserPurchase UserPurchase[] @relation("studentPurchase")
@@ -74,8 +75,9 @@ model CartItem {
   cartId String
   cart   Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
 
+  something     String?
   courseId      String // reference course, but not a relation since we snapshot data
-  quantity      Int    @default(1)
+  quantity      Int     @default(1)
   price         Float // snapshot price when added
   discountPrice Float?
 
@@ -114,7 +116,7 @@ model UserClick {
 
 model UserPurchase {
   id     String @id @default(cuid()) // Unique purchase ID
-  user   User   @relation("studentPurchase",fields: [userId], references: [id]) // Who bought
+  user   User   @relation("studentPurchase", fields: [userId], references: [id]) // Who bought
   userId String
 
   course   Course @relation(fields: [courseId], references: [id]) // What course
@@ -273,11 +275,11 @@ model CourseRevenueAnalytics {
   course   Course @relation(fields: [courseId], references: [id])
   courseId String @unique
 
-  totalRevenue Int   @default(0) // sum of purchases
-  totalEnrolls Int   @default(0) // count of purchases
-  avgPrice     Float @default(0.0) // revenue / enrolls
-
-  lastUpdated DateTime @updatedAt
+  instructorId           String
+  totalRevenue           Int      @default(0) // sum of purchases
+  totalEnrolls           Int      @default(0) // count of purchases
+  totalDiscountedRevenue Int      @default(0)
+  lastUpdated            DateTime @updatedAt
 }
 
 model CourseRevenueHistory {
@@ -285,9 +287,11 @@ model CourseRevenueHistory {
   courseId String @unique
   Course   Course @relation(fields: [courseId], references: [id])
 
-  period      DateTime // e.g. "2025-09-01" (first day of month)
-  revenue     Int      @default(0) // sum of prices
-  enrollments Int      @default(0) // count of purchases
+  instructorId     String
+  date             DateTime // e.g. "2025-09-01" (first day of month)
+  revenue          Int      @default(0) // sum of prices
+  enrollments      Int      @default(0) // count of purchases
+  dicountedRevenue Int      @default(0)
 }
 
 enum CourseStatus {

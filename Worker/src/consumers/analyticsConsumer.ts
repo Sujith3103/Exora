@@ -15,7 +15,7 @@ type RedisStreamResponse = {
 
 const BATCH_SIZE = 10;
 const BLOCK_MS = 5000;
-const CONCURRENCY = 5; 
+const CONCURRENCY = 5;
 
 let isRunning = true;
 
@@ -69,44 +69,51 @@ export const processAnalyticsEvent = async () => {
             for (const streamData of streams) {
                 await pMap(streamData.messages, async (record: any) => {
                     const clickEvent = parseClickEvent(record)
-
+                    
                     if (clickEvent.type === 'category') {
                         await redis.xAck("click-events-stream", "analytics-consumer-group", record.id);
                         return;
                     }
 
-                    await prisma.$transaction(async (tx) => {
+                    if (clickEvent.action === 'click') {
+                        await prisma.$transaction(async (tx: any) => {
 
-                        const courseExists = await tx.course.findUnique({
-                            where: { id: clickEvent.targetId }
-                        });
+                            const courseExists = await tx.course.findUnique({
+                                where: { id: clickEvent.targetId }
+                            });
 
-                        if (!courseExists) {
-                            console.warn(`Skipping analytics for unknown courseId ${clickEvent.targetId}`);
-                            return;
-                        }
-
-                        await tx.courseAnalytics.upsert({
-                            where: { courseId: clickEvent.targetId },
-                            update: {
-                                clicks: {
-                                    increment: 1
-                                },
-
-                            },
-                            create: {
-                                courseId: clickEvent.targetId,
-                                clicks: 1
+                            if (!courseExists) {
+                                console.warn(`Skipping analytics for unknown courseId ${clickEvent.targetId}`);
+                                return;
                             }
+
+                            await tx.courseAnalytics.upsert({
+                                where: { courseId: clickEvent.targetId },
+                                update: {
+                                    clicks: {
+                                        increment: 1
+                                    },
+
+                                },
+                                create: {
+                                    courseId: clickEvent.targetId,
+                                    clicks: 1
+                                }
+                            })
+
+                            await redis.xAck("click-events-stream", "analytics-consumer-group", record.id);
+
+                            console.log("Processed analytics:", clickEvent);
+                        }, {
+                            timeout: 15000,  // 15 seconds
+                            maxWait: 5000    // optional: how long to wait for connection
                         })
 
-                        await redis.xAck("click-events-stream", "analytics-consumer-group", record.id);
+                    }
 
-                        console.log("Processed analytics:", clickEvent);
-                    }, {
-                        timeout: 15000,  // 15 seconds
-                        maxWait: 5000    // optional: how long to wait for connection
-                    })
+                    else if(clickEvent.action === 'enroll'){
+
+                    }
 
                 })
             }

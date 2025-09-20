@@ -70,29 +70,35 @@ export async function processDbEvents() {
           const clickEvent = parseClickEvent(record);
 
           // Transaction: insert and trim old clicks
-          await prisma.$transaction(async (tx) => {
-            await tx.userClick.create({
-              data: {
-                clickType: clickEvent.type,
-                targetId: clickEvent.targetId,
-                userId: clickEvent.userId,
-                categoryId: clickEvent.categoryId,
-                instructorId: clickEvent.instructorId || null
-              },
-            });
+          if (clickEvent.action === 'click') {
+            await prisma.$transaction(async (tx) => {
+              await tx.userClick.create({
+                data: {
+                  clickType: clickEvent.type,
+                  targetId: clickEvent.targetId,
+                  userId: clickEvent.userId,
+                  categoryId: clickEvent.categoryId,
+                  instructorId: clickEvent.instructorId || null
+                },
+              });
 
-            // Trim old clicks > 150 per user
-            await tx.$executeRaw`DELETE FROM "UserClick" WHERE id IN (
+              // Trim old clicks > 150 per user
+              await tx.$executeRaw`DELETE FROM "UserClick" WHERE id IN (
               SELECT id FROM (
                 SELECT id, ROW_NUMBER() OVER (PARTITION BY "userId" ORDER BY "timestamp" DESC) AS rn
                 FROM "UserClick"
                 WHERE "userId" = ${clickEvent.userId}
               ) sub WHERE rn > 150
             )`;
-          }, {
-            timeout: 15000,  // 15 seconds
-            maxWait: 5000    // optional: how long to wait for connection
-          });
+            }, {
+              timeout: 15000,  // 15 seconds
+              maxWait: 5000    // optional: how long to wait for connection
+            });
+          }
+
+          else if(clickEvent.action === 'enroll'){
+            
+          }
 
           // Acknowledge message
           await redis.xAck("click-events-stream", "db-consumer-group", record.id);

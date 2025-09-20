@@ -162,7 +162,12 @@ export const getCouponAnalytics = async (req: Request, res: Response) => {
             include: { coupon: true }
         })
 
-        let totalTimesApplied = 0
+        const result = await prisma.coupon.aggregate({
+            where: { userId },
+            _sum: { timesApplied: true }
+        })
+
+        const totalTimesApplied = result._sum.timesApplied ?? 0        
         let timesAppliedThisMonth = 0
         let timesAppliedPrevMonth = 0
 
@@ -173,12 +178,8 @@ export const getCouponAnalytics = async (req: Request, res: Response) => {
 
         let once = 0
         for (let item of applications) {
-            if (!once) {
-                totalTimesApplied = item.coupon.timesApplied!
 
-                once = 1
-            }
-
+            // console.log("item : ",item.coupon,item.appliedCount)
             if (item.month.getTime() === prevMonthStart.getTime()) {
                 timesAppliedPrevMonth += item.appliedCount;
             }

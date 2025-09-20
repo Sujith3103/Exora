@@ -24,8 +24,13 @@ export type couponAnalyticsType = {
 const CouponAnalytics = React.memo(({ timesAppliedPrevMonth, timesAppliedThisMonth, totalTimesApplied, conversionRate, revenueByCoupon, timesRedeemed }: couponAnalyticsType) => {
 
     const calculateAppliedCouponsMonthDifference = () => {
-        const diffPercentage = ((timesAppliedThisMonth - timesAppliedPrevMonth) / timesAppliedPrevMonth) * 100;
-
+        let diffPercentage;
+        if (timesAppliedPrevMonth === 0) {
+            diffPercentage = timesAppliedThisMonth * 100
+        }
+        else {
+            diffPercentage = ((timesAppliedThisMonth - timesAppliedPrevMonth) / timesAppliedPrevMonth) * 100;
+        }
         if (diffPercentage >= 0) return { diffPercentage, growth: true };
         else if (diffPercentage < 0) return { diffPercentage: Math.abs(diffPercentage), growth: false };
     }
@@ -41,7 +46,7 @@ const CouponAnalytics = React.memo(({ timesAppliedPrevMonth, timesAppliedThisMon
                 <div className="flex items-center gap-1 mt-1 font-semibold">
                     {appliedDiff?.growth && <TrendingUp className="text-green-600" />}
                     {!appliedDiff?.growth && <TrendingDown className="text-red-500" />}
-                    <span className={`${!appliedDiff?.growth? "text-red-500" : "text-green-600"}`}>
+                    <span className={`${!appliedDiff?.growth ? "text-red-500" : "text-green-600"}`}>
                         {`${appliedDiff?.diffPercentage.toFixed(2)}% this month (${timesAppliedThisMonth})`}
                     </span>
                 </div>

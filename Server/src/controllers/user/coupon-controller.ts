@@ -157,7 +157,7 @@ export const valideateCouponOnLogin = async (req: Request, res: Response) => {
 
 export const validateCoupon = async (req: Request, res: Response) => {
 
-    const { courseId, coupon, instructorId, userId, isAuthenticated } = req.body
+    const { courseId, coupon, instructorId, userId, isAuthenticated,isApplying } = req.body
     const month = startOfMonth(new Date())
 
     try {
@@ -206,7 +206,7 @@ export const validateCoupon = async (req: Request, res: Response) => {
             }
 
             else {
-                if (isAuthenticated) {
+                if (isAuthenticated && isApplying) {
 
                     await prisma.$transaction(async (tx) => {
 
