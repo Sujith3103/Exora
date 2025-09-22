@@ -142,7 +142,6 @@ export const processAnalyticsEvent = async () => {
                                 }
                             })
 
-                            console.log("revenue analytics : ", revenueAnalytics)
 
                             const revenueHistory = await tx.courseRevenueHistory.upsert({
                                 where: {
@@ -170,7 +169,6 @@ export const processAnalyticsEvent = async () => {
                                 }
                             })
 
-                            console.log("revenue history : ", revenueHistory)
 
                         })
 

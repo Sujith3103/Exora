@@ -53,9 +53,10 @@ const CouponPage = () => {
                 <h1 className="text-3xl font-bold font-display mt-3">Coupon Analytics</h1>
                 {
                     isCouponAnalyticsLoading ? <>
-                    
+
                     </> : (
-                        <CouponAnalytics conversionRate={data?.conversionRate ?? 0} revenueByCoupon={data?.revenueByCoupon ?? 0} totalTimesApplied={data?.totalTimesApplied ?? 0} timesRedeemed={data?.timesRedeemed ?? 0}
+                        <CouponAnalytics conversionRateLastMonth={data?.conversionRateLastMonth ?? 0} totalRevenue={data?.totalRevenue ?? 0} totalTimesApplied={data?.totalTimesApplied ?? 0}
+                            conversionRateThisMonth={data?.conversionRateThisMonth ?? 0} revenueLastMonth={data?.revenueLastMonth ?? 0} revenueThisMonth={data?.revenueThisMonth ?? 0}
                             timesAppliedPrevMonth={data?.timesAppliedPrevMonth ?? 0} timesAppliedThisMonth={data?.timesAppliedThisMonth ?? 0}
                         />
                     )

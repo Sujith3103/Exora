@@ -238,7 +238,7 @@ model CouponRedemption {
   couponId  String
   userId    String
   courseId  String
-  status    String   // "REDEEMED"
+  status    String // "REDEEMED"
   createdAt DateTime @default(now())
 }
 
@@ -254,12 +254,13 @@ model CouponApplication {
   instructor   User   @relation("InstructorApplications", fields: [instructorId], references: [id])
   instructorId String
 
+  revenue      Int                     @default(0)
   appliedAt    DateTime                @default(now())
   orderId      String? // null if user never checked out
   status       CouponApplicationStatus @default(APPLIED)
   appliedCount Int                     @default(0)
 
-  @@unique([couponId, month])
+  @@unique([couponId, month, status])
 }
 
 enum CouponApplicationStatus {

@@ -18,7 +18,27 @@ export type couponForm = {
     applyTo: 'oneCourse' | 'allCourses',
     courseId?: string
 }
+type ConversionRates = {
+    thisMonth: number;  // in percentage
+    lastMonth: number;  // in percentage
+};
 
+function calculateCouponConversion(
+    timesAppliedThisMonth: number,
+    timesRedeemedThisMonth: number,
+    timesAppliedLastMonth: number,
+    timesRedeemedLastMonth: number
+): ConversionRates {
+    const calcRate = (applied: number, redeemed: number) => {
+        if (applied === 0) return 0; // avoid division by zero
+        return (redeemed / applied) * 100;
+    };
+
+    return {
+        thisMonth: parseFloat(calcRate(timesAppliedThisMonth, timesRedeemedThisMonth).toFixed(2)),
+        lastMonth: parseFloat(calcRate(timesAppliedLastMonth, timesRedeemedLastMonth).toFixed(2)),
+    };
+}
 
 export const createNewCoupon = async (req: Request, res: Response) => {
     const userId = req.user?.id
@@ -149,6 +169,16 @@ export const getCouponAnalytics = async (req: Request, res: Response) => {
 
     const rangeStart = prevMonthStart;   // Aug 1
     const rangeEnd = nextMonthStart;     // Oct 1
+    let timesAppliedThisMonth = 0
+    let timesAppliedPrevMonth = 0
+
+    let revenueThisMonth = 0
+    let revenueLastMonth = 0
+    let totalRevenue = 0
+
+    let conversionRateThisMonth = 0
+    let conversionRateLastMonth = 0
+
     try {
 
         const applications = await prisma.couponApplication.findMany({
@@ -163,33 +193,74 @@ export const getCouponAnalytics = async (req: Request, res: Response) => {
         })
 
         const result = await prisma.coupon.aggregate({
-            where: { userId },
+            where: { userId: userId },
             _sum: { timesApplied: true }
         })
 
-        const totalTimesApplied = result._sum.timesApplied ?? 0        
-        let timesAppliedThisMonth = 0
-        let timesAppliedPrevMonth = 0
+        const totalRevenueResult = await prisma.coupon.aggregate({
+            where: { userId: userId },
+            _sum: { totalRevenue: true }
+        });
+        totalRevenue = totalRevenueResult._sum?.totalRevenue ?? 0;
 
-        let revenueByCoupon = 0
-        let timesRedeemed = 0
+        const history = await prisma.couponApplication.findMany({
+            where: {
+                instructorId: userId,
+                month: {
+                    gte: rangeStart, // Aug 1
+                    lt: rangeEnd   // Oct 1
+                },
+                status: 'REDEEMED'
+            },
+        })
 
-        let conversionRate = 0
+        console.log("historyb",history)
+        for (let item of history) {
+            if (item.month.getTime() === prevMonthStart.getTime()) {
+                revenueLastMonth += item.revenue
+            }
+            if (item.month.getTime() === currMonthStart.getTime()) {
+                revenueThisMonth += item.revenue
+            }
+        }
 
-        let once = 0
+        const totalTimesApplied = result._sum.timesApplied ?? 0
+
+
         for (let item of applications) {
 
             // console.log("item : ",item.coupon,item.appliedCount)
             if (item.month.getTime() === prevMonthStart.getTime()) {
-                timesAppliedPrevMonth += item.appliedCount;
+                console.log("prev",item.status)
+                if (item.status === 'APPLIED') {
+                    timesAppliedPrevMonth += item.appliedCount;
+                }
+                else if (item.status === 'REDEEMED') {
+                    conversionRateLastMonth += item.appliedCount
+                }
             }
 
-            else if (item.month.getTime() === currMonthStart.getTime()) {
-                timesAppliedThisMonth += item.appliedCount;
+            if (item.month.getTime() === currMonthStart.getTime()) {
+
+                if (item.status === 'APPLIED') {
+                    timesAppliedThisMonth += item.appliedCount;
+
+                }
+                else if (item.status === 'REDEEMED') {
+                    conversionRateThisMonth += item.appliedCount
+                }
+
+            }
+
+            if (item.status === 'REDEEMED') {
+
             }
         }
 
-        // console.log(applications)
+        const convertedValue = calculateCouponConversion(timesAppliedThisMonth, conversionRateThisMonth, timesAppliedPrevMonth, conversionRateLastMonth)
+        conversionRateLastMonth = convertedValue.lastMonth
+        conversionRateThisMonth = convertedValue.thisMonth
+
         res.status(200).json({
             success: true,
             message: "fetched coupon analytics successfully",
@@ -197,9 +268,11 @@ export const getCouponAnalytics = async (req: Request, res: Response) => {
                 totalTimesApplied,
                 timesAppliedThisMonth,
                 timesAppliedPrevMonth,
-                revenueByCoupon,
-                timesRedeemed,
-                conversionRate
+                revenueThisMonth,
+                revenueLastMonth,
+                conversionRateLastMonth,
+                conversionRateThisMonth,
+                totalRevenue
             }
         })
     } catch (err) {

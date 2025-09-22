@@ -32,7 +32,7 @@ const isLimitPerUser = async (couponId: string, limitPerUser: number, userId: st
             return false
         }
 
-        const res = await prisma.couponApplication.findMany({
+        const res = await prisma.couponRedemption.findMany({
             where: { id: couponId, userId: userId, status: 'REDEEMED' }
         })
 
@@ -212,9 +212,10 @@ export const validateCoupon = async (req: Request, res: Response) => {
 
                         const inserting = await tx.couponApplication.upsert({
                             where: {
-                                couponId_month: {
+                                couponId_month_status: {
                                     couponId: item.id,
-                                    month: month
+                                    month: month,
+                                    status:'APPLIED'
                                 }
                             },
                             update: {

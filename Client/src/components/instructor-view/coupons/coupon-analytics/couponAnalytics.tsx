@@ -15,13 +15,15 @@ export type couponAnalyticsType = {
     timesAppliedThisMonth: number
     timesAppliedPrevMonth: number
 
-    revenueByCoupon: number
-    timesRedeemed: number
+    revenueThisMonth: number
+    revenueLastMonth: number
+    totalRevenue: number
 
-    conversionRate: number
+    conversionRateThisMonth: number
+    conversionRateLastMonth: number
 }
 
-const CouponAnalytics = React.memo(({ timesAppliedPrevMonth, timesAppliedThisMonth, totalTimesApplied, conversionRate, revenueByCoupon, timesRedeemed }: couponAnalyticsType) => {
+const CouponAnalytics = React.memo(({ timesAppliedPrevMonth, timesAppliedThisMonth, totalTimesApplied, conversionRateLastMonth,conversionRateThisMonth,revenueLastMonth,revenueThisMonth,totalRevenue }: couponAnalyticsType) => {
 
     const calculateAppliedCouponsMonthDifference = () => {
         let diffPercentage;

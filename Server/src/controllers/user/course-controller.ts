@@ -85,6 +85,8 @@ export const purchaseCourse = async (req: Request, res: Response) => {
     const { discountApplied, finalPrice, originalPrice, clickEvent, coupon } = req.body;
     const { type, action, targetId, categoryId, instructorId } = clickEvent;
 
+    let today = new Date()
+
     if (!userId) {
         return res.status(401).json({ success: false, message: "unauthorized" });
     }
@@ -119,7 +121,7 @@ export const purchaseCourse = async (req: Request, res: Response) => {
 
             // 2. If coupon was applied → mark as redeemed
             if (couponData) {
-                const couponApplication = await tx.couponRedemption.create({
+                await tx.couponRedemption.create({
                     data: {
                         couponId: couponData.id,
                         userId,
@@ -128,7 +130,7 @@ export const purchaseCourse = async (req: Request, res: Response) => {
                     },
                 });
 
-                const updatedCoupon = await tx.coupon.update({
+                await tx.coupon.update({
                     where: { id: couponData.id },
                     data: {
                         timesUsed: { increment: 1 },
@@ -137,6 +139,32 @@ export const purchaseCourse = async (req: Request, res: Response) => {
                         }
                     },
                 });
+
+                await tx.couponApplication.upsert({
+                    where: {
+                        couponId_month_status: {
+                            couponId: couponData.id,
+                            month: startOfMonth(today),
+                            status: 'REDEEMED'
+                        }
+                    },
+                    create: {
+                        month: startOfMonth(today),
+                        couponId: couponData.id,
+                        instructorId: instructorId,
+                        status: 'REDEEMED',
+                        appliedCount: 1,
+                        revenue: finalPrice
+                    },
+                    update: {
+                        appliedCount: {
+                            increment: 1
+                        },
+                        revenue: {
+                            increment: finalPrice
+                        }
+                    }
+                })
 
             }
 
