@@ -233,6 +233,15 @@ model Coupon {
   CouponApplication CouponApplication[]
 }
 
+model CouponRedemption {
+  id        String   @id @default(uuid())
+  couponId  String
+  userId    String
+  courseId  String
+  status    String   // "REDEEMED"
+  createdAt DateTime @default(now())
+}
+
 model CouponApplication {
   id       String   @id @default(uuid())
   coupon   Coupon   @relation(fields: [couponId], references: [id])
@@ -292,6 +301,8 @@ model CourseRevenueHistory {
   revenue          Int      @default(0) // sum of prices
   enrollments      Int      @default(0) // count of purchases
   dicountedRevenue Int      @default(0)
+
+  @@unique([courseId, date])
 }
 
 enum CourseStatus {

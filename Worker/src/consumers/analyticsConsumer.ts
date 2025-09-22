@@ -42,6 +42,9 @@ function parseClickEvent(record: RedisStreamMessage): ClickEvent {
         categoryId: raw.categoryId,
         categoryName: raw.categoryName,
         instructorId: raw.instructorId,
+        discountApplied: parseInt(raw.discountApplied),
+        originalPrice: parseInt(raw.originalPrice),
+        finalPrice: parseInt(raw.finalPrice),
         action: (raw.action as ClickEvent["action"]) || "click",
         timestamp: raw.timestamp || new Date().toISOString(),
         metadata,
@@ -69,7 +72,8 @@ export const processAnalyticsEvent = async () => {
             for (const streamData of streams) {
                 await pMap(streamData.messages, async (record: any) => {
                     const clickEvent = parseClickEvent(record)
-                    
+                    console.log("record : ", record)
+
                     if (clickEvent.type === 'category') {
                         await redis.xAck("click-events-stream", "analytics-consumer-group", record.id);
                         return;
@@ -101,7 +105,6 @@ export const processAnalyticsEvent = async () => {
                                 }
                             })
 
-                            await redis.xAck("click-events-stream", "analytics-consumer-group", record.id);
 
                             console.log("Processed analytics:", clickEvent);
                         }, {
@@ -111,9 +114,69 @@ export const processAnalyticsEvent = async () => {
 
                     }
 
-                    else if(clickEvent.action === 'enroll'){
+                    else if (clickEvent.action === 'enroll') {
+                        const today = new Date()
+
+                        today.setHours(0, 0, 0, 0)
+                        await prisma.$transaction(async (tx) => {
+
+                            const revenueAnalytics = await tx.courseRevenueAnalytics.upsert({
+                                where: { courseId: clickEvent.targetId },
+                                update: {
+                                    totalDiscountedRevenue: {
+                                        increment: clickEvent.discountApplied ? clickEvent.finalPrice : 0
+                                    },
+                                    totalEnrolls: {
+                                        increment: 1
+                                    },
+                                    totalRevenue: {
+                                        increment: clickEvent.finalPrice
+                                    }
+                                },
+                                create: {
+                                    instructorId: clickEvent.instructorId!,
+                                    courseId: clickEvent.targetId,
+                                    totalDiscountedRevenue: clickEvent.discountApplied ? clickEvent.finalPrice : 0,
+                                    totalEnrolls: 1,
+                                    totalRevenue: clickEvent.finalPrice
+                                }
+                            })
+
+                            console.log("revenue analytics : ", revenueAnalytics)
+
+                            const revenueHistory = await tx.courseRevenueHistory.upsert({
+                                where: {
+                                    courseId: clickEvent.targetId,
+                                    date: today
+                                },
+                                update: {
+                                    enrollments: {
+                                        increment: 1
+                                    },
+                                    revenue: {
+                                        increment: clickEvent.finalPrice
+                                    },
+                                    dicountedRevenue: {
+                                        increment: clickEvent.discountApplied ? clickEvent.finalPrice : 0
+                                    }
+                                },
+                                create: {
+                                    date: today,
+                                    instructorId: clickEvent.instructorId!,
+                                    courseId: clickEvent.targetId,
+                                    dicountedRevenue: clickEvent.discountApplied ? clickEvent.finalPrice : 0,
+                                    revenue: clickEvent.finalPrice,
+                                    enrollments:1
+                                }
+                            })
+
+                            console.log("revenue history : ", revenueHistory)
+
+                        })
 
                     }
+
+                    await redis.xAck("click-events-stream", "analytics-consumer-group", record.id);
 
                 })
             }

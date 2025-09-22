@@ -8,6 +8,10 @@ export type ClickEvent = {
   action?: "click" | "view" | "enroll" | "share"; // optional, default to "click"
   timestamp?: string;             // optional, defaults to now if not provided
   metadata?: ClickMetaData;       // optional: any extra info
+
+  originalPrice?: number;       // price before discount
+  discountApplied?: number;     // discount value (flat or % depending on context)
+  finalPrice?: number;
 };
 
 

@@ -47,7 +47,7 @@ export const processCounterEvent = async () => {
 
                         const clickEvent = message as unknown as ClickEvent;
                         console.log("type :  ",clickEvent.type)
-                        if (clickEvent.type !== "course") {
+                        if (clickEvent.type !== "course" || clickEvent.action !== 'click') {
                             // just skip this message
                             await redis.xAck("click-events-stream", "counter-consumer-group", id);
                             return;

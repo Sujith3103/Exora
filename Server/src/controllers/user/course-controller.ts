@@ -1,5 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
+import { redis } from "../../utils/redisClient";
+import { validateCouponCore } from "../../helpers/validateCoupon";
+import { startOfMonth } from "date-fns";
 
 const prisma = new PrismaClient()
 
@@ -44,57 +47,123 @@ export const student_GetAllCourses = async (req: Request, res: Response) => {
     }
 };
 
-export const student_GetCourseDetails = async(req: Request, res:Response) => {
+export const student_GetCourseDetails = async (req: Request, res: Response) => {
 
-    const {courseId} = req.params
+    const { courseId } = req.params
 
-    try{
+    try {
 
         const details = await prisma.course.findFirst({
-            where: {id:courseId},
-            include:{instructor:{
-                select:{id:true,name:true,email:true,updatedAt:true,role:true,profile:{select:{profession:true}}}
-            }}
+            where: { id: courseId },
+            include: {
+                instructor: {
+                    select: { id: true, name: true, email: true, updatedAt: true, role: true, profile: { select: { profession: true } } }
+                }
+            }
         })
 
-        if(!details) return res.status(404).json({success:false, message:"course not found"})
+        if (!details) return res.status(404).json({ success: false, message: "course not found" })
 
         return res.status(200).json({
-            success:true,
-            message:"fetched course details successfully",
-            data:details
+            success: true,
+            message: "fetched course details successfully",
+            data: details
         })
 
-    }catch(err){
+    } catch (err) {
         console.log(err)
         return res.status(500).json({
             success: false,
-            message:"failed to fetch course details"
+            message: "failed to fetch course details"
         })
     }
 }
 
-export const purchaseCourse = async(req:Request,res:Response) => {
+export const purchaseCourse = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    const { courseId } = req.params;
+    const { discountApplied, finalPrice, originalPrice, clickEvent, coupon } = req.body;
+    const { type, action, targetId, categoryId, instructorId } = clickEvent;
 
-    const userId = req.user?.id
-    const courseId = req.params
-    const {originalPrice,discountApplied,finalPrice} = req.body
-
-    try{
-
-        //create a user purchase
-        //update user recommendation?
-        
-
-        console.log(userId,courseId)
-        console.log(originalPrice,discountApplied,finalPrice)
-        // const res = await prisma.userPurchase.create({
-        //     data:{
-                
-        //     }
-        // })
-
-    }catch(err){
-
+    if (!userId) {
+        return res.status(401).json({ success: false, message: "unauthorized" });
     }
-}
+
+    try {
+        let couponData = null;
+
+        if (coupon) {
+            const result = await validateCouponCore({
+                couponCode: coupon.code,
+                courseId,
+                instructorId,
+                userId,
+            });
+
+            if (!result.valid) {
+                return res.json({ success: false, message: result.reason });
+            }
+            couponData = result.coupon;
+        }
+
+        // // --- transaction ---
+        await prisma.$transaction(async (tx) => {
+            // 1. Create purchase
+            const userPurchase = await tx.userPurchase.create({
+                data: {
+                    price: finalPrice,
+                    courseId,
+                    userId,
+                },
+            });
+
+            // 2. If coupon was applied → mark as redeemed
+            if (couponData) {
+                const couponApplication = await tx.couponRedemption.create({
+                    data: {
+                        couponId: couponData.id,
+                        userId,
+                        status: "REDEEMED",
+                        courseId: courseId
+                    },
+                });
+
+                const updatedCoupon = await tx.coupon.update({
+                    where: { id: couponData.id },
+                    data: {
+                        timesUsed: { increment: 1 },
+                        totalRevenue: {
+                            increment: finalPrice
+                        }
+                    },
+                });
+
+            }
+
+            // 3. Add analytics event to Redis
+            await redis.xAdd(
+                "click-events-stream",
+                "*",
+                {
+                    discountApplied: String(discountApplied ?? 0),
+                    finalPrice: String(finalPrice),
+                    originalPrice: String(originalPrice),
+                    targetId: String(targetId),
+                    type,
+                    action,
+                    categoryId: categoryId ?? "",
+                    instructorId,
+                    userId,
+                },
+                {
+                    TRIM: { strategy: "MAXLEN", threshold: 100 },
+                }
+            );
+        });
+
+        return res.json({ success: true, message: "Purchase successful" });
+    } catch (err) {
+        console.error("purchaseCourse error:", err);
+        return res.status(500).json({ success: false, message: "Purchase failed" });
+    }
+};

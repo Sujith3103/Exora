@@ -63,14 +63,12 @@ export async function processDbEvents() {
       if (!Array.isArray(response) || response.length === 0) continue;
 
       const streams = response as RedisStreamResponse;
-      console.log("db", response)
       for (const streamData of streams) {
         // Process messages concurrently with a limit
         await pMap(streamData.messages, async (record: any) => {
           const clickEvent = parseClickEvent(record);
 
           // Transaction: insert and trim old clicks
-          if (clickEvent.action === 'click') {
             await prisma.$transaction(async (tx) => {
               await tx.userClick.create({
                 data: {
@@ -78,7 +76,8 @@ export async function processDbEvents() {
                   targetId: clickEvent.targetId,
                   userId: clickEvent.userId,
                   categoryId: clickEvent.categoryId,
-                  instructorId: clickEvent.instructorId || null
+                  instructorId: clickEvent.instructorId || null,
+                  action:clickEvent.action
                 },
               });
 
@@ -94,16 +93,12 @@ export async function processDbEvents() {
               timeout: 15000,  // 15 seconds
               maxWait: 5000    // optional: how long to wait for connection
             });
-          }
-
-          else if(clickEvent.action === 'enroll'){
-            
-          }
+         
 
           // Acknowledge message
           await redis.xAck("click-events-stream", "db-consumer-group", record.id);
 
-          console.log("Processed ClickEvent:", clickEvent);
+          console.log("Processed ClickEvent - dbconsumer:", clickEvent);
         }, { concurrency: CONCURRENCY });
       }
     } catch (err) {

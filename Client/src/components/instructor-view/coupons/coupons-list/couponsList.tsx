@@ -40,9 +40,9 @@ const CouponsList = ({ isScheduling, coupons, error, isLoading }: CouponListProp
                         <TableHead className="text-center">Discount Type</TableHead>
                         <TableHead className="text-center">Discount</TableHead>
                         <TableHead className="text-center">No of Coupons</TableHead>
-                        <TableHead className="text-center">Limit/user</TableHead>
+                        <TableHead className="text-center">Limit/user</TableHead> 
                         <TableHead className="text-center">Only for</TableHead>
-                        <TableHead className="text-center">Times Used</TableHead>
+                        <TableHead className="text-center">Redeemed</TableHead>
                         <TableHead className="text-center">Times Applied</TableHead>
                         <TableHead className="text-center">Revenue</TableHead>
                         {isScheduling && (

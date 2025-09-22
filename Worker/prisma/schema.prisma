@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
@@ -13,6 +7,263 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                           String              @id @default(uuid())
+  name                         String
+  email                        String              @unique
+  createdAt                    DateTime            @default(now())
+  password                     String
+  role                         Role                @default(USER)
+  updatedAt                    DateTime            @updatedAt
+  rememberMe                   Boolean             @default(false)
+  cartId                       String?
+  usersomehing                 String?
+  cart                         Cart?
+  coupons                      Coupon[]
+  instructorCouponApplications CouponApplication[] @relation("InstructorApplications")
+  studentCouponApplications    CouponApplication[] @relation("StudentApplications")
+  clicks                       UserClick[]
+  profile                      UserProfile?
+  UserPurchase                 UserPurchase[]      @relation("studentPurchase")
+  security                     UserSecurity?
+  courses                      Course[]
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+}
+
+model CartItem {
+  id             String         @id @default(uuid())
+  cartId         String
+  courseId       String
+  quantity       Int            @default(1)
+  price          Float
+  discountPrice  Float?
+  title          String
+  thumbnailUrl   String
+  instructorName String
+  addedAt        DateTime       @default(now())
+  status         CartItemStatus @default(ACTIVE)
+  something      String?
+  cart           Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, courseId])
+}
+
+model UserClick {
+  id           String   @id @default(cuid())
+  userId       String
+  courseId     String?
+  timestamp    DateTime @default(now())
+  action       String   @default("click")
+  categoryId   String?
+  instructorId String?
+  metadata     Json?
+  targetId     String
+  clickType    String
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, timestamp])
+  @@index([targetId, timestamp])
+  @@index([clickType, targetId])
+}
+
+model UserPurchase {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  price     Decimal  @db.Decimal(10, 2)
+  timestamp DateTime @default(now())
+  course    Course   @relation(fields: [courseId], references: [id])
+  user      User     @relation("studentPurchase", fields: [userId], references: [id])
+
+  @@index([userId, timestamp])
+  @@index([courseId, timestamp])
+}
+
+model UserProfile {
+  id              String    @id @default(uuid())
+  contact         String?   @unique
+  about           String?
+  dob             DateTime?
+  gender          Gender?
+  profession      String?
+  userId          String    @unique
+  profileBanner   String?
+  profileBannerId String?
+  profileImg      String?
+  profileImgId    String?
+  user            User      @relation(fields: [userId], references: [id])
+}
+
+model UserSecurity {
+  id                  String    @id @default(uuid())
+  twoStepVerification Boolean?
+  lastPasswordChange  DateTime?
+  recoveryEmail       String?
+  recoveryPhone       String?
+  loginAlertsEnabled  Boolean?
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id])
+}
+
+model Course {
+  id                     String                  @id @default(uuid())
+  title                  String
+  category               String
+  level                  String
+  primaryLanguage        String
+  subtitle               String
+  language               String
+  description            String
+  pricing                Float
+  objectives             String
+  welcomeMessage         String
+  requirements           Json
+  searchkey              String
+  slug                   String                  @unique
+  createdAt              DateTime                @default(now())
+  lengthNum              Int
+  lengthStr              String
+  status                 CourseStatus
+  instructorId           String
+  thumbnailId            String?
+  thumbnailUrl           String?
+  updatedAt              DateTime?               @updatedAt
+  CourseAnalytics        CourseAnalytics?
+  courseRevenueAnalytics CourseRevenueAnalytics?
+  revenueHistory         CourseRevenueHistory?
+  sections               Section[]
+  purchases              UserPurchase[]
+  instructor             User                    @relation(fields: [instructorId], references: [id])
+
+  @@map("courses")
+}
+
+model Coupon {
+  id                String              @id @default(uuid())
+  title             String
+  code              String              @unique
+  discountType      DiscountType
+  noOfCoupons       Int
+  limitPerUser      Int
+  onlyFor           OnlyFor
+  autoApply         Boolean
+  totalRevenue      Int
+  applyTo           ApplyTo
+  validUntil        DateTime
+  validFrom         DateTime            @default(now())
+  userId            String
+  discount          Int
+  courseId          String
+  timesUsed         Int                 @default(0)
+  timesApplied      Int?                @default(0)
+  user              User                @relation(fields: [userId], references: [id])
+  CouponApplication CouponApplication[]
+}
+
+model CouponApplication {
+  id           String                  @id @default(uuid())
+  couponId     String
+  userId       String?
+  appliedAt    DateTime                @default(now())
+  orderId      String?
+  status       CouponApplicationStatus @default(APPLIED)
+  month        DateTime
+  appliedCount Int                     @default(0)
+  instructorId String
+  coupon       Coupon                  @relation(fields: [couponId], references: [id])
+  instructor   User                    @relation("InstructorApplications", fields: [instructorId], references: [id])
+  user         User?                   @relation("StudentApplications", fields: [userId], references: [id])
+
+  @@unique([couponId, month])
+}
+
+model CourseAnalytics {
+  id          String   @id @default(uuid())
+  courseId    String   @unique
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  trending    Float    @default(0.0)
+  lastUpdated DateTime @updatedAt
+  course      Course   @relation(fields: [courseId], references: [id])
+}
+
+model CourseRevenueAnalytics {
+  id                     String   @id @default(uuid())
+  courseId               String   @unique
+  totalRevenue           Int      @default(0)
+  totalEnrolls           Int      @default(0)
+  lastUpdated            DateTime @updatedAt
+  instructorId           String
+  totalDiscountedRevenue Int      @default(0)
+  course                 Course   @relation(fields: [courseId], references: [id])
+}
+
+model CourseRevenueHistory {
+  id               String   @id @default(uuid())
+  courseId         String   @unique
+  revenue          Int      @default(0)
+  enrollments      Int      @default(0)
+  date             DateTime
+  dicountedRevenue Int      @default(0)
+  instructorId     String
+  Course           Course   @relation(fields: [courseId], references: [id])
+
+  @@unique([courseId, date])
+}
+
+model Section {
+  id        String    @id @default(uuid())
+  title     String
+  createdAt DateTime  @default(now())
+  courseId  String
+  order     Int
+  lectures  Lecture[]
+  course    Course    @relation(fields: [courseId], references: [id])
+}
+
+model Resource {
+  id        String  @id @default(uuid())
+  title     String
+  link      String
+  lectureId String
+  lecture   Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+}
+
+model Lecture {
+  id            String        @id @default(uuid())
+  title         String
+  freePreview   Boolean       @default(false)
+  lengthNum     Int?
+  lengthStr     String?
+  createdAt     DateTime      @default(now())
+  sectionId     String
+  order         Int
+  section       Section       @relation(fields: [sectionId], references: [id])
+  lectureAssets LectureAsset?
+  Resource      Resource[]
+}
+
+model LectureAsset {
+  id           String             @id @default(uuid())
+  title        String
+  url          String
+  publicId     String
+  type         AssetType
+  createdAt    DateTime           @default(now())
+  lectureId    String             @unique
+  status       LectureAssetStatus @default(pending)
+  thumbnailUrl String?
+  lecture      Lecture            @relation(fields: [lectureId], references: [id], onDelete: Cascade)
 }
 
 enum Role {
@@ -26,132 +277,32 @@ enum Gender {
   Female
 }
 
-model User {
-  id         String        @id @default(uuid())
-  name       String
-  email      String        @unique
-  password   String
-  role       Role          @default(USER)
-  rememberMe Boolean       @default(false)
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  profile    UserProfile?
-  security   UserSecurity?
-
-  // Relation to courses (instructor)
-  courses   Course[]
-  clicks    UserClick[]
-  purchases UserPurchase[]
+enum CartItemStatus {
+  ACTIVE
+  SAVED_LATER
+  REMOVED
 }
 
-model UserClick {
-  id     String @id @default(cuid())
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-
-  clickType     String // "course" | "category" | "instructor"
-  targetId String // ID of clicked entity (courseId, categoryId, instructorId)
-  action   String @default("click") // "click" | "view" | "enroll" | "share"
-
-  // Optional relations (nullable because depends on type)
-  courseId     String?
-  categoryId   String?
-  instructorId String?
-
-  timestamp DateTime @default(now())
-  metadata  Json? // flexible storage for ClickMetaData
-
-  @@index([userId, timestamp])
-  @@index([targetId, timestamp]) // generic index for popularity/recent activity
-  @@index([clickType, targetId])
+enum DiscountType {
+  percentage
+  fixed
 }
 
-model UserPurchase {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  course    Course   @relation(fields: [courseId], references: [id])
-  courseId  String
-  price     Int
-  timestamp DateTime @default(now())
-
-  @@index([userId, timestamp])
-  @@index([courseId, timestamp])
+enum OnlyFor {
+  tier_1
+  tier_2
+  tier_3
 }
 
-model UserProfile {
-  id              String    @id @default(uuid())
-  contact         String?   @unique
-  about           String?
-  dob             DateTime?
-  gender          Gender?
-  profileImg      String?
-  profileImgId    String?
-  profileBanner   String?
-  profileBannerId String?
-  profession      String?
-
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
+enum ApplyTo {
+  allCourses
+  oneCourse
 }
 
-model UserSecurity {
-  id                  String    @id @default(uuid())
-  twoStepVerification Boolean?
-  lastPasswordChange  DateTime?
-  recoveryEmail       String?
-  recoveryPhone       String?
-  loginAlertsEnabled  Boolean?
-
-  user   User   @relation(fields: [userId], references: [id])
-  userId String @unique
-}
-
-model Course {
-  id              String       @id @default(uuid())
-  category        String
-  createdAt       DateTime     @default(now())
-  description     String
-  thumbnailUrl    String?
-  thumbnailId     String?
-  language        String
-  level           String
-  lengthNum       Int
-  lengthStr       String
-  objectives      String
-  primaryLanguage String
-  pricing         Float
-  requirements    Json
-  searchkey       String
-  slug            String       @unique
-  status          CourseStatus
-  subtitle        String
-  title           String
-  welcomeMessage  String
-  updatedAt       DateTime?    @updatedAt
-
-  purchases UserPurchase[]
-
-  // Relation to User (Instructor)
-  instructor   User   @relation(fields: [instructorId], references: [id])
-  instructorId String
-
-  // Relations
-  sections        Section[] // A course has many sections
-  CourseAnalytics CourseAnalytics?
-
-  @@map("courses")
-}
-
-model CourseAnalytics {
-  id       String @id @default(uuid())
-  course   Course @relation(fields: [courseId], references: [id])
-  courseId String @unique
-
-  impressions Int      @default(0)
-  clicks      Int      @default(0)
-  trending    Float    @default(0.0)
-  lastUpdated DateTime @updatedAt
+enum CouponApplicationStatus {
+  APPLIED
+  REDEEMED
+  ABANDONED
 }
 
 enum CourseStatus {
@@ -159,67 +310,11 @@ enum CourseStatus {
   drafted
 }
 
-model Section {
-  id        String   @id @default(uuid())
-  title     String
-  createdAt DateTime @default(now())
-
-  // Relations
-  courseId String
-  course   Course @relation(fields: [courseId], references: [id])
-
-  lectures Lecture[] // one-to-many
-  order    Int // for drag-and-drop ordering
-}
-
-model Resource {
-  id    String @id @default(uuid())
-  title String
-  link  String
-
-  lectureId String
-  lecture   Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
-}
-
-model Lecture {
-  id          String   @id @default(uuid())
-  title       String
-  freePreview Boolean  @default(false)
-  createdAt   DateTime @default(now())
-
-  lengthNum Int? // optional, since PDFs won’t have length
-  lengthStr String? // optional, same reason
-
-  // Relations
-  sectionId String
-  section   Section @relation(fields: [sectionId], references: [id])
-  order     Int // position within the section
-
-  // Link to assets
-  lectureAssets LectureAsset?
-  Resource      Resource[]
-}
-
 enum LectureAssetStatus {
   published
   pending
   uploading
   failed
-}
-
-model LectureAsset {
-  id           String             @id @default(uuid())
-  title        String
-  url          String // Cloudinary/S3 CDN link
-  publicId     String // object key for deletion/management
-  type         AssetType
-  createdAt    DateTime           @default(now())
-  status       LectureAssetStatus @default(pending)
-  thumbnailUrl String?
-
-  // Relation
-  lectureId String  @unique
-  lecture   Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
 }
 
 enum AssetType {

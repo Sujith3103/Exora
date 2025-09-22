@@ -16,7 +16,8 @@ export const useCart = () => {
             }
             return ''
         },
-        staleTime: Infinity
+        staleTime: Infinity,
+        enabled:false
     })
 
 }

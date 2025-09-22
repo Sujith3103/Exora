@@ -101,6 +101,10 @@ const Student_CourseDetailsPricing = () => {
             const finalPrice = calculateCouponDiscount(course.pricing, couponData);
             purchaseCourse.mutate({
                 courseId: course.id,
+                categoryId:course.category,
+                instructorId:course.instructorId,
+                userId:userId as unknown as string,
+                coupon:couponData,
                 ...finalPrice,
             });
         }
@@ -109,7 +113,8 @@ const Student_CourseDetailsPricing = () => {
     /** Fetch cart items for both logged in / guest */
     async function fetchCartItems() {
         if (isAuthenticated) {
-            const ids = new Set(itemsInCart.data.map((item: any) => item.courseId));
+            console.log("item:",itemsInCart)
+            const ids = new Set(itemsInCart?.data.map((item: any) => item.courseId));
             setCartItemsId(ids as Set<string>);
         } else {
             const data = await getCartItemsFromIDB();
@@ -208,6 +213,7 @@ const Student_CourseDetailsPricing = () => {
 
     /** Fetch cart items */
     useEffect(() => {
+        console.log("items in cart cahanges")
         fetchCartItems();
     }, [itemsInCart]);
 
