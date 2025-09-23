@@ -3,7 +3,7 @@ import { type AppDispatch } from "@/store"
 import { loginFailure, loginSuccess } from "@/store/authSlice"
 import { useEffect, useState } from "react"
 import { useDispatch } from "react-redux"
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 
 //SHADCN COMPONENTS
 import { Button } from "@/components/ui/button"

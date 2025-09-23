@@ -56,7 +56,7 @@ const CouponPage = () => {
 
                     </> : (
                         <CouponAnalytics conversionRateLastMonth={data?.conversionRateLastMonth ?? 0} totalRevenue={data?.totalRevenue ?? 0} totalTimesApplied={data?.totalTimesApplied ?? 0}
-                            conversionRateThisMonth={data?.conversionRateThisMonth ?? 0} revenueLastMonth={data?.revenueLastMonth ?? 0} revenueThisMonth={data?.revenueThisMonth ?? 0}
+                            conversionRateThisMonth={data?.conversionRateThisMonth ?? 0} revenueLastMonth={data?.revenueLastMonth ?? 0} revenueThisMonth={data?.revenueThisMonth ?? 0/0}
                             timesAppliedPrevMonth={data?.timesAppliedPrevMonth ?? 0} timesAppliedThisMonth={data?.timesAppliedThisMonth ?? 0}
                         />
                     )

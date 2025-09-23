@@ -159,8 +159,9 @@ export const deleteCoupon = async (req: Request, res: Response) => {
     }
 
 }
+
 export const getCouponAnalytics = async (req: Request, res: Response) => {
-    const userId = req.user?.id
+    const userId = req.user?.id;
 
     // first day of previous month
     const prevMonthStart = startOfMonth(subMonths(new Date(), 1)); // Aug 1
@@ -169,97 +170,87 @@ export const getCouponAnalytics = async (req: Request, res: Response) => {
 
     const rangeStart = prevMonthStart;   // Aug 1
     const rangeEnd = nextMonthStart;     // Oct 1
-    let timesAppliedThisMonth = 0
-    let timesAppliedPrevMonth = 0
+    let timesAppliedThisMonth = 0;
+    let timesAppliedPrevMonth = 0;
 
-    let revenueThisMonth = 0
-    let revenueLastMonth = 0
-    let totalRevenue = 0
+    let revenueThisMonth = 0;
+    let revenueLastMonth = 0;
+    let totalRevenue = 0;
 
-    let conversionRateThisMonth = 0
-    let conversionRateLastMonth = 0
+    let conversionRateThisMonth = 0;
+    let conversionRateLastMonth = 0;
 
     try {
-
-        const applications = await prisma.couponApplication.findMany({
-            where: {
-                instructorId: userId,
-                month: {
-                    gte: rangeStart, // Aug 1
-                    lt: rangeEnd   // Oct 1
+        const [applications, result, totalRevenueResult, history] = await prisma.$transaction([
+            prisma.couponApplication.findMany({
+                where: {
+                    instructorId: userId,
+                    month: {
+                        gte: rangeStart,
+                        lt: rangeEnd
+                    }
+                },
+                include: { coupon: true }
+            }),
+            prisma.coupon.aggregate({
+                where: { userId: userId },
+                _sum: { timesApplied: true }
+            }),
+            prisma.coupon.aggregate({
+                where: { userId: userId },
+                _sum: { totalRevenue: true }
+            }),
+            prisma.couponApplication.findMany({
+                where: {
+                    instructorId: userId,
+                    month: {
+                        gte: rangeStart,
+                        lt: rangeEnd
+                    },
+                    status: 'REDEEMED'
                 }
-            },
-            include: { coupon: true }
-        })
+            })
+        ]);
 
-        const result = await prisma.coupon.aggregate({
-            where: { userId: userId },
-            _sum: { timesApplied: true }
-        })
-
-        const totalRevenueResult = await prisma.coupon.aggregate({
-            where: { userId: userId },
-            _sum: { totalRevenue: true }
-        });
         totalRevenue = totalRevenueResult._sum?.totalRevenue ?? 0;
 
-        const history = await prisma.couponApplication.findMany({
-            where: {
-                instructorId: userId,
-                month: {
-                    gte: rangeStart, // Aug 1
-                    lt: rangeEnd   // Oct 1
-                },
-                status: 'REDEEMED'
-            },
-        })
-
-        console.log("historyb",history)
         for (let item of history) {
             if (item.month.getTime() === prevMonthStart.getTime()) {
-                revenueLastMonth += item.revenue
+                revenueLastMonth += item.revenue;
             }
             if (item.month.getTime() === currMonthStart.getTime()) {
-                revenueThisMonth += item.revenue
+                revenueThisMonth += item.revenue;
             }
         }
 
-        const totalTimesApplied = result._sum.timesApplied ?? 0
-
+        const totalTimesApplied = result._sum.timesApplied ?? 0;
 
         for (let item of applications) {
-
-            // console.log("item : ",item.coupon,item.appliedCount)
             if (item.month.getTime() === prevMonthStart.getTime()) {
-                console.log("prev",item.status)
                 if (item.status === 'APPLIED') {
                     timesAppliedPrevMonth += item.appliedCount;
-                }
-                else if (item.status === 'REDEEMED') {
-                    conversionRateLastMonth += item.appliedCount
+                } else if (item.status === 'REDEEMED') {
+                    conversionRateLastMonth += item.appliedCount;
                 }
             }
 
             if (item.month.getTime() === currMonthStart.getTime()) {
-
                 if (item.status === 'APPLIED') {
                     timesAppliedThisMonth += item.appliedCount;
-
+                } else if (item.status === 'REDEEMED') {
+                    conversionRateThisMonth += item.appliedCount;
                 }
-                else if (item.status === 'REDEEMED') {
-                    conversionRateThisMonth += item.appliedCount
-                }
-
-            }
-
-            if (item.status === 'REDEEMED') {
-
             }
         }
 
-        const convertedValue = calculateCouponConversion(timesAppliedThisMonth, conversionRateThisMonth, timesAppliedPrevMonth, conversionRateLastMonth)
-        conversionRateLastMonth = convertedValue.lastMonth
-        conversionRateThisMonth = convertedValue.thisMonth
+        const convertedValue = calculateCouponConversion(
+            timesAppliedThisMonth,
+            conversionRateThisMonth,
+            timesAppliedPrevMonth,
+            conversionRateLastMonth
+        );
+        conversionRateLastMonth = convertedValue.lastMonth;
+        conversionRateThisMonth = convertedValue.thisMonth;
 
         res.status(200).json({
             success: true,
@@ -274,9 +265,9 @@ export const getCouponAnalytics = async (req: Request, res: Response) => {
                 conversionRateThisMonth,
                 totalRevenue
             }
-        })
+        });
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Something went wrong" })
+        console.error(err);
+        res.status(500).json({ error: "Something went wrong" });
     }
-}   
+};

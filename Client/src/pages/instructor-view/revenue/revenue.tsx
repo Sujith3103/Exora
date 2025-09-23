@@ -2,12 +2,10 @@ import RevenueChart from "@/components/charts"
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
 import { TrendingUp, TrendingDown } from "lucide-react"
-import React from "react"
 
 export default function RevenueDashboard() {
   return (

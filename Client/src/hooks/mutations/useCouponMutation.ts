@@ -2,8 +2,6 @@ import server from "@/api/axiosinstance"
 import type { couponForm } from "@/components/instructor-view/coupons/new-coupon/newCoupon"
 import type { Coupon } from "@/config/config"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useDispatch } from "react-redux"
-import { useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 
 type validateCouponProps = {

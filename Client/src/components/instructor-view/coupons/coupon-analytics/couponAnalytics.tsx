@@ -1,14 +1,9 @@
 import { Card } from '@/components/ui/card'
-import type { Coupon } from '@/config/config'
-import { useCouponAnalytics } from '@/hooks/queries/useCouponAnalytics'
-import type { RootState } from '@/store'
-import { TrendingDown, TrendingUp } from 'lucide-react'
-import React, { useState } from 'react'
-import { useSelector } from 'react-redux'
+import HoverCard from '@/components/ui/hover-card'
+import { CircleQuestionMarkIcon, TrendingDown, TrendingUp } from 'lucide-react'
+import React from 'react'
 
-type CouponAnalyticsProps = {
-    activeCoupons: Coupon[]
-}
+
 
 export type couponAnalyticsType = {
     totalTimesApplied: number
@@ -23,7 +18,7 @@ export type couponAnalyticsType = {
     conversionRateLastMonth: number
 }
 
-const CouponAnalytics = React.memo(({ timesAppliedPrevMonth, timesAppliedThisMonth, totalTimesApplied, conversionRateLastMonth,conversionRateThisMonth,revenueLastMonth,revenueThisMonth,totalRevenue }: couponAnalyticsType) => {
+const CouponAnalytics = React.memo(({ timesAppliedPrevMonth, timesAppliedThisMonth, totalTimesApplied, conversionRateLastMonth, conversionRateThisMonth, revenueLastMonth, revenueThisMonth, totalRevenue }: couponAnalyticsType) => {
 
     const calculateAppliedCouponsMonthDifference = () => {
         let diffPercentage;
@@ -37,11 +32,24 @@ const CouponAnalytics = React.memo(({ timesAppliedPrevMonth, timesAppliedThisMon
         else if (diffPercentage < 0) return { diffPercentage: Math.abs(diffPercentage), growth: false };
     }
 
+    const getRevenuePercentageDiff = (revenueLastMonth: number, revenueThisMonth: number): number => {
+        if (revenueLastMonth === 0) return 100; // Avoid division by zero, assume 100% growth
+        const diff = revenueThisMonth - revenueLastMonth;
+        const percentDiff = (diff / revenueLastMonth) * 100;
+        return parseFloat(percentDiff.toFixed(2)); // Round to 2 decimal places
+    }
+
+    // const conversionRateDiff = (conversionRateLastMonth:number, conversionRateThisMonth:number) => {
+
+    //     if(con)
+
+    // }
+
     const appliedDiff = calculateAppliedCouponsMonthDifference();
 
     return (
-        <div className='flex w-full gap-10 justify-evenly mb-10 mt-5'>
-            <Card className="w-1/5 p-5 flex flex-col gap-2 border rounded-lg shadow-sm">
+        <div className='flex md:flex-row flex-col w-full lg:gap-10 lg:justify-evenly justify-between mb-10 mt-5 flex-wrap items-center gap-3'>
+            <Card className="w-1/5 p-5 flex flex-col gap-2 border rounded-lg shadow-sm  min-w-[250px]">
                 <p className="text-sm text-muted-foreground">Total Coupons Applied</p>
                 <span className="text-2xl font-bold">{totalTimesApplied}</span>
 
@@ -54,12 +62,47 @@ const CouponAnalytics = React.memo(({ timesAppliedPrevMonth, timesAppliedThisMon
                 </div>
             </Card>
 
-            <Card className='w-1/5'>
+            <Card className="w-1/5 p-5 flex flex-col gap-2 border rounded-lg shadow-sm  min-w-[250px]">
+                <p className="text-sm text-muted-foreground flex items-center relative">
+                    Conversion rate this month
+                    <span className=" relative group ml-auto">
+                        <CircleQuestionMarkIcon size={17} className="cursor-pointer" />
 
-            </Card>
-            <Card className='w-1/5'>
+                        {/* Arrow (only shows on hover) */}
+                        <HoverCard message='Conversion rate is the coupon appiled vs coupon redeemed ratio/percentage' />
+                    </span>
+                </p>
 
+                <span className="text-2xl font-bold">{conversionRateThisMonth}%</span>
+                {
+                    conversionRateLastMonth < conversionRateThisMonth ? (
+                        <>
+                            <p className='flex gap-2 text-green-600'><TrendingUp />{conversionRateThisMonth - conversionRateLastMonth}% higher then last month</p>
+                        </>
+                    ) : (
+                        <>
+                            <p className='flex g-2 text-red-500'><TrendingDown /> {conversionRateLastMonth - conversionRateThisMonth}% lower than last month</p>
+                        </>
+                    )
+                }
             </Card>
+            <Card className="w-1/5 p-5 flex flex-col gap-2 border rounded-lg shadow-sm  min-w-[250px]    ">
+                <p className="text-sm text-muted-foreground">Revenue generate by coupons</p>
+
+                <span className="text-2xl font-bold">${totalRevenue}</span>
+                {
+                    revenueLastMonth < revenueThisMonth ? (
+                        <>
+                            <p className='flex gap-2 text-green-600'><TrendingUp /> {getRevenuePercentageDiff(revenueLastMonth,revenueThisMonth)}% higher then last month</p>
+                        </>
+                    ) : (
+                        <>
+                            <p className='flex g-2 text-red-500'><TrendingDown />  {getRevenuePercentageDiff(revenueLastMonth,revenueThisMonth)}% lower than last month</p>
+                        </>
+                    )
+                }
+            </Card>
+            {/* <HoverCard /> */}
 
         </div>
     )

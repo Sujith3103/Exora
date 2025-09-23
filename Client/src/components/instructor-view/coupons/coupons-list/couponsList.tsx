@@ -13,7 +13,7 @@ type CouponListProps = {
     error: Error | null
 }
 
-const CouponsList = ({ isScheduling, coupons, error, isLoading }: CouponListProps) => {
+const CouponsList = ({ isScheduling, coupons,  }: CouponListProps) => {
 
     const { deleteCoupon } = useCouponMutation()
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)

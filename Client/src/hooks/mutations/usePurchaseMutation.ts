@@ -1,5 +1,5 @@
 import server from "@/api/axiosinstance"
-import type { ClickEvent, Coupon } from "@/config/config"
+import type { ClickEvent } from "@/config/config"
 import { useMutation } from "@tanstack/react-query"
 
 type PurchaseMutationProps = {
