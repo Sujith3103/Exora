@@ -24,7 +24,7 @@ export default function HoverCard({message}:HoverCardProps) {
 
             {/* Tooltip content (only shows on hover) */}
             <div className="absolute left-1/2 -translate-x-1/2 top-[calc(100%+10px)] border-1 bg-white text-muted-foreground font-semibold text-xs rounded-md px-3 py-2 shadow-md w-max hidden group-hover:block max-w-[200px]">
-                <p>{message}</p>
+                <span>{message}</span>
             </div>
         </>
     );

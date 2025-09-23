@@ -23,7 +23,24 @@ let isRunning = true;
 process.on("SIGINT", () => { console.log("Shutting down consumer..."); isRunning = false; });
 process.on("SIGTERM", () => { console.log("Shutting down consumer..."); isRunning = false; });
 
+/** --- IST Helpers --- */
+function getISTMidnight(date: Date = new Date()): Date {
+    const istOffset = 330; // +5:30
+    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+    const istDate = new Date(utc + istOffset * 60000);
+    istDate.setHours(0, 0, 0, 0);
+    return istDate;
+}
 
+function nowIST(): string {
+    const istOffset = 330; // +5:30
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const istTime = new Date(utc + istOffset * 60000);
+    return istTime.toISOString();
+}
+
+/** --- Parse Click Event --- */
 function parseClickEvent(record: RedisStreamMessage): ClickEvent {
     const raw = record.message;
 
@@ -46,20 +63,17 @@ function parseClickEvent(record: RedisStreamMessage): ClickEvent {
         originalPrice: parseInt(raw.originalPrice),
         finalPrice: parseInt(raw.finalPrice),
         action: (raw.action as ClickEvent["action"]) || "click",
-        timestamp: raw.timestamp || new Date().toISOString(),
+        timestamp: raw.timestamp || nowIST(),   // ✅ IST timestamp
         metadata,
     };
 }
 
 
 export const processAnalyticsEvent = async () => {
-
     console.log("analytics event started")
-
 
     while (isRunning) {
         try {
-
             const response = await redis.xReadGroup(
                 'analytics-consumer-group',
                 'analytics-consumer-1',
@@ -81,7 +95,6 @@ export const processAnalyticsEvent = async () => {
 
                     if (clickEvent.action === 'click') {
                         await prisma.$transaction(async (tx: any) => {
-
                             const courseExists = await tx.course.findUnique({
                                 where: { id: clickEvent.targetId }
                             });
@@ -93,45 +106,29 @@ export const processAnalyticsEvent = async () => {
 
                             await tx.courseAnalytics.upsert({
                                 where: { courseId: clickEvent.targetId },
-                                update: {
-                                    clicks: {
-                                        increment: 1
-                                    },
-
-                                },
-                                create: {
-                                    courseId: clickEvent.targetId,
-                                    clicks: 1
-                                }
+                                update: { clicks: { increment: 1 } },
+                                create: { courseId: clickEvent.targetId, clicks: 1 }
                             })
-
 
                             console.log("Processed analytics:", clickEvent);
                         }, {
-                            timeout: 15000,  // 15 seconds
-                            maxWait: 5000    // optional: how long to wait for connection
+                            timeout: 15000,
+                            maxWait: 5000
                         })
-
                     }
 
                     else if (clickEvent.action === 'enroll') {
-                        const today = new Date()
+                        const today = getISTMidnight();   // ✅ IST midnight
 
-                        today.setHours(0, 0, 0, 0)
                         await prisma.$transaction(async (tx) => {
-
                             const revenueAnalytics = await tx.courseRevenueAnalytics.upsert({
                                 where: { courseId: clickEvent.targetId },
                                 update: {
                                     totalDiscountedRevenue: {
                                         increment: clickEvent.discountApplied ? clickEvent.finalPrice : 0
                                     },
-                                    totalEnrolls: {
-                                        increment: 1
-                                    },
-                                    totalRevenue: {
-                                        increment: clickEvent.finalPrice
-                                    }
+                                    totalEnrolls: { increment: 1 },
+                                    totalRevenue: { increment: clickEvent.finalPrice }
                                 },
                                 create: {
                                     instructorId: clickEvent.instructorId!,
@@ -142,19 +139,11 @@ export const processAnalyticsEvent = async () => {
                                 }
                             })
 
-
                             const revenueHistory = await tx.courseRevenueHistory.upsert({
-                                where: {
-                                    courseId: clickEvent.targetId,
-                                    date: today
-                                },
+                                where: { courseId: clickEvent.targetId, date: today },
                                 update: {
-                                    enrollments: {
-                                        increment: 1
-                                    },
-                                    revenue: {
-                                        increment: clickEvent.finalPrice
-                                    },
+                                    enrollments: { increment: 1 },
+                                    revenue: { increment: clickEvent.finalPrice },
                                     dicountedRevenue: {
                                         increment: clickEvent.discountApplied ? clickEvent.finalPrice : 0
                                     }
@@ -165,24 +154,17 @@ export const processAnalyticsEvent = async () => {
                                     courseId: clickEvent.targetId,
                                     dicountedRevenue: clickEvent.discountApplied ? clickEvent.finalPrice : 0,
                                     revenue: clickEvent.finalPrice,
-                                    enrollments:1
+                                    enrollments: 1
                                 }
                             })
-
-
                         })
-
                     }
 
                     await redis.xAck("click-events-stream", "analytics-consumer-group", record.id);
-
                 })
             }
-
         } catch (err) {
             console.error("Redis read error:", err);
         }
-
     }
-
 }

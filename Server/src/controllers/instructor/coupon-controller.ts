@@ -159,36 +159,37 @@ export const deleteCoupon = async (req: Request, res: Response) => {
     }
 
 }
-
 export const getCouponAnalytics = async (req: Request, res: Response) => {
     const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
 
-    // first day of previous month
-    const prevMonthStart = startOfMonth(subMonths(new Date(), 1)); // Aug 1
-    const currMonthStart = startOfMonth(new Date());
-    const nextMonthStart = startOfMonth(addMonths(new Date(), 1)); // Oct 1
+    // Get IST time (UTC + 5:30)
+    const nowUTC = new Date();
+    const nowIST = new Date(nowUTC.getTime() + (5.5 * 60 * 60 * 1000));
 
-    const rangeStart = prevMonthStart;   // Aug 1
-    const rangeEnd = nextMonthStart;     // Oct 1
+    // IST month boundaries
+    const prevMonthStart = new Date(nowIST.getFullYear(), nowIST.getMonth() - 1, 1);
+    const currMonthStart = new Date(nowIST.getFullYear(), nowIST.getMonth(), 1);
+    const nextMonthStart = new Date(nowIST.getFullYear(), nowIST.getMonth() + 1, 1);
+
+    const rangeStart = prevMonthStart;
+    const rangeEnd = nextMonthStart;
+
     let timesAppliedThisMonth = 0;
     let timesAppliedPrevMonth = 0;
-
     let revenueThisMonth = 0;
     let revenueLastMonth = 0;
     let totalRevenue = 0;
-
     let conversionRateThisMonth = 0;
     let conversionRateLastMonth = 0;
 
     try {
+        // Run all queries in a single transaction
         const [applications, result, totalRevenueResult, history] = await prisma.$transaction([
             prisma.couponApplication.findMany({
                 where: {
                     instructorId: userId,
-                    month: {
-                        gte: rangeStart,
-                        lt: rangeEnd
-                    }
+                    month: { gte: rangeStart, lt: rangeEnd },
                 },
                 include: { coupon: true }
             }),
@@ -203,10 +204,7 @@ export const getCouponAnalytics = async (req: Request, res: Response) => {
             prisma.couponApplication.findMany({
                 where: {
                     instructorId: userId,
-                    month: {
-                        gte: rangeStart,
-                        lt: rangeEnd
-                    },
+                    month: { gte: rangeStart, lt: rangeEnd },
                     status: 'REDEEMED'
                 }
             })
@@ -214,35 +212,37 @@ export const getCouponAnalytics = async (req: Request, res: Response) => {
 
         totalRevenue = totalRevenueResult._sum?.totalRevenue ?? 0;
 
+        // Calculate revenue per month using IST month/year comparison
         for (let item of history) {
-            if (item.month.getTime() === prevMonthStart.getTime()) {
+            const monthIST = new Date(item.month.getTime() + (5.5 * 60 * 60 * 1000));
+
+            if (monthIST.getMonth() === prevMonthStart.getMonth() && monthIST.getFullYear() === prevMonthStart.getFullYear()) {
                 revenueLastMonth += item.revenue;
             }
-            if (item.month.getTime() === currMonthStart.getTime()) {
+
+            if (monthIST.getMonth() === currMonthStart.getMonth() && monthIST.getFullYear() === currMonthStart.getFullYear()) {
                 revenueThisMonth += item.revenue;
             }
         }
 
         const totalTimesApplied = result._sum.timesApplied ?? 0;
 
+        // Count applications & redeemed per month (IST comparison)
         for (let item of applications) {
-            if (item.month.getTime() === prevMonthStart.getTime()) {
-                if (item.status === 'APPLIED') {
-                    timesAppliedPrevMonth += item.appliedCount;
-                } else if (item.status === 'REDEEMED') {
-                    conversionRateLastMonth += item.appliedCount;
-                }
+            const monthIST = new Date(item.month.getTime() + (5.5 * 60 * 60 * 1000));
+
+            if (monthIST.getMonth() === prevMonthStart.getMonth() && monthIST.getFullYear() === prevMonthStart.getFullYear()) {
+                if (item.status === 'APPLIED') timesAppliedPrevMonth += item.appliedCount;
+                else if (item.status === 'REDEEMED') conversionRateLastMonth += item.appliedCount;
             }
 
-            if (item.month.getTime() === currMonthStart.getTime()) {
-                if (item.status === 'APPLIED') {
-                    timesAppliedThisMonth += item.appliedCount;
-                } else if (item.status === 'REDEEMED') {
-                    conversionRateThisMonth += item.appliedCount;
-                }
+            if (monthIST.getMonth() === currMonthStart.getMonth() && monthIST.getFullYear() === currMonthStart.getFullYear()) {
+                if (item.status === 'APPLIED') timesAppliedThisMonth += item.appliedCount;
+                else if (item.status === 'REDEEMED') conversionRateThisMonth += item.appliedCount;
             }
         }
 
+        // Calculate conversion rates
         const convertedValue = calculateCouponConversion(
             timesAppliedThisMonth,
             conversionRateThisMonth,

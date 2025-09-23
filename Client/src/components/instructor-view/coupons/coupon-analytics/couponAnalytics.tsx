@@ -63,7 +63,7 @@ const CouponAnalytics = React.memo(({ timesAppliedPrevMonth, timesAppliedThisMon
             </Card>
 
             <Card className="w-1/5 p-5 flex flex-col gap-2 border rounded-lg shadow-sm  min-w-[250px]">
-                <p className="text-sm text-muted-foreground flex items-center relative">
+                <div className="text-sm text-muted-foreground flex items-center relative">
                     Conversion rate this month
                     <span className=" relative group ml-auto">
                         <CircleQuestionMarkIcon size={17} className="cursor-pointer" />
@@ -71,7 +71,7 @@ const CouponAnalytics = React.memo(({ timesAppliedPrevMonth, timesAppliedThisMon
                         {/* Arrow (only shows on hover) */}
                         <HoverCard message='Conversion rate is the coupon appiled vs coupon redeemed ratio/percentage' />
                     </span>
-                </p>
+                </div>
 
                 <span className="text-2xl font-bold">{conversionRateThisMonth}%</span>
                 {
