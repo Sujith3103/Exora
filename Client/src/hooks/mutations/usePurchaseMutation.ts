@@ -11,7 +11,7 @@ type PurchaseMutationProps = {
     userId: string,
     categoryId: string,
     instructorId: string,
-    coupon: {}
+    coupon: {} | null
 
 }
 
@@ -25,7 +25,7 @@ const usePurchaseMutation = () => {
                 action: 'enroll',
                 userId,
                 targetId: courseId,
-                categoryId,
+                categoryId, 
                 instructorId
             }
             const res = await server.post(`/courses/${courseId}/purchase`, {

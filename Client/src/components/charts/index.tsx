@@ -21,7 +21,7 @@ const data = [
   ["2000-07-17", 69],  ["2000-07-18", 88],  ["2000-07-19", 77],
   ["2000-07-20", 83],  ["2000-07-21", 111], ["2000-07-22", 57],
   ["2000-07-23", 55],  ["2000-07-24", 60],
-];
+];                                                                                             
 
 const dateList = data.map((item) => item[0]);
 const valueList = data.map((item) => item[1]);
@@ -39,7 +39,6 @@ const RevenueChart: React.FC = () => {
           left: "center",
           textStyle: { fontSize: 16, fontWeight: "bold" },
         },
-        
         tooltip: {
           trigger: "axis",
           formatter: (params: any) => {

@@ -30,7 +30,7 @@ type ValidateCouponProps = {
     coupon: string;
     isAuthenticated: boolean;
     userId: string;
-    isApplying? : boolean
+    isApplying?: boolean
 };
 
 type Coupon = {
@@ -101,11 +101,23 @@ const Student_CourseDetailsPricing = () => {
             const finalPrice = calculateCouponDiscount(course.pricing, couponData);
             purchaseCourse.mutate({
                 courseId: course.id,
-                categoryId:course.category,
-                instructorId:course.instructorId,
-                userId:userId as unknown as string,
-                coupon:couponData,
+                categoryId: course.category,
+                instructorId: course.instructorId,
+                userId: userId as unknown as string,
+                coupon: couponData,
                 ...finalPrice,
+            });
+        }
+        else {
+            purchaseCourse.mutate({
+                courseId: course.id,
+                categoryId: course.category,
+                instructorId: course.instructorId,
+                userId: userId as unknown as string,
+                coupon: null,
+                discountApplied:0,
+                finalPrice:course.pricing,
+                originalPrice:course.pricing
             });
         }
     };
@@ -113,7 +125,6 @@ const Student_CourseDetailsPricing = () => {
     /** Fetch cart items for both logged in / guest */
     async function fetchCartItems() {
         if (isAuthenticated) {
-            console.log("item:",itemsInCart)
             const ids = new Set(itemsInCart?.data.map((item: any) => item.courseId));
             setCartItemsId(ids as Set<string>);
         } else {
@@ -167,7 +178,7 @@ const Student_CourseDetailsPricing = () => {
     };
 
     /** Validate coupon */
-    const handleValidateCoupon = (isApplying:boolean) => {
+    const handleValidateCoupon = (isApplying: boolean) => {
         const couponCode =
             inputRef.current?.value || searchParams.get("couponCode") || "";
 
@@ -177,7 +188,7 @@ const Student_CourseDetailsPricing = () => {
             instructorId: course.instructor.id,
             isAuthenticated,
             userId: userId as unknown as string,
-            isApplying:isApplying
+            isApplying: isApplying
         };
 
         if (inputRef.current) {
@@ -213,7 +224,6 @@ const Student_CourseDetailsPricing = () => {
 
     /** Fetch cart items */
     useEffect(() => {
-        console.log("items in cart cahanges")
         fetchCartItems();
     }, [itemsInCart]);
 
@@ -231,7 +241,7 @@ const Student_CourseDetailsPricing = () => {
                     userId: userId as unknown as string,
                     isAuthenticated,
                 },
-                {   
+                {
                     onSettled: (data) => {
                         if (data.success) {
                             setCouponData(data.data);

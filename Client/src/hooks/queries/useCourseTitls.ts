@@ -13,5 +13,5 @@ export const useCourseTitles = () => {
         refetchOnWindowFocus: false,
         placeholderData:keepPreviousData
     })
-
+    
 }

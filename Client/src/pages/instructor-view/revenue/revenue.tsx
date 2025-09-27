@@ -1,65 +1,70 @@
-import RevenueChart from "@/components/charts"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { TrendingUp, TrendingDown } from "lucide-react"
+import RevenueChart from "@/components/charts";
+import { AnalyticsCard } from "@/components/instructor-view/analytics-card/analyticsCard";
+import { Button } from "@/components/ui/button";
+import { useRevenueSalesSummary } from "@/hooks/queries/useRevenueSalesSummary";
+import {ChevronLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export default function RevenueDashboard() {
+type RevenueDashboardProps = {
+  isOpenMenu: boolean;
+  setIsOpenMenu: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+
+
+
+// Main dashboard
+export default function RevenueDashboard({ isOpenMenu, setIsOpenMenu }: RevenueDashboardProps) {
+  const navigate = useNavigate();
+  const { data: RevenueSummaryData } = useRevenueSalesSummary();
+
+  const handleClick_Menu = () => setIsOpenMenu((prev) => !prev);
+
+  if (!RevenueSummaryData) return null; // optionally show loading skeleton
+
   return (
-    <div className="p-6 space-y-8">
-      <h3 className="text-3xl font-semibold">Revenue & Sales</h3>
+    <>
+      <Button
+        variant="ghost"
+        className="cursor-pointer w-fit lg:hidden flex gap-0"
+        onClick={() => navigate(-1)}
+      >
+        <ChevronLeft className="ml-2" /> Back
+      </Button>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Total Revenue */}
-        <Card className="bg-white shadow-sm hover:shadow-md transition">
-          <CardHeader>
-            <p className="text-sm text-gray-500">Total Revenue</p>
-            <CardTitle className="text-3xl font-bold">$1,231</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-2 text-green-600">
-            <TrendingUp className="w-5 h-5" />
-            <span>+1.25% this month ($121)</span>
-          </CardContent>
-        </Card>
+      <div className="p-6 pt-2 space-y-8">
+        <h3 className="text-3xl font-semibold">Revenue & Sales</h3>
 
-        {/* Enrollments */}
-        <Card className="bg-white shadow-sm hover:shadow-md transition">
-          <CardHeader>
-            <p className="text-sm text-gray-500">Enrollments</p>
-            <CardTitle className="text-3xl font-bold">352</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-2 text-red-600">
-            <TrendingDown className="w-5 h-5" />
-            <span>-0.8% this month (45 enrollments)</span>
-          </CardContent>
-
-        </Card>
-
-        {/* discounted revenue */}
-        <Card className="bg-white shadow-sm hover:shadow-md transition">
-          <CardHeader>
-            <p className="text-sm text-gray-500">Discounted Revenue</p>
-            <CardTitle className="text-3xl font-bold">$252</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-2 text-red-600">
-            <TrendingDown className="w-5 h-5" />
-            <span>-0.8% this month (45 enrollments)</span>
-          </CardContent>
-
-        </Card>
-
-        {/* Add more cards similarly: Average Revenue, Refund Rate, etc. */}
-      </div>
-      <div className="relative ">
-        <div className="absolute right-20 mt-3">
-          <span>by:</span>
-          <span>this month</span>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <AnalyticsCard
+            title="Total Revenue"
+            value={RevenueSummaryData.totalRevenue}
+            lastMonth={RevenueSummaryData.revenueLastMonth ?? 0}
+            thisMonth={RevenueSummaryData.revenueThisMonth ?? 0}
+            currency
+          />
+          <AnalyticsCard
+            title="Enrollments"
+            value={RevenueSummaryData.totalEnrollments}
+            lastMonth={RevenueSummaryData.enrollmentsLastMonth ?? 0}
+            thisMonth={RevenueSummaryData.enrollmentsThisMonth ?? 0}
+          />
+          <AnalyticsCard
+            title="Discounted Revenue"
+            value={RevenueSummaryData.totalDiscountedRevenue}
+            lastMonth={RevenueSummaryData.discountedRevenueLastMonth ?? 0}
+            thisMonth={RevenueSummaryData.discountedRevenueThisMonth ?? 0}
+            currency
+          />
         </div>
-        <RevenueChart />
+
+        <div className="relative">
+          <div className="absolute right-20 mt-3">
+            <span>by:</span> <span>this month</span>
+          </div>
+          <RevenueChart />
+        </div>
       </div>
-    </div>
-  )
+    </>
+  );
 }

@@ -80,3 +80,17 @@ export type Coupon = couponForm & {
   createdAt: Date
   updatedAt: Date
 }
+
+export type RevenueSalesSummary = {
+
+  totalDiscountedRevenue: number,
+  totalEnrollments: number,
+  totalRevenue: number,
+  revenueLastMonth: number,
+  revenueThisMonth: number,
+  discountedRevenueLastMonth: number,
+  discountedRevenueThisMonth: number,
+  enrollmentsLastMonth: number,
+  enrollmentsThisMonth: number
+
+}

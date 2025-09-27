@@ -8,9 +8,14 @@ type NavBarTab = {
   icon: React.ReactNode
 }
 
-const AnalyticsNavbar = () => {
-  const navigate = useNavigate()
+// type NavBarProps = {
+//   isOpenMenu: boolean;
+//   setIsOpenMenu: React.Dispatch<React.SetStateAction<boolean>>;
+// };
 
+const AnalyticsNavbar = () => {
+  
+  const navigate = useNavigate()
   const navBarTabs: NavBarTab[] = [
     {
       title: "Revenue and Sales",
@@ -30,7 +35,7 @@ const AnalyticsNavbar = () => {
   ]
 
   return (
-    <div className=" w-full h-full p-4 flex flex-col gap-3 border-r-1">
+    <div className=" h-full p-4 flex flex-col gap-3 border-r-1  min-w-fit">
       {/* Back Button */}
       <Button
         variant="ghost"
@@ -52,12 +57,15 @@ const AnalyticsNavbar = () => {
           <Button
             key={tab.id}
             variant="ghost"
-            className="justify-start w-full cursor-pointer"
+            className="justify-start w-full cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap"
             onClick={() => navigate(`/profile/instructor/analytics/${tab.id}`)}
           >
             {tab.icon}
-            {tab.title}
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+              {tab.title}
+            </span>
           </Button>
+
         ))}
       </div>
     </div>

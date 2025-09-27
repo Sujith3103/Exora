@@ -1,16 +1,47 @@
+import server from "@/api/axiosinstance"
 import AnalyticsNavbar from "@/components/navbar/analytics-navbar/analytics_Navbar"
+import { Menu, X } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Outlet } from "react-router-dom"
 
 const AnalyticsLayout = () => {
+
+    const [isOpenMenu, setIsOpenMenu] = useState<boolean>(false)
+
+    //     {
+    //     "totalDiscountedRevenue": 28,
+    //     "totalEnrollments": 4,
+    //     "totalRevenue": 136,
+    //     "revenueLastMonth": 28,
+    //     "revenueThisMonth": 108,
+    //     "discountedRevenueLastMonth": 28,
+    //     "discountedRevenueThisMonth": 28,
+    //     "enrollmentsLastMonth": 1,
+    //     "enrollmentsThisMonth": 3
+    // }
+
+    const handleClick_Menu = () => {
+        setIsOpenMenu((prev) => !prev)
+    }
+
     return (
         <div className="h-screen w-full flex">
             {/* Sidebar */}
-            <div className="w-1/7 h-full">
+            <div className={`min-w-1/7 h-full  lg:block z-10
+                ${isOpenMenu ? 'absolute bg-white' : 'hidden'}
+                `}>
+                {
+                    isOpenMenu && <X className="absolute -right-10 top-3 bg-white border-2 border-gray" onClick={handleClick_Menu} />
+                }
                 <AnalyticsNavbar />
             </div>
 
+
             {/* Main Content */}
             <div className="flex-1 h-full overflow-y-auto">
+                <div className="w-full bg-black lg:hidden" onClick={handleClick_Menu}>
+                    <Menu className="text-white ml-2" />
+                </div>
                 <Outlet />
             </div>
         </div>
