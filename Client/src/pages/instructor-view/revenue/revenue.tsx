@@ -1,24 +1,62 @@
+import server from "@/api/axiosinstance";
 import RevenueChart from "@/components/charts";
 import { AnalyticsCard } from "@/components/instructor-view/analytics-card/analyticsCard";
 import { Button } from "@/components/ui/button";
 import { useRevenueSalesSummary } from "@/hooks/queries/useRevenueSalesSummary";
-import {ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { UseRevenueAnalytics } from "./hooks/useRevenueAnalytics";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type RevenueDashboardProps = {
   isOpenMenu: boolean;
   setIsOpenMenu: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+export type RevenueAnalyticsState = {
+  monthToShowRevenue: number;
+  showBy: 'month' | 'year';
+  year: number
+};
 
+const months = ['jan', 'feb', 'mar', 'apr', 'may', 'june', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
+const getCurrentMonth = () => {
+  const today = new Date()
+  return today.getMonth()
+}
+const getCurrentYear = () => {
+  const today = new Date()
+  return today.getFullYear()
+}
 
 // Main dashboard
 export default function RevenueDashboard({ isOpenMenu, setIsOpenMenu }: RevenueDashboardProps) {
   const navigate = useNavigate();
   const { data: RevenueSummaryData } = useRevenueSalesSummary();
+  const today = new Date()
+
+
+  const [revenueAnalyticsState, setRevenueAnalyticsState] = useState<RevenueAnalyticsState>({
+    monthToShowRevenue: getCurrentMonth(),
+    showBy: 'month',
+    year: getCurrentYear(),
+  })
+
+  const [enrollmentsAnalyticsState, setEnrollmentsAnalyticsState] = useState<RevenueAnalyticsState>({
+    monthToShowRevenue: getCurrentMonth(),
+    showBy: 'month',
+    year: getCurrentYear(),
+  })
+
+  const { data: RevenueAnalyticsData, refetch: fetchRevenueAnalytics, isLoading } = UseRevenueAnalytics({ period: revenueAnalyticsState.showBy, revenueMonth: revenueAnalyticsState.monthToShowRevenue });
 
   const handleClick_Menu = () => setIsOpenMenu((prev) => !prev);
+
+  useEffect(() => {
+    console.log(RevenueAnalyticsData)
+  },[RevenueAnalyticsData])
 
   if (!RevenueSummaryData) return null; // optionally show loading skeleton
 
@@ -35,6 +73,7 @@ export default function RevenueDashboard({ isOpenMenu, setIsOpenMenu }: RevenueD
       <div className="p-6 pt-2 space-y-8">
         <h3 className="text-3xl font-semibold">Revenue & Sales</h3>
 
+        {/* Analytics Card */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <AnalyticsCard
             title="Total Revenue"
@@ -59,10 +98,30 @@ export default function RevenueDashboard({ isOpenMenu, setIsOpenMenu }: RevenueD
         </div>
 
         <div className="relative">
-          <div className="absolute right-20 mt-3">
-            <span>by:</span> <span>this month</span>
+          <div className="absolute right-20 mt-3 z-20">
+            <Select value={revenueAnalyticsState.showBy}
+              onValueChange={(val: 'month' | 'year') =>
+                setRevenueAnalyticsState(prev => ({ ...prev, showBy: val }))
+              }            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="By Month" />
+              </SelectTrigger>
+              <SelectContent defaultValue={'month'}>
+                <SelectGroup>
+                  <SelectLabel >Select By</SelectLabel>
+                  <SelectItem value="month">Month</SelectItem>
+                  <SelectItem value="year">Year</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
-          <RevenueChart />
+          <div className="absolute left-20 mt-3 z-20">
+            <span className="font-bold text-xl">{months[revenueAnalyticsState.monthToShowRevenue]} {revenueAnalyticsState.year}</span>
+          </div>
+          {
+            !isLoading &&
+            <RevenueChart minDate={RevenueAnalyticsData?.firstRevenueDate} analyticsState={revenueAnalyticsState} data={RevenueAnalyticsData?.chartData ?? []} month={revenueAnalyticsState.monthToShowRevenue} setAnalyticsState={setRevenueAnalyticsState} />
+          }
         </div>
       </div>
     </>

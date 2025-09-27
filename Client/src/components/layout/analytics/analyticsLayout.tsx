@@ -8,17 +8,6 @@ const AnalyticsLayout = () => {
 
     const [isOpenMenu, setIsOpenMenu] = useState<boolean>(false)
 
-    //     {
-    //     "totalDiscountedRevenue": 28,
-    //     "totalEnrollments": 4,
-    //     "totalRevenue": 136,
-    //     "revenueLastMonth": 28,
-    //     "revenueThisMonth": 108,
-    //     "discountedRevenueLastMonth": 28,
-    //     "discountedRevenueThisMonth": 28,
-    //     "enrollmentsLastMonth": 1,
-    //     "enrollmentsThisMonth": 3
-    // }
 
     const handleClick_Menu = () => {
         setIsOpenMenu((prev) => !prev)
@@ -35,7 +24,6 @@ const AnalyticsLayout = () => {
                 }
                 <AnalyticsNavbar />
             </div>
-
 
             {/* Main Content */}
             <div className="flex-1 h-full overflow-y-auto">

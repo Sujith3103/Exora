@@ -1,33 +1,87 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as echarts from "echarts";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { RevenueAnalyticsState } from "@/pages/instructor-view/revenue/revenue";
 
-// Your data
-// prettier-ignore
-const data = [
-  ["2000-06-05", 116], ["2000-06-06", 129], ["2000-06-07", 135],
-  ["2000-06-08", 86],  ["2000-06-09", 73],  ["2000-06-10", 85],
-  ["2000-06-11", 73],  ["2000-06-12", 68],  ["2000-06-13", 92],
-  ["2000-06-14", 130], ["2000-06-15", 245], ["2000-06-16", 139],
-  ["2000-06-17", 115], ["2000-06-18", 111], ["2000-06-19", 309],
-  ["2000-06-20", 206], ["2000-06-21", 137], ["2000-06-22", 128],
-  ["2000-06-23", 85],  ["2000-06-24", 94],  ["2000-06-25", 71],
-  ["2000-06-26", 106], ["2000-06-27", 84],  ["2000-06-28", 93],
-  ["2000-06-29", 85],  ["2000-06-30", 73],  ["2000-07-01", 83],
-  ["2000-07-02", 125], ["2000-07-03", 107], ["2000-07-04", 82],
-  ["2000-07-05", 44],  ["2000-07-06", 72],  ["2000-07-07", 106],
-  ["2000-07-08", 107], ["2000-07-09", 66],  ["2000-07-10", 91],
-  ["2000-07-11", 92],  ["2000-07-12", 113], ["2000-07-13", 107],
-  ["2000-07-14", 131], ["2000-07-15", 111], ["2000-07-16", 64],
-  ["2000-07-17", 69],  ["2000-07-18", 88],  ["2000-07-19", 77],
-  ["2000-07-20", 83],  ["2000-07-21", 111], ["2000-07-22", 57],
-  ["2000-07-23", 55],  ["2000-07-24", 60],
-];                                                                                             
+type ChartProps = {
+  data: [string, number][]
+  //the lowest limit until where the user can look his data -> minDate
+  minDate: Date
+  month: number
+  setAnalyticsState: React.Dispatch<React.SetStateAction<RevenueAnalyticsState>>;
+  analyticsState: RevenueAnalyticsState
+}
 
-const dateList = data.map((item) => item[0]);
-const valueList = data.map((item) => item[1]);
-
-const RevenueChart: React.FC = () => {
+const RevenueChart: React.FC<ChartProps> = ({ data, month, setAnalyticsState, analyticsState, minDate }) => {
   const chartRef = useRef<HTMLDivElement>(null);
+
+  const [isLeftChevronDisabled, setIsLeftChevronDisabled] = useState<boolean>(false)
+  const [isRightChevronDisabled, setIsRightChevronDisabled] = useState<boolean>(false)
+
+  const now = new Date()
+  const currentMonth = now.getMonth()
+  const currentYear = now.getFullYear()
+
+  const dateList = data.map((item) => item[0]);
+  const valueList = data.map((item) => item[1]);
+
+  const handleClick_ChangeMonth = (type: 'Add' | 'sub') => {
+
+    setAnalyticsState(prev => {
+      if (prev.monthToShowRevenue === 11 && type === 'Add') {
+
+      }
+      const newMonth = type === 'Add'
+        ? prev.monthToShowRevenue === 11 ? 0 : prev.monthToShowRevenue + 1
+        : prev.monthToShowRevenue === 0 ? 11 : prev.monthToShowRevenue - 1;
+
+      return {
+        ...prev,               // keep other properties like showBy
+        monthToShowRevenue: newMonth
+      };
+    });
+
+
+    // setMonth(prev => {
+    //   if (type === 'Add') {
+    //     return prev === 11 ? 0 : prev + 1;   // Wrap around after December
+    //   } else {
+    //     return prev === 0 ? 11 : prev - 1;   // Wrap around before January
+    //   }
+    // });
+
+  };
+
+  const calcIfIconDisables = () => {
+
+  }
+
+  const isRightIconDisabled = () => {
+    if (analyticsState?.year === currentYear && analyticsState?.monthToShowRevenue === currentMonth) {
+      setIsRightChevronDisabled(true)
+    }
+    else {
+      setIsRightChevronDisabled(false)
+    }
+  }
+
+  const isLeftIconDisabled = () => {
+    const firstDate = new Date(minDate);
+    const month = firstDate?.getMonth()
+    const year = firstDate?.getFullYear()
+    if (analyticsState.year === year && analyticsState.monthToShowRevenue === month) {
+      setIsLeftChevronDisabled(true)
+    }
+    else {
+      setIsLeftChevronDisabled(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!analyticsState) return
+    isRightIconDisabled()
+    isLeftIconDisabled()
+  }, [analyticsState])
 
   useEffect(() => {
     if (chartRef.current) {
@@ -85,8 +139,27 @@ const RevenueChart: React.FC = () => {
     }
   }, []);
 
-  return <div ref={chartRef} style={{ width: "100%", height: "400px" }} />;
+  return <div className="flex items-center">
+    <ChevronLeft
+      className={`transition-colors ${isLeftChevronDisabled
+        ? "text-gray-400 cursor-not-allowed"  // disabled styling
+        : "text-gray-700 hover:text-gray-900 cursor-pointer"  // active styling
+        }`}
+      onClick={() => {
+        if (!isLeftChevronDisabled) handleClick_ChangeMonth("sub");
+      }}
+    />
+    <div ref={chartRef} style={{ width: "100%", height: "400px", }} className="ml-7" />
+    <ChevronRight
+      className={`transition-colors ${isRightChevronDisabled
+        ? "text-gray-400 cursor-not-allowed"  // disabled styling
+        : "text-gray-700 hover:text-gray-900 cursor-pointer"  // active styling
+        }`}
+      onClick={() => {
+        if (!isRightChevronDisabled) handleClick_ChangeMonth("Add");
+      }}
+    />
+  </div>
 };
 
 export default RevenueChart;
-    
