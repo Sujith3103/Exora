@@ -140,7 +140,7 @@ model Course {
   updatedAt              DateTime?               @updatedAt
   CourseAnalytics        CourseAnalytics?
   courseRevenueAnalytics CourseRevenueAnalytics?
-  revenueHistory         CourseRevenueHistory?
+  revenueHistory         CourseRevenueHistory[]
   sections               Section[]
   purchases              UserPurchase[]
   instructor             User                    @relation(fields: [instructorId], references: [id])
@@ -180,11 +180,12 @@ model CouponApplication {
   month        DateTime
   appliedCount Int                     @default(0)
   instructorId String
+  revenue      Int                     @default(0)
   coupon       Coupon                  @relation(fields: [couponId], references: [id])
   instructor   User                    @relation("InstructorApplications", fields: [instructorId], references: [id])
   user         User?                   @relation("StudentApplications", fields: [userId], references: [id])
 
-  @@unique([couponId, month])
+  @@unique([couponId, month, status])
 }
 
 model CourseAnalytics {
@@ -210,7 +211,7 @@ model CourseRevenueAnalytics {
 
 model CourseRevenueHistory {
   id               String   @id @default(uuid())
-  courseId         String   @unique
+  courseId         String
   revenue          Int      @default(0)
   enrollments      Int      @default(0)
   date             DateTime
@@ -218,7 +219,7 @@ model CourseRevenueHistory {
   instructorId     String
   Course           Course   @relation(fields: [courseId], references: [id])
 
-  @@unique([courseId, date])
+  @@unique([courseId, date], name: "courseId_date")
 }
 
 model Section {
@@ -264,6 +265,15 @@ model LectureAsset {
   status       LectureAssetStatus @default(pending)
   thumbnailUrl String?
   lecture      Lecture            @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+}
+
+model CouponRedemption {
+  id        String   @id
+  couponId  String
+  userId    String
+  courseId  String
+  status    String
+  createdAt DateTime @default(now())
 }
 
 enum Role {

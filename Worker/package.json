@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@types/json2csv": "^5.0.7",
-    "@types/node": "^24.2.1",
+    "@types/node": "^24.5.2",
     "@types/nodemailer": "^6.4.17",
     "nodemon": "^3.1.10",
     "prisma": "^6.14.0",

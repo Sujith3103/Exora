@@ -36,6 +36,7 @@ import coupon_route from './routes/instructor/coupon_route'
 import validateCoupon_route from './routes/user/coupon_route'
 import course_route from './routes/user/course_route'
 import trackEvent_route from './routes/click'
+import analytics_route from './routes/instructor/analytics_route'
 import { connectRedis, redis } from "./utils/redisClient";
 // -------------------- CONFIG --------------------
 dotenv.config();
@@ -62,6 +63,7 @@ app.get("/health", (req, res) => {
 //instructor
 app.use('/api/instructor/course', instructor_course_route)
 app.use('/api/instructor/coupon',coupon_route)
+app.use('/api/instructor/analytics',analytics_route)
 
 // -------------------- SUPABASE --------------------
 const supabaseUrl = "https://aywktugruubporzskjdt.supabase.co";

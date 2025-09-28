@@ -63,7 +63,7 @@ export async function processDbEvents() {
       if (!Array.isArray(response) || response.length === 0) continue;
 
       const streams = response as RedisStreamResponse;
-      for (const streamData of streams) {
+        for (const streamData of streams) {
         // Process messages concurrently with a limit
         await pMap(streamData.messages, async (record: any) => {
           const clickEvent = parseClickEvent(record);
@@ -80,7 +80,7 @@ export async function processDbEvents() {
                   action:clickEvent.action
                 },
               });
-
+              
               // Trim old clicks > 150 per user
               await tx.$executeRaw`DELETE FROM "UserClick" WHERE id IN (
               SELECT id FROM (

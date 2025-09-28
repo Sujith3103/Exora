@@ -140,8 +140,12 @@ export const processAnalyticsEvent = async () => {
                             })
 
                             const revenueHistory = await tx.courseRevenueHistory.upsert({
-                                where: { courseId: clickEvent.targetId, date: today },
-                                update: {
+                                where: {
+                                    courseId_date: {
+                                        courseId: clickEvent.targetId,
+                                        date: today,
+                                    },
+                                }, update: {
                                     enrollments: { increment: 1 },
                                     revenue: { increment: clickEvent.finalPrice },
                                     dicountedRevenue: {

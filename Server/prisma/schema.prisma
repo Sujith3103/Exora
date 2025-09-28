@@ -190,7 +190,7 @@ model Course {
   sections               Section[] // A course has many sections
   CourseAnalytics        CourseAnalytics?
   courseRevenueAnalytics CourseRevenueAnalytics?
-  revenueHistory         CourseRevenueHistory?
+  revenueHistory         CourseRevenueHistory[]
 
   @@map("courses")
 }
@@ -294,17 +294,18 @@ model CourseRevenueAnalytics {
 
 model CourseRevenueHistory {
   id       String @id @default(uuid())
-  courseId String @unique
+  courseId String
   Course   Course @relation(fields: [courseId], references: [id])
 
   instructorId     String
-  date             DateTime // e.g. "2025-09-01" (first day of month)
-  revenue          Int      @default(0) // sum of prices
-  enrollments      Int      @default(0) // count of purchases
+  date             DateTime
+  revenue          Int      @default(0)
+  enrollments      Int      @default(0)
   dicountedRevenue Int      @default(0)
 
-  @@unique([courseId, date])
+  @@unique([courseId, date]) // ✅ only this
 }
+
 
 enum CourseStatus {
   published
