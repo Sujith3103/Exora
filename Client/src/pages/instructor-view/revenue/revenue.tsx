@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UseRevenueAnalytics } from "./hooks/useRevenueAnalytics";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEnrollmentsAnalytics } from "./hooks/useEnrollmentsAnalytics";
 
 type RevenueDashboardProps = {
   isOpenMenu: boolean;
@@ -50,13 +51,11 @@ export default function RevenueDashboard({ isOpenMenu, setIsOpenMenu }: RevenueD
     year: getCurrentYear(),
   })
 
-  const { data: RevenueAnalyticsData, refetch: fetchRevenueAnalytics, isLoading } = UseRevenueAnalytics({ period: revenueAnalyticsState.showBy, revenueMonth: revenueAnalyticsState.monthToShowRevenue });
+  const { data: RevenueAnalyticsData, refetch: fetchRevenueAnalytics, isLoading: isRevenueAnalyticsLoading } = UseRevenueAnalytics({ period: revenueAnalyticsState.showBy, revenueMonth: revenueAnalyticsState.monthToShowRevenue, revenueYear: revenueAnalyticsState.year });
+  const { data: EnrollmentsAnalyticsData, refetch: fetchEnrollmentsAnalytics, isLoading: isEnrollmentsAnalyticsLoading } = useEnrollmentsAnalytics({ period: enrollmentsAnalyticsState.showBy, revenueMonth: enrollmentsAnalyticsState.monthToShowRevenue, revenueYear: enrollmentsAnalyticsState.year });
 
   const handleClick_Menu = () => setIsOpenMenu((prev) => !prev);
 
-  useEffect(() => {
-    console.log(RevenueAnalyticsData)
-  },[RevenueAnalyticsData])
 
   if (!RevenueSummaryData) return null; // optionally show loading skeleton
 
@@ -119,9 +118,41 @@ export default function RevenueDashboard({ isOpenMenu, setIsOpenMenu }: RevenueD
             <span className="font-bold text-xl">{months[revenueAnalyticsState.monthToShowRevenue]} {revenueAnalyticsState.year}</span>
           </div>
           {
-            !isLoading &&
-            <RevenueChart minDate={RevenueAnalyticsData?.firstRevenueDate} analyticsState={revenueAnalyticsState} data={RevenueAnalyticsData?.chartData ?? []} month={revenueAnalyticsState.monthToShowRevenue} setAnalyticsState={setRevenueAnalyticsState} />
+            !isRevenueAnalyticsLoading &&
+            <RevenueChart title="Revenue Over Time" minDate={RevenueAnalyticsData?.firstRevenueDate} analyticsState={revenueAnalyticsState} data={RevenueAnalyticsData?.chartData ?? []} setAnalyticsState={setRevenueAnalyticsState}
+              valName="Revenue :$"
+            />
           }
+
+        </div>
+        <div className="relative">
+          <div className="absolute right-20 mt-3 z-20">
+            <Select value={enrollmentsAnalyticsState.showBy}
+              onValueChange={(val: 'month' | 'year') =>
+                setEnrollmentsAnalyticsState(prev => ({ ...prev, showBy: val }))
+              }            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="By Month" />
+              </SelectTrigger>
+              <SelectContent defaultValue={'month'}>
+                <SelectGroup>
+                  <SelectLabel >Select By</SelectLabel>
+                  <SelectItem value="month">Month</SelectItem>
+                  <SelectItem value="year">Year</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="absolute left-20 mt-3 z-20">
+            <span className="font-bold text-xl">{months[enrollmentsAnalyticsState.monthToShowRevenue]} {enrollmentsAnalyticsState.year}</span>
+          </div>
+          {
+            !isEnrollmentsAnalyticsLoading &&
+            <RevenueChart title="Enrollments Over Time" minDate={EnrollmentsAnalyticsData?.firstRevenueDate} analyticsState={enrollmentsAnalyticsState} data={EnrollmentsAnalyticsData?.chartData ?? []} setAnalyticsState={setEnrollmentsAnalyticsState}
+              valName="Enrollments :"
+            />
+          }
+
         </div>
       </div>
     </>

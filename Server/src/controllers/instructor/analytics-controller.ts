@@ -98,7 +98,6 @@ export const getRevenueAndSalesAnalytics = async (req: Request, res: Response) =
 
 }
 
-
 function getMonthRange(year: number, monthIndex: number) {
     // Start: first day of the given month
     const startOfMonth = new Date(year, monthIndex, 1);
@@ -157,169 +156,270 @@ function parseChartDataToFilledDates(
 
 
 export const getRevenueTimeSeries = async (req: Request, res: Response) => {
-    const { period = "month" } = req.query as { period?: "month" | "year" };
-    const { month } = req.query
-    const { year } = req.query
+  const { period = "month" } = req.query as { period?: "month" | "year" };
+  const { month, year } = req.query;
 
-    const { type } = req.query as { type?: 'revenue' | 'enrollments' }
+  const monthNum = parseInt(month as string, 10);
+  const yearNum = parseInt(year as string, 10);
 
-    const monthNum = parseInt(month as string, 10); // shift to 0-based
-    const yearNum = parseInt(year as string, 10); // shift to 0-based
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ message: "User not authenticated" });
 
-    const userId = req.user?.id;
+  // Boundaries
+  const startOfMonth = new Date(yearNum, monthNum, 1);
+  const endOfMonth = new Date(yearNum, monthNum + 1, 0);
+  const startOfYear = new Date(yearNum, 0, 1);
+  const endOfYear = new Date(yearNum, 11, 31);
 
-    if (!userId) return res.status(401).json({ message: "User not authenticated" });
+  try {
+    let result: any[] = [];
 
-    const today = new Date();
-    // const startOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1); // 1st day of current month
-    // const startOf3MonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1); // 1st day of 2 months before
-    // const endOfCurrentMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // last day of current month
-    const startOfMonth = new Date(yearNum, monthNum, 1)
-    const endOfMonth = new Date(yearNum, monthNum + 1, 0)
-    let chartData: [string, number][] = []
-
-    let firstRevenueDate;
-    try {
-        let groupBy: "month" | "year" = "month";
-        switch (period) {
-            case "month":
-                groupBy = "month";
-                break;
-            case "year":
-                groupBy = "year";
-                break;
-            default:
-                groupBy = "month";
-        }
-
-        const result = await prisma.courseRevenueHistory.groupBy({
-            where: {
-                instructorId: userId,
-                date: {
-                    gte: startOfMonth,
-                    lte: endOfMonth
-                }
-            },
-            by: [
-                "date"
-            ],
-            _sum: {
-                revenue: true,
-            },
-            orderBy: { date: 'asc' },
-
-        })
-
-        const firstRevenue = await prisma.courseRevenueHistory.findFirst({
-            orderBy: {
-                date: 'asc',  // ascending → earliest first
-            },
-        });
-
-        if (firstRevenue) {
-            firstRevenueDate = firstRevenue.date
-        }
-        // Use raw SQL for flexible grouping
-
-        result.forEach(item => {
-            const formattedDate = new Date(item.date).toISOString().split("T")[0];
-            chartData.push([formattedDate, item._sum.revenue ?? 0]); // push as array
-        });
-
-
-        const filledDate = getDaysInMonth(year as unknown as number, monthNum);
-
-        const finalData = parseChartDataToFilledDates(chartData, filledDate)
-
-        return res.json({
-            chartData: finalData,
-            firstRevenueDate
-        });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Internal server error" });
+    if (period === "month") {
+      //  Group daily inside given month
+      result = await prisma.$queryRawUnsafe<any[]>(
+        `
+        SELECT 
+          date_trunc('day', "date")::date AS period,
+          SUM("revenue")::bigint AS "totalRevenue"
+        FROM "CourseRevenueHistory"
+        WHERE "instructorId" = $1
+          AND "date" >= $2
+          AND "date" <= $3
+        GROUP BY period
+        ORDER BY period ASC;
+        `,
+        userId,
+        startOfMonth,
+        endOfMonth
+      );
+    } else {
+      //  Group monthly inside given year
+      result = await prisma.$queryRawUnsafe<any[]>(
+        `
+        SELECT 
+          date_trunc('month', "date")::date AS period,
+          SUM("revenue")::bigint AS "totalRevenue"
+        FROM "CourseRevenueHistory"
+        WHERE "instructorId" = $1
+          AND "date" >= $2
+          AND "date" <= $3
+        GROUP BY period
+        ORDER BY period ASC;
+        `,
+        userId,
+        startOfYear,
+        endOfYear
+      );
     }
+
+    //  Map results
+    let chartData: [string, number][] = result.map((r) => [
+      new Date(r.period).toISOString().split("T")[0],
+      Number(r.totalRevenue),
+    ]);
+
+    //  Only fill missing days when period = month
+    if (period === "month") {
+      const filledDate = getDaysInMonth(yearNum, monthNum);
+      chartData = parseChartDataToFilledDates(chartData, filledDate);
+    }
+
+    //  First revenue date
+    const firstRevenue = await prisma.courseRevenueHistory.findFirst({
+      orderBy: { date: "asc" },
+    });
+
+    return res.json({
+      chartData,
+      firstRevenueDate: firstRevenue?.date || null,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 
+// export const getRevenueTimeSeries = async (req: Request, res: Response) => {
+//     const { period = "month" } = req.query as { period?: "month" | "year" };
+//     const { month } = req.query
+//     const { year } = req.query
+
+//     const { type } = req.query as { type?: 'revenue' | 'enrollments' }
+
+//     const monthNum = parseInt(month as string, 10); // shift to 0-based
+//     const yearNum = parseInt(year as string, 10); // shift to 0-based
+
+//     const userId = req.user?.id;
+
+//     if (!userId) return res.status(401).json({ message: "User not authenticated" });
+
+//     const today = new Date();
+
+//     const startOfMonth = new Date(yearNum, monthNum, 1)
+//     const endOfMonth = new Date(yearNum, monthNum + 1, 0)
+
+//     const startOfYear = new Date(yearNum, 0, 1);   // Jan 1, 2025
+//     const endOfYear = new Date(yearNum, 11, 31); // Dec 31, 2025
+
+//     let chartData: [string, number][] = []
+
+//     let firstRevenueDate;
+//     try {
+//         let groupBy: "month" | "year" = "month";
+//         switch (period) {
+//             case "month":
+//                 groupBy = "month";
+//                 break;
+//             case "year":
+//                 groupBy = "year";
+//                 break;
+//             default:
+//                 groupBy = "month";
+//         }
+//         const result = await prisma.$queryRawUnsafe<any[]>(`
+//   SELECT 
+//     date_trunc('${groupBy}', "date")::date AS period,
+//     SUM("revenue")::bigint AS totalRevenue
+//   FROM "CourseRevenueHistory"
+//   WHERE "instructorId" = $1
+//     AND "date" >= $2
+//     AND "date" <= $3
+//   GROUP BY period
+//   ORDER BY period ASC
+// `, userId, groupBy === 'month' ? startOfMonth : startOfYear, groupBy === 'month' ? endOfMonth : endOfYear);
+
+//         const chartData = result.map(r => [r.period.toISOString().split("T")[0], Number(r.totalRevenue)]);
+
+//         // const result = await prisma.courseRevenueHistory.groupBy({
+//         //     where: {
+//         //         instructorId: userId,
+//         //         date: {
+//         //             gte: groupBy === 'month' ? startOfMonth : startOfYear,
+//         //             lte: groupBy === 'month' ? endOfMonth : endOfYear
+//         //         }
+//         //     },
+//         //     by: [
+//         //         "date"
+//         //     ],
+//         //     _sum: {
+//         //         revenue: true,
+//         //     },
+//         //     orderBy: { date: 'asc' },
+
+//         // })
+//         const firstRevenue = await prisma.courseRevenueHistory.findFirst({
+//             orderBy: {
+//                 date: 'asc',  // ascending → earliest first
+//             },
+//         });
+
+//         if (firstRevenue) {
+//             firstRevenueDate = firstRevenue.date
+//         }
+//         // Use raw SQL for flexible grouping
+
+//         result.forEach(item => {
+//             const formattedDate = new Date(item.date).toISOString().split("T")[0];
+//             chartData.push([formattedDate, item._sum.revenue ?? 0]); // push as array
+//         });
+
+
+//         const filledDate = getDaysInMonth(year as unknown as number, monthNum);
+
+//         const finalData = parseChartDataToFilledDates(chartData, filledDate)
+
+//         return res.json({
+//             chartData: finalData,
+//             firstRevenueDate
+//         });
+//     } catch (err) {
+//         console.error(err);
+//         return res.status(500).json({ message: "Internal server error" });
+//     }
+// };
+
+
 export const getEnrollmentsTimeSeries = async (req: Request, res: Response) => {
+  const { period = "month" } = req.query as { period?: "month" | "year" };
+  const { month, year } = req.query;
 
-    const { period = "month" } = req.query as { period?: "month" | "year" };
-    const { month } = req.query
-    const { year } = req.query
+  const monthNum = parseInt(month as string, 10);
+  const yearNum = parseInt(year as string, 10);
 
-    const monthNum = parseInt(month as string, 10); // shift to 0-based
-    const yearNum = parseInt(year as string, 10); // shift to 0-based
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ message: "User not authenticated" });
 
-    const userId = req.user?.id;
+  // Boundaries
+  const startOfMonth = new Date(yearNum, monthNum, 1);
+  const endOfMonth = new Date(yearNum, monthNum + 1, 0);
+  const startOfYear = new Date(yearNum, 0, 1);
+  const endOfYear = new Date(yearNum, 11, 31);
 
-    if (!userId) return res.status(401).json({ message: "User not authenticated" });
+  try {
+    let result: any[] = [];
 
-    const today = new Date();
- 
-    const startOfMonth = new Date(yearNum, monthNum, 1)
-    const endOfMonth = new Date(yearNum, monthNum + 1, 0)
-    let chartData: [string, number][] = []
-
-    let firstRevenueDate;
-    try {
-        let groupBy: "month" | "year" = "month";
-        switch (period) {
-            case "month":
-                groupBy = "month";
-                break;
-            case "year":
-                groupBy = "year";
-                break;
-            default:
-                groupBy = "month";
-        }
-
-        const result = await prisma.courseRevenueHistory.groupBy({
-            where: {
-                instructorId: userId,
-                date: {
-                    gte: startOfMonth,
-                    lte: endOfMonth
-                }
-            },
-            by: [
-                "date"
-            ],
-            _sum: {
-                enrollments: true,
-            },
-            orderBy: { date: 'asc' },
-
-        })
-
-        const firstRevenue = await prisma.courseRevenueHistory.findFirst({
-            orderBy: {
-                date: 'asc',  // ascending → earliest first
-            },
-        });
-
-        if (firstRevenue) {
-            firstRevenueDate = firstRevenue.date
-        }
-        // Use raw SQL for flexible grouping
-
-        result.forEach(item => {
-            const formattedDate = new Date(item.date).toISOString().split("T")[0];
-            chartData.push([formattedDate, item._sum.enrollments ?? 0]); // push as array
-        });
-
-        const filledDate = getDaysInMonth(year as unknown as number, monthNum);
-
-        const finalData = parseChartDataToFilledDates(chartData, filledDate)
-
-        return res.json({
-            chartData: finalData,
-            firstRevenueDate
-        });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Internal server error" });
+    if (period === "month") {
+      // Group daily inside given month
+      result = await prisma.$queryRawUnsafe<any[]>(
+        `
+        SELECT 
+          date_trunc('day', "date")::date AS period,
+          SUM("enrollments")::bigint AS "totalEnrollments"
+        FROM "CourseRevenueHistory"
+        WHERE "instructorId" = $1
+          AND "date" >= $2
+          AND "date" <= $3
+        GROUP BY period
+        ORDER BY period ASC;
+        `,
+        userId,
+        startOfMonth,
+        endOfMonth
+      );
+    } else {
+      // Group monthly inside given year
+      result = await prisma.$queryRawUnsafe<any[]>(
+        `
+        SELECT 
+          date_trunc('month', "date")::date AS period,
+          SUM("enrollments")::bigint AS "totalEnrollments"
+        FROM "CourseRevenueHistory"
+        WHERE "instructorId" = $1
+          AND "date" >= $2
+          AND "date" <= $3
+        GROUP BY period
+        ORDER BY period ASC;
+        `,
+        userId,
+        startOfYear,
+        endOfYear
+      );
     }
 
-}
+    // Map results
+    let chartData: [string, number][] = result.map((r) => [
+      new Date(r.period).toISOString().split("T")[0],
+      Number(r.totalEnrollments),
+    ]);
+
+    // Only fill missing days when period = month
+    if (period === "month") {
+      const filledDate = getDaysInMonth(yearNum, monthNum);
+      chartData = parseChartDataToFilledDates(chartData, filledDate);
+    }
+
+    // First enrollment date (from revenue history since enrollments stored there)
+    const firstEnrollment = await prisma.courseRevenueHistory.findFirst({
+      orderBy: { date: "asc" },
+    });
+
+    return res.json({
+      chartData,
+      firstEnrollmentDate: firstEnrollment?.date || null,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
