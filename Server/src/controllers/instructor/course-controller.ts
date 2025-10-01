@@ -136,6 +136,41 @@ export const getCourseLanding = async (req: Request, res: Response) => {
     }
 };
 
+export const getCourseMessage = async (req: Request, res: Response) => {
+
+    const userId = req.user?.id
+
+    const { courseId: courseId } = req.params
+
+    if (!userId) return res.status(401).json({ message: 'not authenticated' })
+
+    try {
+
+        const result = await prisma.course.findFirst({
+            where: { id: courseId },
+            select: {
+                welcomeMessage: true,
+                congradulationsMessage: true
+            }
+        })
+
+
+        if (!result) return res.status(404).json("unable to find the course")
+
+        return res.status(200).json({
+            success: true,
+            message: 'fetched course messaage successfully',
+            data: result
+        })
+
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({
+            message: 'failed to get course message data'
+        })
+    }
+}
+
 // helper to get the next section order
 
 const getNextLectureOrder = async (sectionId: string) => {
@@ -163,7 +198,7 @@ export const getCourseTitles = async (req: Request, res: Response) => {
             data: result
         })
 
-    } catch (err) { 
+    } catch (err) {
         console.log(err)
         return res.status(500).json({
             success: false,
@@ -396,6 +431,7 @@ export const UpdateSectionTitle = async (req: Request, res: Response) => {
         })
     }
 }
+
 export const UpdateLectureTitle = async (req: Request, res: Response) => {
     const userId = req.user?.id as string;
     console.log(req.body)
@@ -428,6 +464,7 @@ export const UpdateLectureTitle = async (req: Request, res: Response) => {
         });
     }
 };
+
 export const publishCourse = async (req: Request, res: Response) => {
     const { courseId } = req.params
     const userId = req.user?.id as string
@@ -455,6 +492,36 @@ export const publishCourse = async (req: Request, res: Response) => {
     }
 
 }
+
+export const updateCourseMessage = async (req: Request, res: Response) => {
+    const userId = req.user?.id
+    if (!userId) return res.status(401).json({ message: 'not authorized' })
+
+    const { welcomeMessage, congradulationsMessage } = req.body
+    const { courseId: courseId } = req.params
+
+    try {
+        const result = await prisma.course.update({
+            where: { id: courseId },
+            data: {
+                welcomeMessage:welcomeMessage,
+                congradulationsMessage:congradulationsMessage,
+            },
+        })
+
+        return res.json({
+            success: true,
+            message: "updated course message successfully",
+            result
+        })
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({
+            message: "failed to update the course message",
+        })
+    }
+}
+
 
 //delete
 export const deleteCourse = async (req: Request, res: Response) => {
@@ -601,3 +668,5 @@ export const deleteResource = async (req: Request, res: Response) => {
         });
     }
 };
+
+

@@ -91,7 +91,7 @@ const NewCourse = () => {
     }, [])
 
     return (
-        <div className="p-5">
+        <div className="p-5 h-full">
             <Tabs defaultValue={fetchComponentInUrl()}>
                 <div className="flex">
                     <TabsList className="flex justify-start rounded-none bg-transparent p-0">
