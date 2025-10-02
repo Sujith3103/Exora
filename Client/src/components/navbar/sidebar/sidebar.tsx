@@ -43,8 +43,8 @@ const SideBar = () => {
         },
         {
             icon: <MessageCircle />,
-            title: 'Messages',
-            link: 'messages'
+            title: 'Communication',
+            link: 'communication'
         },
         {
             icon: <MenuIcon />,

@@ -33,7 +33,7 @@ const getCurrentYear = () => {
 }
 
 // Main dashboard
-export default function RevenueDashboard({ isOpenMenu, setIsOpenMenu }: RevenueDashboardProps) {
+export default function RevenueDashboard() {
   const navigate = useNavigate();
   const { data: RevenueSummaryData } = useRevenueSalesSummary();
   const today = new Date()
@@ -54,7 +54,7 @@ export default function RevenueDashboard({ isOpenMenu, setIsOpenMenu }: RevenueD
   const { data: RevenueAnalyticsData, refetch: fetchRevenueAnalytics, isLoading: isRevenueAnalyticsLoading } = UseRevenueAnalytics({ period: revenueAnalyticsState.showBy, revenueMonth: revenueAnalyticsState.monthToShowRevenue, revenueYear: revenueAnalyticsState.year });
   const { data: EnrollmentsAnalyticsData, refetch: fetchEnrollmentsAnalytics, isLoading: isEnrollmentsAnalyticsLoading } = useEnrollmentsAnalytics({ period: enrollmentsAnalyticsState.showBy, revenueMonth: enrollmentsAnalyticsState.monthToShowRevenue, revenueYear: enrollmentsAnalyticsState.year });
 
-  const handleClick_Menu = () => setIsOpenMenu((prev) => !prev);
+  // const handleClick_Menu = () => setIsOpenMenu((prev) => !prev);
 
 
   if (!RevenueSummaryData) return null; // optionally show loading skeleton

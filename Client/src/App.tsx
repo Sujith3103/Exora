@@ -19,7 +19,9 @@ import Instructor_CourseInfo from "./components/instructor-view/course-info/cour
 import CouponPage from "./pages/instructor-view/coupons/coupon"
 import { Toaster } from "./components/ui/sonner"
 import AnalyticsLayout from "./components/layout/analytics/analyticsLayout"
-import Revenue from "./pages/instructor-view/revenue/revenue"
+import RevenueDashboard from "./pages/instructor-view/revenue/revenue"
+import CommunicationLayout from "./components/layout/communication/communicationLayout"
+import Message from "./pages/student-view/messages/message"
 
 function App() {
 
@@ -53,9 +55,17 @@ function App() {
             <Route path="course-info/:id" element={<Instructor_CourseInfo />} />
           </Route>
         </Route>
+
+        <Route path="/profile/communication" element={<RouteGuard element={<CommunicationLayout />} />}>
+
+          <Route path="messages" element={<Message />}/>
+          <Route path="announcement" />
+
+        </Route>
+
         <Route path="/profile/instructor/coupons" element={<RouteGuard element={<CouponPage />} />} />
         <Route path="/profile/instructor/analytics" element={<RouteGuard element={<AnalyticsLayout />} />}>
-          <Route path="revenue" element={<Revenue />} />
+          <Route path="revenue" element={<RevenueDashboard />} />
         </Route>
 
       </Routes>

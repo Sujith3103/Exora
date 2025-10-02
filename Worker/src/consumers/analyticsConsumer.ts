@@ -68,7 +68,6 @@ function parseClickEvent(record: RedisStreamMessage): ClickEvent {
     };
 }
 
-
 export const processAnalyticsEvent = async () => {
     console.log("analytics event started")
 
