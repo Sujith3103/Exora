@@ -39,13 +39,13 @@ const CommunicationNavbar = () => {
     }, [location])
 
     return (
-        <Card className="h-screen w-1/6 gap-0 p-0 rounded-none">
+        <Card className="h-screen lg:min-w-fit gap-0 p-0 rounded-none lg:block hidden">
             <Button variant={'ghost'} className='w-20 mt-2 cursor-pointer' onClick={() => navigate('/profile/overview')}>
                 <ChevronLeft />
                 Back
             </Button>
 
-            <p className="text-3xl p-5 pt-3 text-center font-semibold font-display">Communication</p>
+            <p className="text-3xl p-5 pt-3  text-center font-semibold font-display">Communication</p>
             <hr className="border-gray-300" />
             <div className="flex flex-col p-5 gap-2">
                 {studentNavbarItems.map((item) => (

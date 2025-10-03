@@ -51,7 +51,7 @@ model User {
 
   UserPurchase UserPurchase[] @relation("studentPurchase")
   // conversations           Conversation[]
-  // ConversationParticipant ConversationParticipant[]
+  ConversationParticipant ConversationParticipant[]
   messages     Message[]
 }
 
@@ -113,6 +113,7 @@ model ConversationParticipant {
   id String @id @default(uuid())
 
   conversationId  String
+  user User @relation(fields: [userId] , references: [id])
   userId          String
   lastMessageRead Boolean
   messageRReplied Boolean

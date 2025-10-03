@@ -35,6 +35,7 @@ import instructor_course_route from './routes/instructor/course_route'
 import coupon_route from './routes/instructor/coupon_route'
 import validateCoupon_route from './routes/user/coupon_route'
 import course_route from './routes/user/course_route'
+import message_route from './routes/user/message_route'
 import trackEvent_route from './routes/click'
 import analytics_route from './routes/instructor/analytics_route'
 import { connectRedis, redis } from "./utils/redisClient";
@@ -54,6 +55,7 @@ app.use('/api/user', user_route);
 app.use('/api/user/cart',cart_route );
 app.use('/api/media', media_route);
 app.use('/api/courses', course_route);
+app.use('/api/communication', message_route);
 app.use('/api/validate/coupon',validateCoupon_route)
 app.use('/api/track-click', trackEvent_route)
 app.get("/health", (req, res) => {

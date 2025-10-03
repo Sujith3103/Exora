@@ -4,15 +4,16 @@ import { Outlet } from 'react-router-dom'
 
 const CommunicationLayout = () => {
 
-    
-    return (
-        <div className='flex'>
 
+    return (
+        <div className="flex w-full h-screen">
             <CommunicationNavbar />
 
-            <Outlet />
-
+            <div className="flex-1 overflow-x-auto">
+                <Outlet />
+            </div>
         </div>
+
     )
 }
 
