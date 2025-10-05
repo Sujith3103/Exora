@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { composeNewMessage } from "../../controllers/user/message-controller";
+import { composeNewMessage, getAllMessages } from "../../controllers/user/message-controller";
 import { AuthenticateMiddleware } from "../../middleware";
 
 const router = Router()
 
-router.post('/compose', AuthenticateMiddleware, composeNewMessage)
+router.post('/message/compose', AuthenticateMiddleware, composeNewMessage)
 
+router.get('/messages', AuthenticateMiddleware, getAllMessages)
 
 export default router

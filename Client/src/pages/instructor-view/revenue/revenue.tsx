@@ -1,19 +1,18 @@
-import server from "@/api/axiosinstance";
 import RevenueChart from "@/components/charts";
 import { AnalyticsCard } from "@/components/instructor-view/analytics-card/analyticsCard";
 import { Button } from "@/components/ui/button";
 import { useRevenueSalesSummary } from "@/hooks/queries/useRevenueSalesSummary";
 import { ChevronLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UseRevenueAnalytics } from "./hooks/useRevenueAnalytics";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnrollmentsAnalytics } from "./hooks/useEnrollmentsAnalytics";
 
-type RevenueDashboardProps = {
-  isOpenMenu: boolean;
-  setIsOpenMenu: React.Dispatch<React.SetStateAction<boolean>>;
-};
+// type RevenueDashboardProps = {
+//   isOpenMenu: boolean;
+//   setIsOpenMenu: React.Dispatch<React.SetStateAction<boolean>>;
+// };
 
 export type RevenueAnalyticsState = {
   monthToShowRevenue: number;
@@ -36,7 +35,6 @@ const getCurrentYear = () => {
 export default function RevenueDashboard() {
   const navigate = useNavigate();
   const { data: RevenueSummaryData } = useRevenueSalesSummary();
-  const today = new Date()
 
 
   const [revenueAnalyticsState, setRevenueAnalyticsState] = useState<RevenueAnalyticsState>({
@@ -51,8 +49,8 @@ export default function RevenueDashboard() {
     year: getCurrentYear(),
   })
 
-  const { data: RevenueAnalyticsData, refetch: fetchRevenueAnalytics, isLoading: isRevenueAnalyticsLoading } = UseRevenueAnalytics({ period: revenueAnalyticsState.showBy, revenueMonth: revenueAnalyticsState.monthToShowRevenue, revenueYear: revenueAnalyticsState.year });
-  const { data: EnrollmentsAnalyticsData, refetch: fetchEnrollmentsAnalytics, isLoading: isEnrollmentsAnalyticsLoading } = useEnrollmentsAnalytics({ period: enrollmentsAnalyticsState.showBy, revenueMonth: enrollmentsAnalyticsState.monthToShowRevenue, revenueYear: enrollmentsAnalyticsState.year });
+  const { data: RevenueAnalyticsData, isLoading: isRevenueAnalyticsLoading } = UseRevenueAnalytics({ period: revenueAnalyticsState.showBy, revenueMonth: revenueAnalyticsState.monthToShowRevenue, revenueYear: revenueAnalyticsState.year });
+  const { data: EnrollmentsAnalyticsData, isLoading: isEnrollmentsAnalyticsLoading } = useEnrollmentsAnalytics({ period: enrollmentsAnalyticsState.showBy, revenueMonth: enrollmentsAnalyticsState.monthToShowRevenue, revenueYear: enrollmentsAnalyticsState.year });
 
   // const handleClick_Menu = () => setIsOpenMenu((prev) => !prev);
 

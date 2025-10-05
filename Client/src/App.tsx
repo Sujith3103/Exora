@@ -22,9 +22,25 @@ import AnalyticsLayout from "./components/layout/analytics/analyticsLayout"
 import RevenueDashboard from "./pages/instructor-view/revenue/revenue"
 import CommunicationLayout from "./components/layout/communication/communicationLayout"
 import Message from "./pages/student-view/messages/message"
+import { useEffect } from "react"
+import { socket } from "./config/socket"
 
 function App() {
 
+useEffect(() => {
+  socket.on("connect", () => {
+    console.log("✅ Connected with ID:", socket.id);
+  });
+
+  socket.on("new_message", (msg) => {
+    console.log("📩 Got new message:", msg);
+  });
+
+  return () => {
+    socket.off("connect");
+    socket.off("new_message");
+  };
+}, []);
 
   return (
     <>
@@ -58,7 +74,7 @@ function App() {
 
         <Route path="/profile/communication" element={<RouteGuard element={<CommunicationLayout />} />}>
 
-          <Route path="messages" element={<Message />}/>
+          <Route path="messages" element={<Message />} />
           <Route path="announcement" />
 
         </Route>

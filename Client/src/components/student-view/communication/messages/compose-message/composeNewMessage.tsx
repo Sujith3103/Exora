@@ -1,20 +1,34 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import React, { useState } from 'react'
+import { useComposeNewMessage } from '@/hooks/mutations/useComposeNewMessage'
+import { useState } from 'react'
 
-const ComposeNewMessage = () => {
+type ConversationCardProps = {
+  setIsComposingMessage: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+
+const ComposeNewMessage = ({ setIsComposingMessage }: ConversationCardProps) => {
+
+  const { composeNewMessage } = useComposeNewMessage()
+
   const [toUser, setToUser] = useState('')
   const [message, setMessage] = useState('')
 
   const handleSend = () => {
     if (!toUser || !message) return
-    // Here you can send the data to the backend
-    console.log('Sending message to:', toUser)
-    console.log('Message:', message)
-    // Reset fields after send
-    setToUser('')
-    setMessage('')
+
+    composeNewMessage.mutate({ content: message, userName: toUser }, {
+      onSettled: (data) => {
+        if (data.success) {
+          setToUser('')
+          setMessage('')
+          setIsComposingMessage(false)
+        }
+      }
+    })
+
   }
 
   const isSendDisabled = !toUser.trim() || !message.trim()

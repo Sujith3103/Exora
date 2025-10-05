@@ -1,7 +1,6 @@
-import server from "@/api/axiosinstance"
 import AnalyticsNavbar from "@/components/navbar/analytics-navbar/analytics_Navbar"
 import { Menu, X } from "lucide-react"
-import { useEffect, useState } from "react"
+import {  useState } from "react"
 import { Outlet } from "react-router-dom"
 
 const AnalyticsLayout = () => {

@@ -39,6 +39,7 @@ import message_route from './routes/user/message_route'
 import trackEvent_route from './routes/click'
 import analytics_route from './routes/instructor/analytics_route'
 import { connectRedis, redis } from "./utils/redisClient";
+import { socketConnection } from "./config/socket";
 // -------------------- CONFIG --------------------
 dotenv.config();
 const app = express();
@@ -52,11 +53,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', auth_route);
 app.use('/api/user', user_route);
-app.use('/api/user/cart',cart_route );
+app.use('/api/user/cart', cart_route);
 app.use('/api/media', media_route);
 app.use('/api/courses', course_route);
 app.use('/api/communication', message_route);
-app.use('/api/validate/coupon',validateCoupon_route)
+app.use('/api/validate/coupon', validateCoupon_route)
 app.use('/api/track-click', trackEvent_route)
 app.get("/health", (req, res) => {
   res.status(200).send("OK");
@@ -64,18 +65,17 @@ app.get("/health", (req, res) => {
 
 //instructor
 app.use('/api/instructor/course', instructor_course_route)
-app.use('/api/instructor/coupon',coupon_route)
-app.use('/api/instructor/analytics',analytics_route)
+app.use('/api/instructor/coupon', coupon_route)
+app.use('/api/instructor/analytics', analytics_route)
 
 // -------------------- SUPABASE --------------------
 const supabaseUrl = "https://aywktugruubporzskjdt.supabase.co";
 const supabaseKey = process.env.SUPABASE_kEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
-
 // -------------------- SOCKET.IO -------------------
 const httpServer = http.createServer(app);
 
-const io = new Server(httpServer, {
+export const io = new Server(httpServer, {
   cors: {
     origin: ["http://localhost:5173", "https://exora-livid.vercel.app/"],
     credentials: true,
@@ -83,6 +83,7 @@ const io = new Server(httpServer, {
   },
 });
 
+socketConnection()
 
 // -------------------- START SERVER --------------------
 const PORT = process.env.PORT || 8800;
@@ -102,6 +103,7 @@ async function startServer() {
     process.exit(1);
   }
 }
+
 process.on("SIGINT", async () => {
   console.log("Shutting down worker...");
   try {

@@ -17,7 +17,7 @@ const CourseMessage = () => {
 
     const { saveMessages } = useCourseMessageMutation()
 
-    const { data: courseMessage, isLoading, isError } = useCourseMessage(id!)
+    const { data: courseMessage, isLoading } = useCourseMessage(id!)
 
     const handleSave = () => {
         const welcomeMessage = welcomeMessageRef.current?.value || ""

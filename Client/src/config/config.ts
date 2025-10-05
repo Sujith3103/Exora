@@ -94,3 +94,42 @@ export type RevenueSalesSummary = {
   enrollmentsThisMonth: number
 
 }
+
+type Profile = {
+  profileImg: string
+} | null
+
+ type User = {
+  email: string
+  name: string
+  id: string
+  profile: Profile
+}
+
+ type Message = {
+  id: string
+  conversationId: string
+  senderId: string
+  content: string
+  automatedMessage: boolean
+  createdAt: string
+}
+
+ type ConversationParticipant = {
+  id: string
+  conversationId: string
+  userId: string
+  lastMessageRead: boolean
+  messageRReplied: boolean
+  isImportant: boolean
+  user: User
+}
+
+export type Conversation = {
+  id: string
+  createdAt: string
+  updatedAt: string
+  userId: string | null
+  messages: Message[]
+  conversationParticipant: ConversationParticipant[]
+}

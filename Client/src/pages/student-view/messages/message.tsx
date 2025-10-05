@@ -1,12 +1,14 @@
+import { useGetAllMessage } from '@/components/student-view/communication/hooks/useGetAllMessage'
 import ComposeNewMessage from '@/components/student-view/communication/messages/compose-message/composeNewMessage'
+import ConversationCard from '@/components/student-view/communication/messages/conversationCard/conversationList'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectGroup, SelectItem,  SelectTrigger, SelectValue } from '@/components/ui/select'
+import type { Conversation } from '@/config/config'
 import { Search } from 'lucide-react'
-import React, { useState } from 'react'
+import  { useEffect, useState } from 'react'
 
 type MessageFilters = {
   isUnred: boolean
@@ -24,7 +26,10 @@ const filterOptions = [
 
 const Message = () => {
 
-  const [isComposingMessage, setaIsComposingMessage] = useState(false)
+
+  const { data: messagesData, isLoading } = useGetAllMessage()
+
+  const [isComposingMessage, setIsComposingMessage] = useState(false)
 
   const [messageFilters, setMessageFilters] = useState<MessageFilters>({
     isAnswered: false,
@@ -32,6 +37,10 @@ const Message = () => {
     isImportant: false,
     isUnred: false
   })
+
+  useEffect(() => {
+    console.log(messagesData)
+  },[messagesData])
 
   return (
     <div className='lg:pt-5 lg:p-15 p-5 w-full h-full flex flex-col'>
@@ -72,17 +81,17 @@ const Message = () => {
         <Button
           variant={"outline"}
           className="border-violet-500 text-purple-700 rounded-sm w-full h-11 cursor-pointer"
-          onClick={() => setaIsComposingMessage(prev => !prev)}
+          onClick={() => setIsComposingMessage(prev => !prev)}
         >
           {
-            !isComposingMessage? 'Compose' : 'Cancel'
+            !isComposingMessage ? 'Compose' : 'Cancel'
           }
         </Button>
       </div>
 
       {
         isComposingMessage ? (
-          <ComposeNewMessage />
+          <ComposeNewMessage setIsComposingMessage={setIsComposingMessage}/>
         ) : (
           <Card className='rounded-none p-0 gap-0 mt-3 flex-1 flex flex-row border-gray-300'>
 
@@ -100,6 +109,16 @@ const Message = () => {
                 </Button>
               </div>
 
+              {!isLoading && (
+                <>
+                  {messagesData.data.map((message: Conversation) => (
+                    <ConversationCard
+                      key={message.id}
+                      conversation={message}
+                    />
+                  ))}
+                </>
+              )}  
 
             </div>
 
