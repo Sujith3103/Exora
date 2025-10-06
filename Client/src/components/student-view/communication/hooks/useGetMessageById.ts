@@ -1,3 +1,4 @@
+
 import server from "@/api/axiosinstance"
 import { useQuery } from "@tanstack/react-query"
 
@@ -7,18 +8,17 @@ import { useQuery } from "@tanstack/react-query"
 
 // }
 
-export const useGetAllMessage = () => {
+export const useGetMessageById = (messageId: string) => {
 
     return useQuery({
-        queryKey: ['messages'],
+        queryKey: ['message', messageId],
         queryFn: async () => {
 
-            const res = await server.get(`/communication/messages`)
+            const res = await server.get(`/communication/messages/${messageId}`)
             return res.data
 
         },
-        staleTime: Infinity,
         refetchOnWindowFocus: true,
-        enabled: false
+
     })
 }

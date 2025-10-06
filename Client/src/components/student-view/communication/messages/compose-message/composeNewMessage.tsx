@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { useComposeNewMessage } from '@/hooks/mutations/useComposeNewMessage'
+import { useMessage } from '@/hooks/mutations/useMessage'
 import { useState } from 'react'
 
 type ConversationCardProps = {
@@ -11,7 +11,7 @@ type ConversationCardProps = {
 
 const ComposeNewMessage = ({ setIsComposingMessage }: ConversationCardProps) => {
 
-  const { composeNewMessage } = useComposeNewMessage()
+  const { composeNewMessage } = useMessage()
 
   const [toUser, setToUser] = useState('')
   const [message, setMessage] = useState('')

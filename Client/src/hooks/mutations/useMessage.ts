@@ -1,4 +1,5 @@
 import server from "@/api/axiosinstance"
+import type { ConversationData } from "@/components/student-view/communication/messages/conversationCard/conversationList"
 import type { Conversation } from "@/config/config"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -9,7 +10,15 @@ type ComposeNewMessageProps = {
     content: string
 }
 
-export const useComposeNewMessage = () => {
+type UpdateAsUnreadProps = {
+
+    setConversationData: React.Dispatch<React.SetStateAction<ConversationData>>
+    conversation: Conversation,
+    read: boolean,
+    userId: string
+}
+
+export const useMessage = () => {
 
     const queryClient = useQueryClient()
 
@@ -45,15 +54,28 @@ export const useComposeNewMessage = () => {
         }
 
     })
-    const updateMessages = useMutation({
-        mutationFn: async (conversation: Conversation) => {
-            queryClient.setQueryData(['messages'], (old: any) => {
-                if (!old?.data) return { ...old, data: [conversation] }
-                return { ...old, data: [conversation, ...old.data] }
+
+    const updateAsUnread = useMutation({
+
+        mutationFn: async ({ conversation, setConversationData, read, userId }: UpdateAsUnreadProps) => {
+            const isRead = read ? false : true
+            const coversationParticipantId = conversation.conversationParticipant.filter(c => c.userId == userId)[0].id
+            const res = await server.patch(`/communication/message/${coversationParticipantId}/unread`, {
+                read: isRead
             })
-        }
+            return res.data
+        },
+        onMutate: ({ conversation, setConversationData }) => {
+
+            setConversationData(prev => ({
+                ...prev,
+                unread: !prev.unread
+            }))
+
+        },
+
     })
 
 
-    return { composeNewMessage, updateMessages }
+    return { composeNewMessage, updateAsUnread }
 }

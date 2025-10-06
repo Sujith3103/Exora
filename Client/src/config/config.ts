@@ -115,7 +115,7 @@ type Profile = {
   createdAt: string
 }
 
- type ConversationParticipant = {
+ export type ConversationParticipant = {
   id: string
   conversationId: string
   userId: string

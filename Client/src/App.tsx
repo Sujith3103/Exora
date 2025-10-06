@@ -25,22 +25,24 @@ import Message from "./pages/student-view/messages/message"
 import { useEffect } from "react"
 import { socket } from "./config/socket"
 
+// setIsComposingMessage: React.Dispatch<React.SetStateAction<boolean>>
+
 function App() {
 
-useEffect(() => {
-  socket.on("connect", () => {
-    console.log("✅ Connected with ID:", socket.id);
-  });
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("✅ Connected with ID:", socket.id);
+    });
 
-  socket.on("new_message", (msg) => {
-    console.log("📩 Got new message:", msg);
-  });
+    socket.on("new_message", (msg) => {
+      console.log("📩 Got new message:", msg);
+    });
 
-  return () => {
-    socket.off("connect");
-    socket.off("new_message");
-  };
-}, []);
+    return () => {
+      socket.off("connect");
+      socket.off("new_message");
+    };
+  }, []);
 
   return (
     <>
@@ -75,6 +77,7 @@ useEffect(() => {
         <Route path="/profile/communication" element={<RouteGuard element={<CommunicationLayout />} />}>
 
           <Route path="messages" element={<Message />} />
+          <Route path="messages/:id" element={<Message />} />
           <Route path="announcement" />
 
         </Route>

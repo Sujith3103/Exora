@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../../utils/prisma";
 
-
 export const composeNewMessage = async (req: Request, res: Response) => {
 
     const userId = req.user?.id
@@ -76,7 +75,7 @@ export const composeNewMessage = async (req: Request, res: Response) => {
                 where: { id: result.id },
                 include: {
                     messages: {
-                        take: 10,
+                        take: 1,
                         orderBy: {
                             createdAt: 'desc'
                         }
@@ -169,6 +168,37 @@ export const getAllMessages = async (req: Request, res: Response) => {
             message: 'failed to get messages'
         })
 
+    }
+
+}
+
+export const toggleUnread = async (req: Request, res: Response) => {
+
+    const userId = req.user?.id
+    const { id } = req.params
+    const { read } = req.body
+    if (!userId) return res.status(401).json('not authenticated')
+
+    try {
+        
+        const result = await prisma.conversationParticipant.update({
+            where: {
+                id: id,
+                userId: userId
+            },
+            data: {
+                lastMessageRead: read
+            }
+        })
+
+        return res.status(200).json({
+            success: 'true',
+            message: 'updated last message read'
+        })
+
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json('failed to update read')
     }
 
 }

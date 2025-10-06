@@ -1,4 +1,5 @@
 import { useGetAllMessage } from '@/components/student-view/communication/hooks/useGetAllMessage'
+import ChatArea from '@/components/student-view/communication/messages/chat-area/chatArea'
 import ComposeNewMessage from '@/components/student-view/communication/messages/compose-message/composeNewMessage'
 import ConversationCard from '@/components/student-view/communication/messages/conversationCard/conversationList'
 import { Button } from '@/components/ui/button'
@@ -124,7 +125,7 @@ const Message = () => {
 
             {/* right side */}
             <div className='overflow-y-auto'>
-
+              <ChatArea />
             </div>
           </Card>
         )
