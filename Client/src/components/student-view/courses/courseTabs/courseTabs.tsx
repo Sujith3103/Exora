@@ -24,7 +24,7 @@ const CourseTabs = () => {
                         >
                             Trending    
                         </TabsTrigger>
-                        <TabsTrigger
+                        {/* <TabsTrigger
                             value="popular"
                             className="relative bg-transparent rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black 
                             data-[state=active]:font-semibold 
@@ -41,7 +41,7 @@ const CourseTabs = () => {
                             data-[state=active]:after:scale-x-100"
                         >
                             New
-                        </TabsTrigger>
+                        </TabsTrigger> */}
                     </div>
                 </TabsList>
                 <TabsContent value="trending">

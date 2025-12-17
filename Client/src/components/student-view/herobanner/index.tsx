@@ -1,21 +1,22 @@
-import { Card } from "@/components/ui/card"
+import image from "../../../assets-static/tech company-cuate.png"
 
 const StudentViewHeroBanner = () => {
   return (
     <section className="relative w-full bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-700 overflow-hidden h-[630px]">
 
       {/* content here   */}
-      <div className="w-full h-full flex p-10 flex-wrap">
+      <div className="w-full h-full flex p-10 ">
 
-        <div className="w-1/2 p-15 flex flex-col gap-5">
+        <div className="w-1/2 p-15 flex flex-col gap-5 ml-20">
           <div>
             <p className="text-white text-6xl font-bold">Learn From Your</p>
             <span className="text-white text-6xl font-bold ">Favourite</span>
           </div>
           <p className="text-lg md:text-xl text-indigo-100 max-w-lg ">Unlock your true potential with thousands of experts-led courses.start learning today and transfor your career</p>
         </div>
-        <div className="w-1/2  p-10 pb-30">
-          <Card className="h-full bg-white"></Card>
+        <div className="w-1/2  pb-30">
+
+            <img src={image} className="h-100 w-100 ml-20"/>
         </div>
       </div>
 

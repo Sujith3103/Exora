@@ -9,12 +9,12 @@ const SideBar = () => {
 
 
     const Instructor_sideBarItems = [
-        {
-            icon: <FileText />,
-            title: 'Reviews',
-            link: 'reviews',
-            role: 'instructor'
-        },
+        // {
+        //     icon: <FileText />,
+        //     title: 'Reviews',
+        //     link: 'reviews',
+        //     role: 'instructor'
+        // },
         {
             icon: <BookOpen />,
             title: 'Courses',
@@ -46,11 +46,11 @@ const SideBar = () => {
             title: 'Communication',
             link: 'communication'
         },
-        {
-            icon: <MenuIcon />,
-            title: 'Tasks',
-            link: 'tasks'
-        },
+        // {
+        //     icon: <MenuIcon />,
+        //     title: 'Tasks',
+        //     link: 'tasks'
+        // },
         {
             icon: <BookMarked />,
             title: "My learning",

@@ -53,7 +53,7 @@ export const AnalyticsCard = ({ title, value, lastMonth, thisMonth, currency = f
             <CardContent className={`flex items-center gap-2 ${analytics.growth ? positiveColor : negativeColor}`}>
                 {analytics.growth ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
                 <div className="flex items-center gap-1">
-                    {analytics.growth ? "+" : "-"}
+                    {analytics.growth ? "+" : ""}
                     {analytics.percentageChange ?? "N/A"}%
                     <span className="mx-1">this month</span>
                     ({currency ? "$" : ""}

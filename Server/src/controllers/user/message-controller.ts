@@ -180,7 +180,7 @@ export const toggleUnread = async (req: Request, res: Response) => {
     if (!userId) return res.status(401).json('not authenticated')
 
     try {
-        
+
         const result = await prisma.conversationParticipant.update({
             where: {
                 id: id,
@@ -202,3 +202,57 @@ export const toggleUnread = async (req: Request, res: Response) => {
     }
 
 }
+
+export const getMessageById = async (req: Request, res: Response) => {
+
+    const { conversationId } = req.params
+    const userId = req.user?.id
+
+    if (!userId) return res.status(401).json('not authenticated')
+
+    try {
+
+        const result = await prisma.conversation.findFirst({
+            where: { id: conversationId },
+            include: {
+                conversationParticipant: {
+                    include: {
+                        user: {
+                            select: {
+                                email: true,
+                                name: true,
+                                id: true,
+                                profile: {
+                                    select: {
+                                        profileImg: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                messages: {
+                    take: 10,
+                    orderBy: {
+                        createdAt: 'desc',
+                    }
+                }
+            }
+        })
+
+        if (result) {
+            return res.status(200).json({
+                success: true,
+                message: 'fetched message',
+                data: result
+            })
+        }
+        else{
+            return res.status(404).json('message not found')
+        }
+
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json('failed to get the message')
+    }
+}   

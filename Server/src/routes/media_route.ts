@@ -15,8 +15,6 @@ const prisma = new PrismaClient();
 router.post('/set-profile-img', upload.single("profileImage"), AuthenticateMiddleware, async (req, res) => {
   const userId = req.user?.id as string
   if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" })
-
-
   console.log(req.file)
   const userProfileKey = `user:profile:${userId}`
 

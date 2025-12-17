@@ -10,7 +10,7 @@
   --radius-xl: calc(var(--radius) + 4px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  
+
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -163,7 +163,8 @@
 }
 
 @theme {
-  --font-display: "Epunda Slab"; 
+  --font-display: "Epunda Slab";
+  --font-stack-heading: 'Udemy Sans', 'Vazirmatn', -apple-system, BlinkMacSystemFont, Roboto, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 }
 
 @layer base {

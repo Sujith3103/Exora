@@ -20,6 +20,7 @@ import { addCartItemToDb, getCartItemsFromIDB } from "@/lib/indexdb";
 import type { RootState } from "@/store";
 import type { CourseDetails } from "@/store/courseDetailsSlice";
 import type { CartItem } from "@/store/cartSlice";
+import server from "@/api/axiosinstance";
 
 
 // ─── Types ──────────────────────────────────────────────
@@ -80,6 +81,7 @@ const Student_CourseDetailsPricing = () => {
     const [isCouponApplyLoading, setIsCouponApplyLoading] = useState(false);
     const [isCouponFetching, setIsCouponFetching] = useState(true);
     const [couponData, setCouponData] = useState<Coupon>();
+    const [userBoughtCourses, setUserBoughtCourses] = useState<Set<string>>(new Set());
     const [discountedPrice, setDiscountedPrice] = useState({
         originalPrice: 0,
         discountApplied: 0,
@@ -115,9 +117,9 @@ const Student_CourseDetailsPricing = () => {
                 instructorId: course.instructorId,
                 userId: userId as unknown as string,
                 coupon: null,
-                discountApplied:0,
-                finalPrice:course.pricing,
-                originalPrice:course.pricing
+                discountApplied: 0,
+                finalPrice: course.pricing,
+                originalPrice: course.pricing
             });
         }
     };
@@ -219,7 +221,18 @@ const Student_CourseDetailsPricing = () => {
         });
     };
 
-
+    const getUserBoughtCourses = async () => {
+        try {
+            const res = await server.get(`/user/my-learning/only-ids`);
+            if (res.data.success) {
+                // Convert array of objects to Set of courseIds
+                const idsSet = new Set(res.data.data.map((item: any) => item.courseId));
+                setUserBoughtCourses(idsSet as Set<string>);
+            }
+        } catch (err) {
+            console.error("Failed to fetch user bought courses:", err);
+        }
+    };
     // ─── Effects ─────────────────────────────────────────
 
     /** Fetch cart items */
@@ -230,8 +243,10 @@ const Student_CourseDetailsPricing = () => {
     /** Validate or auto-apply coupon */
     useEffect(() => {
         if (course?.id && params) {
+            getUserBoughtCourses()
             handleValidateCoupon(false);
         } else if (course?.id && !params) {
+            getUserBoughtCourses()
             setIsCouponFetching(true);
 
             validateCouponOnLogin.mutate(
@@ -265,7 +280,7 @@ const Student_CourseDetailsPricing = () => {
         refetchCart();
     }, [isAuthenticated]);
 
-    // ─── Render ──────────────────────────────────────────
+    // ─── Render ─────────────────────────────────────────
 
     if (!id) return null;
     if (isLoading || isCouponFetching) return <CoursePricingSkeleton />;
@@ -340,9 +355,31 @@ const Student_CourseDetailsPricing = () => {
                     <Button
                         variant="outline"
                         className="border-purple-500 h-13 text-purple-700 font-bold text-md hover:text-purple-700 cursor-pointer"
-                        onClick={handleBuyNow}
+                        onClick={
+                            () => {
+                                userBoughtCourses.has(id)
+                                    ? (
+                                        navigate(`/profile/my-learning`)
+                                    )
+                                    : (
+                                        handleBuyNow()
+                                    )
+                            }
+
+
+                        }
                     >
-                        Buy Now
+                        {
+                            userBoughtCourses.has(id)
+                                ? (
+                                    // Render if user has bought the course
+                                  'Go to Course'
+                                )
+                                : (
+                                    // Render if user hasn't bought the course
+                                   'Buy Now'
+                                )
+                        }
                     </Button>
 
                     {/* ─── Extra Info ─── */}
@@ -404,8 +441,8 @@ const Student_CourseDetailsPricing = () => {
                         </Button>
                     </div>
                 </div>
-            </Card>
-        </div>
+            </Card >
+        </div >
     );
 };
 

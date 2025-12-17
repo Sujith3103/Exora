@@ -97,7 +97,7 @@ const ConversationCard = ({ conversation }: ConversationCardProps) => {
   }, [conversation])
 
   return (
-    <div className={`p-3 border-b flex gap-3 hover:bg-gray-100 cursor-pointer transition ${activeConvoId === conversation.id && 'bg-gray-100'}`} onClick={() => navigate(`/profile/communication/messages/${conversation.id}`)}>
+    <div className={`p-3 border-b flex gap-3 hover:bg-gray-300 cursor-pointer transition ${activeConvoId === conversation.id && 'bg-gray-100'}`} onClick={() => navigate(`/profile/communication/messages/${conversation.id}`)}>
       {/* Avatar */}
       {conversationData.profileImage ? (
         <img

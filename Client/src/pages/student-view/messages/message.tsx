@@ -39,10 +39,6 @@ const Message = () => {
     isUnred: false
   })
 
-  useEffect(() => {
-    console.log(messagesData)
-  },[messagesData])
-
   return (
     <div className='lg:pt-5 lg:p-15 p-5 w-full h-full flex flex-col'>
       <span className='text-3xl font-semibold font-display tracking-wide'>Messages</span>
@@ -97,7 +93,7 @@ const Message = () => {
           <Card className='rounded-none p-0 gap-0 mt-3 flex-1 flex flex-row border-gray-300'>
 
             {/* left side */}
-            <div className='sm:w-1/3 bg-red- overflow-y-auto border-r-1'>
+            <div className='sm:w-1/2 bg-red- overflow-y-auto border-r-1'>
               <div className='w-full flex gap-1 border-b-1 border-gray-300'>
 
                 <input className='w-full pl-2 caret-gray-400'
@@ -110,21 +106,21 @@ const Message = () => {
                 </Button>
               </div>
 
-              {!isLoading && (
-                <>
-                  {messagesData.data.map((message: Conversation) => (
-                    <ConversationCard
-                      key={message.id}
-                      conversation={message}
-                    />
-                  ))}
-                </>
-              )}  
+                {!isLoading && (
+                  <>
+                    {messagesData?.data.map((message: Conversation) => (
+                      <ConversationCard
+                        key={message.id}
+                        conversation={message}
+                      />
+                    ))}
+                  </>
+                )}  
 
             </div>
 
             {/* right side */}
-            <div className='overflow-y-auto'>
+            <div className='overflow-y-auto w-full'>
               <ChatArea />
             </div>
           </Card>

@@ -12,13 +12,10 @@ export const useGetAllMessage = () => {
     return useQuery({
         queryKey: ['messages'],
         queryFn: async () => {
-
             const res = await server.get(`/communication/messages`)
             return res.data
-
         },
         staleTime: Infinity,
         refetchOnWindowFocus: true,
-        enabled: false
     })
 }

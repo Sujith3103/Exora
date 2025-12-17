@@ -49,6 +49,8 @@ model User {
   studentCouponApplications    CouponApplication[] @relation("StudentApplications")
   instructorCouponApplications CouponApplication[] @relation("InstructorApplications")
 
+  lectureProgress UserLectureProgress[]
+
   UserPurchase UserPurchase[] @relation("studentPurchase")
   // conversations           Conversation[]
   ConversationParticipant ConversationParticipant[]
@@ -361,6 +363,34 @@ model CourseRevenueHistory {
   @@unique([courseId, date]) // ✅ only this
 }
 
+model UserLectureProgress {
+  id         String   @id @default(uuid())
+  userId     String
+  lectureId  String
+  courseId   String
+  watchedSec Int      @default(0)   // tracked seconds for resume
+  completed  Boolean  @default(false)
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  lecture Lecture @relation(fields: [lectureId], references: [id])
+
+  @@unique([userId, lectureId])
+  @@index([userId, courseId])
+}
+
+model CourseProgress {
+  id         String   @id @default(uuid())
+  userId     String
+  courseId   String
+  completed  Boolean  @default(false)
+  completedAt DateTime?
+
+  @@unique([userId, courseId])
+}
+
+
 enum CourseStatus {
   published
   drafted
@@ -403,6 +433,7 @@ model Lecture {
   order     Int // position within the section
 
   // Link to assets
+  lectureProgress UserLectureProgress[]
   lectureAssets LectureAsset?
   Resource      Resource[]
 }

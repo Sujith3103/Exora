@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 // import { client } from "../utils/redis";
 import { format } from 'date-fns';
 import { redis } from "../utils/redisClient";
+import { success } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -158,7 +159,7 @@ export const EditUserSecurity = async (req: Request, res: Response) => {
             twoStepVerification: String(userData.twoStepVerification),
             loginAlertsEnabled: String(userData.loginAlertsEnabled),
         }
-        console.log("updated :",updatedSecurityData)
+        console.log("updated :", updatedSecurityData)
 
         // 4. Respond once
         return res.status(200).json({
@@ -271,4 +272,72 @@ export const getUserSecurityData = async (req: Request, res: Response) => {
         })
     }
 
+}
+
+export const getUserBoughtCourses = async (req: Request, res: Response) => {
+
+    const userId = req.user?.id
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" })
+
+    try {
+
+        const result = await prisma.userPurchase.findMany({
+            where: { userId: userId },
+            include: {
+                course: {
+                    select: {
+                        thumbnailUrl: true,
+                        title: true,
+                        instructor: {
+                            select: {
+                                name: true
+                            }
+                        },
+
+                    }
+                }
+            }
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: 'fetched the user purchases',
+            data: result
+        })
+
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json('failed to fetch user bought courses')
+    }
+
+}
+
+export const getUserBoughtCoursesIds = async (req: Request, res: Response) => {
+
+    const userId = req.user?.id
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" })
+
+    try {
+
+        const result = await prisma.userPurchase.findMany({
+            where:{userId},
+            select:{
+                courseId:true
+            }
+        })
+
+        return res.status(200).json({
+            success:true,
+            message:'fetched user bought courses Id',
+            data:result
+        })
+
+    } catch(err) {
+        console.log(err)
+        return res.status(500).json({
+            success:false,
+            message:'failed to fetch user bought courses Id'
+        })
+
+    }
 }

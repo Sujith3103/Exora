@@ -56,6 +56,8 @@ app.use('/api/user', user_route);
 app.use('/api/user/cart', cart_route);
 app.use('/api/media', media_route);
 app.use('/api/courses', course_route);
+app.use('/api/course', course_route);
+app.use('/api/progress', course_route);
 app.use('/api/communication', message_route);
 app.use('/api/validate/coupon', validateCoupon_route)
 app.use('/api/track-click', trackEvent_route)

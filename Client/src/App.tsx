@@ -24,6 +24,8 @@ import CommunicationLayout from "./components/layout/communication/communication
 import Message from "./pages/student-view/messages/message"
 import { useEffect } from "react"
 import { socket } from "./config/socket"
+import MyLearning from "./pages/student-view/my-learning/myLearning"
+import CoursePlayer from "./pages/student-view/course-player/course_player"
 
 // setIsComposingMessage: React.Dispatch<React.SetStateAction<boolean>>
 
@@ -58,6 +60,13 @@ function App() {
           <Route path="courses" element={<StudentViewCourseLayout />}>
           </Route>
           <Route path="course/:id" element={<CourseDetails />} />
+          <Route path="course/:courseId/learn/lecture/" element={<CoursePlayer />}>
+            
+          </Route>
+          <Route path="course/:courseId/learn/lecture/:lectureId" element={<CoursePlayer />}>
+
+          </Route>
+
           <Route path="cart" element={<Cart />} />
         </Route>
 
@@ -65,6 +74,9 @@ function App() {
           <Route path="overview" element={<OverView />} />
           <Route path="instructor/courses" element={<InstructorCourses />}>
           </Route>
+
+          <Route path="my-learning" element={<MyLearning />}/>
+
           <Route path="instructor/courses/new-course" element={<NewCourse />} />
           <Route path="instructor/courses/edit" element={<NewCourse />}>
             <Route path="course-landing/:id" element={<CourseLanding />} />

@@ -99,7 +99,7 @@ type Profile = {
   profileImg: string
 } | null
 
- type User = {
+export type User = {
   email: string
   name: string
   id: string

@@ -88,10 +88,9 @@ const CouponPage = () => {
 
             <CouponsList coupons={activeCoupons} error={error} isLoading={isLoading} isScheduling={false} />
 
-            <div className="flex items-center w-full mt-20 ">
+            {/* <div className="flex items-center w-full mt-20 ">
                 <h1 className="text-2xl font-bold font-display">No Coupons Scheduled</h1>
-                {/* dialog */}
-                <Dialog>
+                            ]                <Dialog>
                     <DialogTrigger className="ml-auto rounded-sm" asChild>
                         <Button className="ml-auto rounded-sm">Schedule A New Coupon</Button>
                     </DialogTrigger>
@@ -103,9 +102,9 @@ const CouponPage = () => {
                         <NewCoupon isScheduling={true} isEdit={false} coupon={null} isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
                     </DialogContent>
                 </Dialog>
-            </div>
+            </div> */}
 
-            <CouponsList coupons={scheduledCoupons} error={error} isLoading={isLoading} isScheduling={true} />
+            {/* <CouponsList coupons={scheduledCoupons} error={error} isLoading={isLoading} isScheduling={true} /> */}
 
 
         </div>

@@ -1,24 +1,14 @@
+import server from "@/api/axiosinstance";
+import type { Conversation } from "@/config/config";
+import { useQuery } from "@tanstack/react-query";
 
-import server from "@/api/axiosinstance"
-import { useQuery } from "@tanstack/react-query"
-
-// type GetALlMessagesProps = {
-
-//     userId: string
-
-// }
-
-export const useGetMessageById = (messageId: string) => {
-
-    return useQuery({
-        queryKey: ['message', messageId],
-        queryFn: async () => {
-
-            const res = await server.get(`/communication/messages/${messageId}`)
-            return res.data
-
-        },
-        refetchOnWindowFocus: true,
-
-    })
-}
+export const useGetMessageById = (conversationId: string) => {
+  return useQuery<Conversation>({
+    queryKey: ['message', conversationId],
+    queryFn: async (): Promise<Conversation> => {
+      const res = await server.get(`/communication/message/${conversationId}`);
+      return res.data.data;
+    },
+    enabled: !!conversationId, // only runs when id exists
+  });
+};
