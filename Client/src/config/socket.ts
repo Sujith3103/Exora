@@ -8,6 +8,7 @@ const URL = "http://localhost:8800";
 // e.g., "https://api.myapp.com"
 
 export const socket = io(URL, {
+  autoConnect:false,
   withCredentials: true, // allows cookies if you use them
   transports: ["websocket"], // force websocket
 //   auth: {

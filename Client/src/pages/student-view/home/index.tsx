@@ -11,15 +11,15 @@ import teachingImage from "../../../assets-static/Teaching-cuate.png"
 const StudentViewHomePage = () => {
   const { data, isLoading, isError } = usePopularCourses();
   const navigate = useNavigate();
-  
+
   return (
     <div className="space-y-16">
-      {/* 🟣 Hero Banner */}
+      {/*  Hero Banner */}
       <div>
         <StudentViewHeroBanner />
       </div>
 
-      {/* 🟣 Explore Courses */}
+      {/* Explore Courses */}
       <div className="px-12">
         <h1 className="text-3xl font-bold mb-6">Explore Courses:</h1>
         <Card className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">

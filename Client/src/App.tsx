@@ -26,15 +26,27 @@ import { useEffect } from "react"
 import { socket } from "./config/socket"
 import MyLearning from "./pages/student-view/my-learning/myLearning"
 import CoursePlayer from "./pages/student-view/course-player/course_player"
+import { useSelector } from "react-redux"
+import type { RootState } from "./store"
 
 // setIsComposingMessage: React.Dispatch<React.SetStateAction<boolean>>
 
 function App() {
 
+  const user = useSelector((state: RootState) => state.auth.user)
+
   useEffect(() => {
-    socket.on("connect", () => {
-      console.log("✅ Connected with ID:", socket.id);
-    });
+
+    if (user) {
+      socket.connect()
+      const token = sessionStorage.getItem('token')
+      socket.auth = {
+        token: token
+      }
+      socket.on("connect", () => {
+        console.log("✅ Connected with ID:", socket.id);
+      });
+    }
 
     socket.on("new_message", (msg) => {
       console.log("📩 Got new message:", msg);
@@ -44,7 +56,7 @@ function App() {
       socket.off("connect");
       socket.off("new_message");
     };
-  }, []);
+  }, [user]);
 
   return (
     <>
@@ -61,7 +73,7 @@ function App() {
           </Route>
           <Route path="course/:id" element={<CourseDetails />} />
           <Route path="course/:courseId/learn/lecture/" element={<CoursePlayer />}>
-            
+
           </Route>
           <Route path="course/:courseId/learn/lecture/:lectureId" element={<CoursePlayer />}>
 
@@ -75,7 +87,7 @@ function App() {
           <Route path="instructor/courses" element={<InstructorCourses />}>
           </Route>
 
-          <Route path="my-learning" element={<MyLearning />}/>
+          <Route path="my-learning" element={<MyLearning />} />
 
           <Route path="instructor/courses/new-course" element={<NewCourse />} />
           <Route path="instructor/courses/edit" element={<NewCourse />}>

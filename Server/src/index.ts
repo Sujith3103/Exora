@@ -40,6 +40,7 @@ import trackEvent_route from './routes/click'
 import analytics_route from './routes/instructor/analytics_route'
 import { connectRedis, redis } from "./utils/redisClient";
 import { socketConnection } from "./config/socket";
+import { initSocket } from "./socket";
 // -------------------- CONFIG --------------------
 dotenv.config();
 const app = express();
@@ -85,7 +86,7 @@ export const io = new Server(httpServer, {
   },
 });
 
-socketConnection()
+initSocket( )
 
 // -------------------- START SERVER --------------------
 const PORT = process.env.PORT || 8800;

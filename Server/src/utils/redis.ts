@@ -10,10 +10,13 @@ export const client = createClient({
 });
 client.on('error', (err:Error) => console.log('Redis Client Error', err));
 
+
+
 export async function initRedis() {
   await client.connect();
   console.log("Redis connected");
 }
+
 
 // await redisClient.hSet(`user:profile:${userId}`, {
 //   name: "John",

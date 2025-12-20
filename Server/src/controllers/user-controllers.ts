@@ -113,7 +113,6 @@ export const EditUserProfile = async (req: Request, res: Response) => {
     }
 };
 
-
 export const EditUserSecurity = async (req: Request, res: Response) => {
     const userData = req.body;
     const user = req.user

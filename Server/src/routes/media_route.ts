@@ -17,7 +17,7 @@ router.post('/set-profile-img', upload.single("profileImage"), AuthenticateMiddl
   if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" })
   console.log(req.file)
   const userProfileKey = `user:profile:${userId}`
-
+  
   try {
 
     if (req.file?.path) {
