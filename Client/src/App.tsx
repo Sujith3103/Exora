@@ -28,6 +28,7 @@ import MyLearning from "./pages/student-view/my-learning/myLearning"
 import CoursePlayer from "./pages/student-view/course-player/course_player"
 import { useSelector } from "react-redux"
 import type { RootState } from "./store"
+import Suga from "./suga"
 
 // setIsComposingMessage: React.Dispatch<React.SetStateAction<boolean>>
 
@@ -61,6 +62,7 @@ function App() {
   return (
     <>
       <Routes>
+        <Route path="suga" element={ <Suga />} />
         <Route path="/" element={<RouteGuard element={<NavBarLayout />} />}>
           <Route path="" element={<StudentViewHomePage />} />
         </Route>

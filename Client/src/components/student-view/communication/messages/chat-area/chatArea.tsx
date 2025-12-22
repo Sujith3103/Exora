@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { DotIcon, EllipsisVertical } from "lucide-react";
@@ -24,6 +24,13 @@ type PresenceEvent = {
   status: "online" | "offline";
 };
 
+type TypingEvent = {
+  conversationId: string;
+  userId: string
+  typingStatus: "start" | "stop"
+}
+
+
 
 
 const ChatArea = () => {
@@ -33,11 +40,15 @@ const ChatArea = () => {
     location.pathname.split("/")[4]
   );
 
+
   const { socket } = useSocket()
 
   const [isOnlineUser, setIsOnlineUser] = useState<Boolean>(false);
-
-
+  const [typingEventState, setTypingEventState] = useState<TypingEvent>({
+    conversationId: '',
+    userId: '',
+    typingStatus: 'stop'
+  })
 
   const [chatMetaData, setChatMetaData] = useState<ChatAreaType>({
     userProfile: null,
@@ -73,9 +84,50 @@ const ChatArea = () => {
     return date.toLocaleDateString("en-US", options);
   }
 
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingRef = useRef(false);
+
+  function handleTyping() {
+    const conversationId = location.pathname.split("/")[4];
+
+    if (!isTypingRef.current) {
+
+      socket.emit("typing:command", {
+        conversationId,
+        typingStatus: "start",
+        userId: userId?.toString()
+      });
+
+      isTypingRef.current = true;
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("typing:command", {
+        conversationId,
+        typingStatus: "stop",
+      });
+
+      isTypingRef.current = false;
+    }, 1000);
+  }
+  const handleTypingEvent = (event: TypingEvent) => {
+    // Ignore my own typing
+    if (event.userId === userId as unknown as string) return;
+    setTypingEventState(prev => ({
+      conversationId: event.conversationId,
+      typingStatus: event.typingStatus,
+      userId: event.userId
+    }))
+  };
+
+
   useEffect(() => {
 
-    if(chatMetaData.otherUserProfile?.id == null) return
+    if (chatMetaData.otherUserProfile?.id == null) return
 
     const conversationData: ConversationData = {
       conversationId: location.pathname.split("/")[4],
@@ -93,6 +145,8 @@ const ChatArea = () => {
       }
     })
 
+
+
     socket.on(`presence:${conversationData.otherUserId}`, (response: PresenceEvent) => {
       console.log("presence changed")
       if (response.status === 'online') {
@@ -104,7 +158,23 @@ const ChatArea = () => {
     })
     //will this useffect dependance array lead to a bug? cause we are using chatmetadata, is it efficient?
 
-  },[chatMetaData.userProfile?.id])
+  }, [chatMetaData.userProfile?.id])
+
+  useEffect(() => {
+    if (!chatMetaData.otherUserProfile?.id) return;
+
+    socket.on("typing:event", (event: TypingEvent) => {
+      handleTypingEvent(event)
+    });
+
+    return () => {
+      socket.off("typing:event", handleTypingEvent);
+    };
+  }, [chatMetaData.otherUserProfile?.id, userId]);
+
+  useEffect(() => {
+    console.log(typingEventState)
+  }, [typingEventState])
 
   useEffect(() => {
     const otheruser = data?.conversationParticipant.find(
@@ -139,6 +209,7 @@ const ChatArea = () => {
   return (
     <div className="flex flex-col h-[75vh] w-full overflow-hidden">
       {/* Header */}
+
       <div className="w-full px-4 py-3 border-b flex items-center gap-3">
         <p className="text-sm text-muted-foreground flex items-center space-x-2">
           <span>Conversation</span>
@@ -227,6 +298,22 @@ const ChatArea = () => {
           );
         })}
       </div>
+
+      {/* other user typing.... */}
+      <div className="ml-3 h-5 flex items-center">
+        {/* {typingEventState.typingStatus === 'start' && typingEventState.userId !== userId as unknown as string &&  ( */}
+        {typingEventState.typingStatus === 'stop' && (
+          <div className="relative bottom-3 left-3">
+            <div className="px-5 py-2 bg-white border border-gray-200 rounded-xl shadow-sm w-fit">
+              <div className="flex items-center space-x-1">
+                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" />
+                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:0.15s]" />
+                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:0.3s]" />             </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Typing area */}
       <div className="border-t border-gray-300 p-4">
         <div className="flex items-center gap-3">
@@ -234,8 +321,13 @@ const ChatArea = () => {
             placeholder="Type your message..."
             className="min-h-[44px] resize-none"
             aria-label="Type your message"
+            onChange={() => {
+              handleTyping()
+            }}
           />
-          <Button className="h-[44px] bg-brand px-6 text-brand-foreground hover:bg-brand/90">
+
+          <Button className="h-[44px] bg-brand px-6 text-brand-foreground hover:bg-brand/90"
+          >
             Send
           </Button>
         </div>

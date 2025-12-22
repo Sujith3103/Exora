@@ -12,13 +12,26 @@ type PresenceEvent = {
     status: "online" | "offline";
 };
 
+type TypingEvent = {
+    conversationId: string;
+    userId: string
+    typingStatus: "start" | "stop"
+}
+
 
 export const initSocket = () => {
     io.use(socketAuthMiddleware);
 
+    // SUBSCRIBED TO USER PRESENCE EVENT ( online / offline )
     subscriber.subscribe("presence-events", (message: string) => {
         const event: PresenceEvent = JSON.parse(message)
         io.emit(`presence:${event.userId}`, event)
+    })
+
+    // SUBSCRIBED TO USER TYPING EVENT 
+    subscriber.subscribe("typing-events", (message: string) => {
+        const event: TypingEvent = JSON.parse(message)
+        io.to(event.conversationId).emit("typing:event", event)
     })
 
     io.on("connection", async (socket) => {
@@ -27,6 +40,8 @@ export const initSocket = () => {
         const userId = socket.data.user.id.toString();
 
         socket.join(userId);
+
+        let conversationId;
 
         const count = await redis.hIncrBy('user_sockets', userId, 1)
         if (count === 1) {
@@ -49,13 +64,17 @@ export const initSocket = () => {
 
             // })
 
-            console.log("converation is emitting")
+            conversationId = conversationData.conversationId
             socket.join(conversationData.conversationId)
 
             const isOnlineUser = await redis.sIsMember('online_users', conversationData.otherUserId)
 
             socket.emit('isOnlineUser', isOnlineUser)
-            console.log('isonline user: ', isOnlineUser, conversationData)
+        })
+
+        socket.on('typing:command', (message: TypingEvent) => {
+            const event = JSON.stringify(message)
+            publisher.publish("typing-events", event)
         })
 
         socket.on("disconnect", async () => {
