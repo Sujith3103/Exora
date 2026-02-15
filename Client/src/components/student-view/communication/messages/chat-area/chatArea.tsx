@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { DotIcon, EllipsisVertical } from "lucide-react";
+import { EllipsisVertical } from "lucide-react";
 import { useGetMessageById } from "../../hooks/useGetMessageById";
 import type { RootState } from "@/store";
 import type { User } from "@/config/config";
@@ -55,6 +55,8 @@ const ChatArea = () => {
     otherUserProfile: null,
   });
 
+  const [draftMessage, setDraftMessage] = useState<string>("")
+
   function formatChatDate(dateString: string): string {
     const date = new Date(dateString);
     const now = new Date();
@@ -87,8 +89,12 @@ const ChatArea = () => {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isTypingRef = useRef(false);
 
-  function handleTyping() {
+  function handleTyping(e: React.ChangeEvent<HTMLTextAreaElement>) {
+
+    setDraftMessage(e.target.value)
+
     const conversationId = location.pathname.split("/")[4];
+
 
     if (!isTypingRef.current) {
 
@@ -117,11 +123,12 @@ const ChatArea = () => {
   const handleTypingEvent = (event: TypingEvent) => {
     // Ignore my own typing
     if (event.userId === userId as unknown as string) return;
-    setTypingEventState(prev => ({
+    setTypingEventState({
       conversationId: event.conversationId,
       typingStatus: event.typingStatus,
       userId: event.userId
-    }))
+    });
+
   };
 
 
@@ -172,9 +179,10 @@ const ChatArea = () => {
     };
   }, [chatMetaData.otherUserProfile?.id, userId]);
 
-  useEffect(() => {
-    console.log(typingEventState)
-  }, [typingEventState])
+  //TYPING EVENT
+  // useEffect(() => {
+  //   console.log("typing event state :",typingEventState)
+  // }, [typingEventState])
 
   useEffect(() => {
     const otheruser = data?.conversationParticipant.find(
@@ -301,8 +309,7 @@ const ChatArea = () => {
 
       {/* other user typing.... */}
       <div className="ml-3 h-5 flex items-center">
-        {/* {typingEventState.typingStatus === 'start' && typingEventState.userId !== userId as unknown as string &&  ( */}
-        {typingEventState.typingStatus === 'stop' && (
+        {typingEventState.typingStatus === 'start' && typingEventState.userId !== userId as unknown as string && (
           <div className="relative bottom-3 left-3">
             <div className="px-5 py-2 bg-white border border-gray-200 rounded-xl shadow-sm w-fit">
               <div className="flex items-center space-x-1">
@@ -318,15 +325,20 @@ const ChatArea = () => {
       <div className="border-t border-gray-300 p-4">
         <div className="flex items-center gap-3">
           <Textarea
+            value={draftMessage}
             placeholder="Type your message..."
-            className="min-h-[44px] resize-none"
+            className="min-h-[44px] resize-none max-h-[120px]"
             aria-label="Type your message"
-            onChange={() => {
-              handleTyping()
+            onChange={(e) => {
+              handleTyping(e)
             }}
           />
 
-          <Button className="h-[44px] bg-brand px-6 text-brand-foreground hover:bg-brand/90"
+          <Button className="h-[44px] bg-brand px-6 text-brand-foreground hover:bg-brand/90 hover:bg-gray-300 cursor-pointer"
+            onClick={() => {
+              console.log(draftMessage)
+              setDraftMessage("")
+            }}
           >
             Send
           </Button>

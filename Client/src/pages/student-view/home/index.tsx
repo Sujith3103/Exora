@@ -5,7 +5,7 @@ import { courseCategories } from "@/config/config";
 import { usePopularCourses } from "@/hooks/queries/usePopularCourses";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
+// import { useEffect } from "react";
 import teachingImage from "../../../assets-static/Teaching-cuate.png"
 
 const StudentViewHomePage = () => {

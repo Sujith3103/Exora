@@ -15,7 +15,7 @@ const CouponPage = () => {
 
     const { data: coupons, isLoading, error } = useCoupon()
     const [activeCoupons, setActiveCoupons] = useState<Coupon[]>([])
-    const [scheduledCoupons, setScheduledCoupons] = useState<Coupon[]>([])
+    // const [scheduledCoupons, setScheduledCoupons] = useState<Coupon[]>([])
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
 
     const { data, isLoading: isCouponAnalyticsLoading } = useCouponAnalytics()
@@ -37,7 +37,7 @@ const CouponPage = () => {
         })
 
         setActiveCoupons(active)
-        setScheduledCoupons(scheduled)
+        // setScheduledCoupons(scheduled)
 
     }, [coupons])
 

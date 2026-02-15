@@ -1,10 +1,10 @@
 import { socket } from "@/config/socket";
 import { createContext, useContext, useEffect, useState } from "react";
 
-interface SocketContextType {
-    socket: typeof socket;
-    connected: boolean;
-}
+// interface SocketContextType {
+//     socket: typeof socket;
+//     connected: boolean;
+// }
 
 const SocketContext = createContext<any>(undefined);
 

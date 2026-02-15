@@ -57,7 +57,7 @@ export const useMessage = () => {
 
     const updateAsUnread = useMutation({
 
-        mutationFn: async ({ conversation, setConversationData, read, userId }: UpdateAsUnreadProps) => {
+        mutationFn: async ({ conversation, read, userId }: UpdateAsUnreadProps) => {
             const isRead = read ? false : true
             const coversationParticipantId = conversation.conversationParticipant.filter(c => c.userId == userId)[0].id
             const res = await server.patch(`/communication/message/${coversationParticipantId}/unread`, {
@@ -65,7 +65,7 @@ export const useMessage = () => {
             })
             return res.data
         },
-        onMutate: ({ conversation, setConversationData }) => {
+        onMutate: ({  setConversationData }) => {
 
             setConversationData(prev => ({
                 ...prev,

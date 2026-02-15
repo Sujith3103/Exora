@@ -2,7 +2,8 @@ import { io } from "../index";
 import { publisher, redis, subscriber } from "../utils/redisClient";
 import { socketAuthMiddleware } from "./auth/middleware";
 
-type ConversationData = {
+type ConversationData =
+{
     conversationId: string,
     otherUserId: string
 }
@@ -18,6 +19,7 @@ type TypingEvent = {
     typingStatus: "start" | "stop"
 }
 
+const SERVER_ID = "server-1"
 
 export const initSocket = () => {
     io.use(socketAuthMiddleware);
