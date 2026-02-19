@@ -23,7 +23,6 @@ const RouteGuard = ({ element }: any) => {
             try {
                 const accessToken = sessionStorage.getItem("token");
                 const storedUser = sessionStorage.getItem("user");
-
                 // 🚪 No token or user -> logout immediately
                 if (!accessToken || !storedUser) {
                     dispatch(logout());
@@ -74,6 +73,10 @@ const RouteGuard = ({ element }: any) => {
 
     if (isAuthenticated && location.pathname.includes('instructor') && user?.role != 'INSTRUCTOR') {
         return <Navigate to={'/'} />
+    }
+
+    if (location.pathname.includes('teaching') && user?.role == 'INSTRUCTOR') {
+        return navigate(-1)
     }
 
     return element

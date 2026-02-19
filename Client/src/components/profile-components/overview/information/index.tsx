@@ -1,4 +1,4 @@
-import React, {  useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
 import { Card } from '@/components/ui/card';
@@ -173,13 +173,39 @@ const OverViewUserInformation = () => {
                                         className="absolute top-3 right-3 cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200"
                                     />
                                 ) : (
-                                    <Button
-                                        disabled={isLoading}
-                                        type='submit'
-                                        className="absolute w-20 h-7 bg-blue-400 hover:bg-blue-400 top-3 right-3 transition-opacity duration-200 cursor-pointer"
-                                    >
-                                        Submit
-                                    </Button >
+
+                                    <>
+                                        <Button
+                                            disabled={isLoading}
+                                            type="submit"
+                                            className="absolute top-3 right-16 h-8 px-4 
+                                                         bg-blue-600 text-white text-sm font-medium
+                                                              rounded-md shadow-sm
+                                                             hover:bg-blue-700 hover:shadow-md
+                                                            active:scale-95
+                                                            transition-all duration-200"
+                                        >
+                                            {isLoading ? "..." : "Submit"}
+                                        </Button>
+
+                                        <Button
+                                            disabled={isLoading}
+                                            onClick={() => setIsEdit_Info(false)}
+                                            type="button"
+                                            className="absolute top-3 right-3 h-8 w-8 cursor-pointer
+                                                            flex items-center justify-center
+                                                        bg-white border border-gray-300
+                                                        text-gray-500 text-sm
+                                                            rounded-md shadow-sm
+                                                        hover:bg-red-50 hover:text-red-600 hover:border-red-300
+                                                            active:scale-95
+                                                            transition-all duration-200"
+                                        >
+                                            ✕
+                                        </Button>
+                                    </>
+
+
                                 )}
 
                                 {fields.map(field => (
@@ -212,13 +238,36 @@ const OverViewUserInformation = () => {
                                         className="absolute top-3 right-3 cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200"
                                     />
                                 ) : (
-                                    <Button
-                                        disabled={isLoading}
-                                        type='submit'
-                                        className="absolute w-20 h-7 bg-blue-400 hover:bg-blue-400 top-3 right-3 transition-opacity duration-200 cursor-pointer"
-                                    >
-                                        Submit
-                                    </Button>
+                                    <>
+                                        <Button
+                                            disabled={isLoading}
+                                            type="submit"
+                                            className="absolute top-3 right-16 h-8 px-4 
+                                                         bg-blue-600 text-white text-sm font-medium
+                                                              rounded-md shadow-sm
+                                                             hover:bg-blue-700 hover:shadow-md
+                                                            active:scale-95
+                                                            transition-all duration-200"
+                                        >
+                                            {isLoading ? "..." : "Submit"}
+                                        </Button>
+
+                                        <Button
+                                            disabled={isLoading}
+                                            onClick={() => setIsEdit_Security(false)}
+                                            type="button"
+                                            className="absolute top-3 right-3 h-8 w-8 cursor-pointer
+                                                            flex items-center justify-center
+                                                        bg-white border border-gray-300
+                                                        text-gray-500 text-sm
+                                                            rounded-md shadow-sm
+                                                        hover:bg-red-50 hover:text-red-600 hover:border-red-300
+                                                            active:scale-95
+                                                            transition-all duration-200"
+                                        >
+                                            ✕
+                                        </Button>
+                                    </>
                                 )}
 
                                 {securityFields.map(field => (

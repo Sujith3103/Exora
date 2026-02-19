@@ -20,4 +20,6 @@ router.get('/my-learning',AuthenticateMiddleware,getUserBoughtCourses)
 router.get('/my-learning/only-ids',AuthenticateMiddleware,getUserBoughtCoursesIds)
 
 
+router.patch('/role', AuthenticateMiddleware, ChangeRole)
+
 export default router

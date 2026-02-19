@@ -2,10 +2,10 @@ import { Button } from '@/components/ui/button'
 import { Bell, CircleUser, GraduationCap, MenuSquareIcon } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "../../../store";
-import server from '@/api/axiosinstance';
-import { updateUserRole } from '@/store/authSlice';
+import {  useSelector } from "react-redux";
+import type { RootState } from "../../../store";
+// import server from '@/api/axiosinstance';
+// import { updateUserRole } from '@/store/authSlice';
 import ExploreMenu from './exploreMenu';
 import { useState } from 'react';
 import NavBar_sm from './small-screen';
@@ -16,24 +16,24 @@ const StudentNavbar = () => {
 
     const [isNavbar, setIsNavBar] = useState(false)
 
-    const dispatch = useDispatch<AppDispatch>()
+    // const dispatch = useDispatch<AppDispatch>()
     const navigate = useNavigate()
 
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
     const user = useSelector((state: RootState) => state.auth.user)
-    const handleClick_ChangeRole = async () => {
-        const response = await server.put('/user/change-role')
-        if (response.data.success) {
-            dispatch(updateUserRole("INSTRUCTOR"))
-        }
-    }
+    // const handleClick_ChangeRole = async () => {
+    //     const response = await server.put('/user/change-role')
+    //     if (response.data.success) {
+    //         dispatch(updateUserRole("INSTRUCTOR"))
+    //     }
+    // }
 
     return (
         <>
             {
                 isNavbar && <NavBar_sm isNavbarOpen={isNavbar} setIsNavbarOpen={setIsNavBar} />
             }
-            <div className="flex  items-center p-4 justify-between border-gray-300 [box-shadow:0_2px_4px_color-mix(in_oklch,oklch(27.54%_.1638_265.98deg)_8%,transparent),0_4px_12px_color-mix(in_oklch,oklch(27.54%_.1638_265.98deg)_8%,transparent)]
+            <div className="flex  items-center p-4 justify-between border-gray-300 [box-shadow:0_px_4px_color-mix(in_oklch,oklch(27.54%_.1638_265.98deg)_8%,transparent),0_4px_12px_color-mix(in_oklch,oklch(27.54%_.1638_265.98deg)_8%,transparent)]
         
         ">
                 <MenuSquareIcon className='md:hidden block' onClick={() => setIsNavBar(true)} />
@@ -50,7 +50,9 @@ const StudentNavbar = () => {
                         user?.role === "INSTRUCTOR" ?
                             <Button className='font-semibold hidden md:block'>Instructor</Button>
                             :
-                            <Button onClick={handleClick_ChangeRole} className='bg-gray-300 hover:bg-gray-200 text-black hidden md:block'>Teach on Exora</Button>
+                            <Button className='bg-gray-300 hover:bg-gray-200 text-black hidden md:block'>
+                                <Link to={'/teaching'} >Teach on Exora</Link>
+                            </Button>
                     }
 
                     {/* Cart */}

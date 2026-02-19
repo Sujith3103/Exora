@@ -29,6 +29,7 @@ import CoursePlayer from "./pages/student-view/course-player/course_player"
 import { useSelector } from "react-redux"
 import type { RootState } from "./store"
 import Suga from "./suga"
+import TeachPage from "./pages/student-view/Teach/teachPage"
 
 // setIsComposingMessage: React.Dispatch<React.SetStateAction<boolean>>
 
@@ -66,6 +67,10 @@ function App() {
         <Route path="/" element={<RouteGuard element={<NavBarLayout />} />}>
           <Route path="" element={<StudentViewHomePage />} />
         </Route>
+
+        <Route path="/teaching" element={<RouteGuard element={<TeachPage />} /> } />
+
+
         <Route path="/auth" element={<RouteGuard element={<AuthPage />} />}>
           <Route path="login" element={<AuthPage />} />
           <Route path="signup" element={<AuthPage />} />
