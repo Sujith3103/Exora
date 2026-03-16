@@ -1,16 +1,14 @@
 import nodemailer from "nodemailer";
 
-//  user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS,
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER, // your gmail
-    pass: process.env.EMAIL_PASS, // your app password
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS, 
   },
 });
 
-// sendLoginAlert.ts
 export async function sendLoginAlert(email: string) {
   console.log("reached the function", email);
 

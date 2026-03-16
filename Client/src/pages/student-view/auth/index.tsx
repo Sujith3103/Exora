@@ -60,7 +60,11 @@ const AuthPage = () => {
                 }
             } else if (activeTab === 'login') {
                 const updatedjson = { ...jsonData, rememberMe: formValue.checkbox };
-                response = await server.post('/auth/login', updatedjson);
+                response = await server.post('/auth/login', updatedjson,
+                    {
+                        withCredentials:true
+                    }
+                );
                 if (response.data.success) {
                     if (redirect) {
                         const safeRedirect = redirect.startsWith("/") ? redirect : `/${redirect}`;

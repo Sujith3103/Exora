@@ -4,9 +4,25 @@ import { Request, Response } from "express";
 import jwt from 'jsonwebtoken'
 import { QueueConnection } from '../connection';
 import { addLoginJob, sendLoginAlert } from "../producers/userTasks.producer";
+import { randomUUID } from "crypto";
 
 
 const prisma = new PrismaClient();
+
+function generateRefreshToken(userId: string) {
+    const jti = randomUUID(); // unique id for rotation tracking
+
+    return jwt.sign(
+        {
+            sub: userId,
+            jti
+        },
+        process.env.REFRESH_TOKEN_SECRET!,
+        {
+            expiresIn: "7d"
+        }
+    );
+}
 
 export const register = async (req: any, res: any) => {
     try {
@@ -111,13 +127,33 @@ export const loginUser = async (req: any, res: any) => {
             { expiresIn: '2h' }
         );
 
+        if (rememberMe) {
+            if (!process.env.REFRESH_SECRET) {
+                throw new Error("REFRESH_SECRET is not defined");
+            }
+
+            const refreshToken = jwt.sign(
+                { ...userData, type: 'refresh' },
+                process.env.REFRESH_SECRET,
+                { expiresIn: "7d" }
+            );
+
+            console.log("cookie is being set")
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: false,     // because you're on http
+                sameSite: "lax",   // NOT "none"
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            });
+        }
+
         const userSecurityDetails = await prisma.userSecurity.findUnique({
-            where: {userId: user.id}
+            where: { userId: user.id }
         })
 
-        console.log("islogin alert : ",userSecurityDetails)
+        console.log("islogin alert : ", userSecurityDetails)
 
-        if(userSecurityDetails?.loginAlertsEnabled){
+        if (userSecurityDetails?.loginAlertsEnabled) {
             sendLoginAlert(user.email)
         }
 

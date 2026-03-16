@@ -1,12 +1,13 @@
 import { io } from "../index";
+import { prisma } from "../utils/prisma";
 import { publisher, redis, subscriber } from "../utils/redisClient";
 import { socketAuthMiddleware } from "./auth/middleware";
 
 type ConversationData =
-{
-    conversationId: string,
-    otherUserId: string
-}
+    {
+        conversationId: string,
+        otherUserId: string
+    }
 
 type PresenceEvent = {
     userId: string;
@@ -17,6 +18,14 @@ type TypingEvent = {
     conversationId: string;
     userId: string
     typingStatus: "start" | "stop"
+}
+type MessageInfo = {
+    automatedMessage: boolean,
+    content: string
+    conversationId: string
+    createdAt: string | null
+    id: string | null
+    senderId: string
 }
 
 const SERVER_ID = "server-1"
@@ -36,14 +45,20 @@ export const initSocket = () => {
         io.to(event.conversationId).emit("typing:event", event)
     })
 
+    subscriber.subscribe("message-events", (message: string) => {
+        const event: MessageInfo = JSON.parse(message)
+        io.to(event.conversationId).emit("message:receive", event)
+    })
+
     io.on("connection", async (socket) => {
         console.log("Socket connected:", socket.id);
 
         const userId = socket.data.user.id.toString();
+        const user = socket.data.user
 
         socket.join(userId);
 
-        let conversationId;
+        let conversationId: string;
 
         const count = await redis.hIncrBy('user_sockets', userId, 1)
         if (count === 1) {
@@ -56,15 +71,9 @@ export const initSocket = () => {
             )
         }
 
+        // console.log(socket.rooms)
+
         socket.on("joinConversation", async (conversationData: ConversationData) => {
-
-            // socket.on(`presence:${conversationData.otherUserId}`, (response:PresenceEvent) => {
-
-            //     if (response.status === 'online') {
-
-            //     }
-
-            // })
 
             conversationId = conversationData.conversationId
             socket.join(conversationData.conversationId)
@@ -78,6 +87,36 @@ export const initSocket = () => {
             const event = JSON.stringify(message)
             publisher.publish("typing-events", event)
         })
+
+        socket.on('message:send', async (message) => {
+            console.log(message)
+            const res = await redis.xAdd(
+                "message-events-stream",
+                '*',
+                {
+                    message: JSON.stringify(message)
+                }
+            )
+            console.log("addd event:",res)
+            // try {
+            //     const res = await prisma.message.create({
+            //         data: {
+            //             content: message.content,
+            //             automatedMessage: message.automatedMessage,
+            //             conversationId: message.conversationId,
+            //             senderId: message.senderId
+            //         }
+            //     })
+            //     console.log("res:",res)
+
+            // }
+            // catch (err) {
+
+            // }
+            // io.to(conversationId).emit("message:receive", message)
+        })
+
+        // Removed socket.on(conversationId, ...) from here since conversationId may not be assigned yet
 
         socket.on("disconnect", async () => {
             const count = await redis.hIncrBy("user_sockets", userId, -1);

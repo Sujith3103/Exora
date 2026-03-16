@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, UserCircleIcon } from "lucide-react";
 import { useGetMessageById } from "../../hooks/useGetMessageById";
 import type { RootState } from "@/store";
 import type { User } from "@/config/config";
@@ -29,17 +29,25 @@ type TypingEvent = {
   userId: string
   typingStatus: "start" | "stop"
 }
+export type Message = {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  content: string;
+  automatedMessage: boolean;
+  createdAt: string; // ISO string (UTC)
+};
 
+export type MessagesResponse = Message[];
 
 
 
 const ChatArea = () => {
   const location = useLocation();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
-  const { data, isLoading, isError } = useGetMessageById(
+  const { data, isLoading, isError, isSuccess } = useGetMessageById(
     location.pathname.split("/")[4]
   );
-
 
   const { socket } = useSocket()
 
@@ -56,6 +64,7 @@ const ChatArea = () => {
   });
 
   const [draftMessage, setDraftMessage] = useState<string>("")
+  const [chatMessage, setChatMessage] = useState<MessagesResponse>()
 
   function formatChatDate(dateString: string): string {
     const date = new Date(dateString);
@@ -89,12 +98,13 @@ const ChatArea = () => {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isTypingRef = useRef(false);
 
+
+  //SOCKET STUFF HERE
   function handleTyping(e: React.ChangeEvent<HTMLTextAreaElement>) {
 
     setDraftMessage(e.target.value)
 
     const conversationId = location.pathname.split("/")[4];
-
 
     if (!isTypingRef.current) {
 
@@ -130,7 +140,45 @@ const ChatArea = () => {
     });
 
   };
+  const convertDateToISTTime = (dateString: string): string => {
+    return new Date(dateString).toLocaleTimeString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
 
+  const handleSendingMessage = () => {
+    const message: Message = {
+      automatedMessage: false,
+      content: draftMessage,
+      conversationId: typingEventState.conversationId,
+      createdAt: new Date().toISOString(),
+      id: '',
+      senderId: userId as unknown as string
+    }
+    // setChatMessage(prev => [
+    //   ...(prev || []),
+    //   message
+    // ])
+
+    socket.emit('message:send', message)
+  }
+
+  useEffect(() => {
+    socket.on("message:receive", (message: any) => {
+      console.log("new message:", message)
+      setChatMessage(prev => [
+        ...(prev || []),
+        message
+      ])
+    })
+
+    return () => {
+      socket.off("message:receive")
+    }
+  }, [])
 
   useEffect(() => {
 
@@ -179,11 +227,20 @@ const ChatArea = () => {
     };
   }, [chatMetaData.otherUserProfile?.id, userId]);
 
+  useEffect(() => {
+
+    setChatMessage(data?.messages)
+
+  }, [isSuccess])
+
+  useEffect(() => {
+    console.log("chat : ", chatMessage)
+  }, chatMessage)
+
   //TYPING EVENT
   // useEffect(() => {
   //   console.log("typing event state :",typingEventState)
   // }, [typingEventState])
-
   useEffect(() => {
     const otheruser = data?.conversationParticipant.find(
       (c) => c.userId !== userId as unknown as string
@@ -251,7 +308,8 @@ const ChatArea = () => {
 
       {/* Messages */}
       <div className="flex-1 p-4 space-y-5 overflow-y-auto">
-        {data?.messages.map((message, i) => {
+        {chatMessage?.map((message, i) => {
+          // console.log("messages : ",message)
           const isOwnMessage = message.senderId === userId as unknown as string;
           const senderProfile = isOwnMessage
             ? chatMetaData.userProfile
@@ -260,9 +318,18 @@ const ChatArea = () => {
           return (
             <div key={i} className="relative">
               {/* Date divider */}
-              {i === 0 ||
+              <>
+                {/* {i === 0 ||
                 formatChatDate(message.createdAt) !==
                 formatChatDate(data.messages[i - 1].createdAt) ? (
+                <p className="mb-4 text-center text-[13px] font-semibold uppercase text-muted-foreground">
+                  {formatChatDate(message.createdAt)}
+                </p>
+              ) : null} */}
+              </>
+              {i === 0 ||
+                new Date(message.createdAt).toDateString() !==
+                new Date(chatMessage[i - 1].createdAt).toDateString() ? (
                 <p className="mb-4 text-center text-[13px] font-semibold uppercase text-muted-foreground">
                   {formatChatDate(message.createdAt)}
                 </p>
@@ -273,15 +340,29 @@ const ChatArea = () => {
                 className={`flex gap-3 ${isOwnMessage ? "flex-row-reverse text-right" : "flex-row"
                   }`}
               >
-                <div className="mt-1.5 h-9 w-9 rounded-2xl">
-                  <img
-                    src={senderProfile?.profile?.profileImg}
-                    alt=""
-                    className="rounded-2xl object-cover h-full w-full"
-                  />
-                </div>
+                {
+                  senderProfile?.id != userId &&
+                  <>
+                    <div className="mt-1.5 h-9 w-9 rounded-2xl">
+                      {
+                        senderProfile?.profile?.profileImg ?
+                          <>
+                            <img
+                              src={senderProfile?.profile?.profileImg}
+                              alt=""
+                              className="rounded-2xl object-cover h-full w-full"
+                            />
+                          </> :
+                          (
+                            <UserCircleIcon strokeWidth={1} className="w-10 h-10 text-gray-400" />
+                          )
 
-                <div className="flex-1">
+                      }
+                    </div>
+
+                  </>
+                }
+                <div className="flex-1 w-full">
                   <div
                     className={`mb-1 flex items-center gap-2 text-sm ${isOwnMessage ? "justify-end" : ""
                       }`}
@@ -289,13 +370,21 @@ const ChatArea = () => {
                     <a href="#" className="font-medium text-brand hover:underline">
                       {senderProfile?.name}
                     </a>
-                    <span className="text-muted-foreground text-xs">7:03 AM</span>
+                    <span className="text-muted-foreground text-xs">{convertDateToISTTime(message.createdAt)}</span>
                   </div>
-
+                  {/* 
+                    <div
+                      className={`inline-block rounded-xl px-3 py-2 text-sm leading-6 break-words whitespace-pre-wrap ${isOwnMessage
+                        ? "bg-blue-500 text-white ml-auto max-w-[70%]"
+                        : "bg-gray-100 text-gray-800 mr-auto max-w-[70%]"
+                        }`}
+                    >
+                      <p>{message.content || "..."}</p>
+                    </div> */}
                   <div
-                    className={`inline-block rounded-xl px-3 py-2 text-sm leading-6 ${isOwnMessage
-                      ? "bg-blue-500 text-white ml-auto max-w-[75%]"
-                      : "bg-gray-100 text-gray-800 mr-auto max-w-[75%]"
+                    className={`inline-block rounded-xl px-3 py-2 text-sm leading-6 break-words whitespace-pre-wrap text-left ${isOwnMessage
+                      ? "bg-blue-500 text-white ml-auto max-w-[70%]"
+                      : "bg-gray-100 text-gray-800 mr-auto max-w-[70%]"
                       }`}
                   >
                     <p>{message.content || "..."}</p>
@@ -336,7 +425,7 @@ const ChatArea = () => {
 
           <Button className="h-[44px] bg-brand px-6 text-brand-foreground hover:bg-brand/90 hover:bg-gray-300 cursor-pointer"
             onClick={() => {
-              console.log(draftMessage)
+              handleSendingMessage()
               setDraftMessage("")
             }}
           >

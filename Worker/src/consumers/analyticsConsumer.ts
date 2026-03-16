@@ -119,7 +119,7 @@ export const processAnalyticsEvent = async () => {
                     else if (clickEvent.action === 'enroll') {
                         const today = getISTMidnight();   // ✅ IST midnight
 
-                        await prisma.$transaction(async (tx) => {
+                        await prisma.$transaction(async (tx:any) => {
                             const revenueAnalytics = await tx.courseRevenueAnalytics.upsert({
                                 where: { courseId: clickEvent.targetId },
                                 update: {

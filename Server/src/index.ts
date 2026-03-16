@@ -46,7 +46,10 @@ dotenv.config();
 const app = express();
 const upload = multer();
 
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:5173", "https://exora-livid.vercel.app"],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -80,7 +83,7 @@ const httpServer = http.createServer(app);
 
 export const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:5173", "https://exora-livid.vercel.app/"],
+    origin: ["http://localhost:5173", "https://exora-livid.vercel.app"],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']
   },

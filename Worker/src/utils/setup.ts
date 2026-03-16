@@ -1,6 +1,7 @@
 import { processAnalyticsEvent } from "../consumers/analyticsConsumer";
 import { processCounterEvent } from "../consumers/counterConsumer";
 import { processDbEvents } from "../consumers/dbConsumer";
+import { processMessageFanOutEvent } from "../consumers/messageFanoutConsumer";
 import { redis } from "./redisClient";
 
 export async function setupClickEventStream() {
@@ -10,6 +11,8 @@ export async function setupClickEventStream() {
       redis.xGroupCreate("click-events-stream", "db-consumer-group", "$", { MKSTREAM: true }),
       redis.xGroupCreate("click-events-stream", "counter-consumer-group", "$", { MKSTREAM: true }),
       redis.xGroupCreate("click-events-stream", "analytics-consumer-group", "$", { MKSTREAM: true }),
+      redis.xGroupCreate('message-events-stream',"fanout-consumer-group","$",{MKSTREAM:true}),
+      redis.xGroupCreate('message-events-stream',"db-consumer-group","$",{MKSTREAM:true})
     ]);
     console.log("✅ Consumer groups ready");
   } catch (err: any) {
@@ -25,6 +28,7 @@ export async function setupClickEventStream() {
     processDbEvents(),
     processCounterEvent(),
     processAnalyticsEvent(),
+    processMessageFanOutEvent()
   ]);
 }
 

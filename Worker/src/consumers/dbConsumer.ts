@@ -69,7 +69,7 @@ export async function processDbEvents() {
           const clickEvent = parseClickEvent(record);
 
           // Transaction: insert and trim old clicks
-            await prisma.$transaction(async (tx) => {
+            await prisma.$transaction(async (tx:any) => {
               await tx.userClick.create({
                 data: {
                   clickType: clickEvent.type,
