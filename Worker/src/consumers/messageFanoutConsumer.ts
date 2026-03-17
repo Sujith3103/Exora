@@ -1,4 +1,4 @@
-import { idempotencyClient, messageProcessingClient, publisher, redis, streamAck, streamReader } from "../utils/redisClient";
+import { idempotencyClient, messageCompletedClient, messageProcessingClient, publisher, redis, streamAck, streamReader } from "../utils/redisClient";
 
 type RedisStreamMessage = {
     id: string;
@@ -11,9 +11,9 @@ type RedisStreamResponse = {
 }[];
 
 
-const BATCH_SIZE = 20;
-const BLOCK_MS = 10;
-const CONCURRENCY = 5;
+const BATCH_SIZE = 5;  // How many messages you pull
+const BLOCK_MS = 10;   // How long redis waits
+const CONCURRENCY = 5; // How many you process in parallel
 
 let isRunning = true;
 
@@ -45,6 +45,8 @@ export const processMessageFanOutEvent = async () => {
 
             const ids = streamData.messages.map(msg => msg.id);
             console.log(ids)
+
+            console.time("batch-process")
             await Promise.all(
                 streamData.messages.map(async (msg) => {
                     const payload = msg.message;
@@ -56,7 +58,7 @@ export const processMessageFanOutEvent = async () => {
                             messageId: payload.messageId
                         };
                     } catch (err) {
-                        console.error("❌ JSON parse failed", err);
+                        console.error("JSON parse failed", err);
                         return;
                     }
 
@@ -65,36 +67,34 @@ export const processMessageFanOutEvent = async () => {
                     const lockKey = `lock:${messageId}`;
                     const completedKey = `completed:${messageId}`;
 
-                    try {
-                        const lock = await messageProcessingClient.set(lockKey, "1", {
-                            NX: true,
-                            EX: 60
-                        });
+                    const pipeline = messageProcessingClient.multi()
+                    const pipeline2 = messageCompletedClient.multi()
 
-                        if (!lock) {
-                            console.log("Already processing");
-                            return;
+                    try {
+
+                        pipeline.set(lockKey, '1', { NX: true, EX: 60 })
+                        pipeline.exists(completedKey);
+                    
+                        const [lockRes, isCompleted] = await pipeline.exec()
+
+                        if (!lockRes) {
+                            console.log("already being processed")
+                            return
                         }
 
-                        const isCompleted = await idempotencyClient.exists(completedKey);
                         if (isCompleted) {
                             console.log("Duplicate skipped");
                             return;
                         }
 
-                        await publisher.publish(
-                            "message-events",
-                            JSON.stringify(message)
-                        );
 
-                        console.log("✅ Published:", messageId);
+                        pipeline2.publish("message-events", JSON.stringify(message))
+                        pipeline2.set(completedKey,'1',{EX:3600})
 
-                        await idempotencyClient.set(completedKey, "1", {
-                            EX: 3600 
-                        });
+                        await pipeline2.exec()
 
                     } catch (err) {
-                        console.error("❌ Processing failed:", messageId, err);
+                        console.error("Processing failed:", messageId, err);
 
                         // 👉 Hook: retry stream (add your retry logic here)
                         // await retryClient.xAdd("retry-stream", "*", { ... })
@@ -102,6 +102,7 @@ export const processMessageFanOutEvent = async () => {
                     }
                 })
             );
+            console.timeEnd("batch-process")
             const ack = await streamAck.xAck(
                 "message-events-stream",
                 "fanout-consumer-group",
@@ -111,4 +112,4 @@ export const processMessageFanOutEvent = async () => {
         }
     }
 
-}
+ }

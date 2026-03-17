@@ -1,6 +1,5 @@
 import { randomUUID } from "crypto";
 import { io } from "../index";
-import { prisma } from "../utils/prisma";
 import { publisher, redis, subscriber } from "../utils/redisClient";
 import { socketAuthMiddleware } from "./auth/middleware";
 
