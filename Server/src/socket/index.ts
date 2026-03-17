@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { io } from "../index";
 import { prisma } from "../utils/prisma";
 import { publisher, redis, subscriber } from "../utils/redisClient";
@@ -32,7 +33,7 @@ const SERVER_ID = "server-1"
 
 export const initSocket = () => {
     io.use(socketAuthMiddleware);
-
+    
     // SUBSCRIBED TO USER PRESENCE EVENT ( online / offline )
     subscriber.subscribe("presence-events", (message: string) => {
         const event: PresenceEvent = JSON.parse(message)
@@ -90,11 +91,13 @@ export const initSocket = () => {
 
         socket.on('message:send', async (message) => {
             console.log(message)
+            const messageId = randomUUID()
             const res = await redis.xAdd(
                 "message-events-stream",
                 '*',
                 {
-                    message: JSON.stringify(message)
+                    message: JSON.stringify(message),
+                    messageId: messageId
                 }
             )
             console.log("addd event:",res)

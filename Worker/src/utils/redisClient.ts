@@ -13,6 +13,9 @@ const config = {
 export const redis = createClient(config);
 export const streamReader = createClient(config);
 export const streamAck = createClient(config);
+export const idempotencyClient = createClient(config);
+export const messageProcessingClient = createClient(config);
+export const messageCompletedClient = createClient(config);
 
 export const publisher = redis.duplicate();
 
@@ -24,6 +27,10 @@ export async function connectRedis() {
     redis.on("error", (err) => console.error("❌ Redis error", err));
     streamReader.on("error", (err) => console.error("❌ Stream reader error", err));
     streamAck.on("error", (err) => console.error("❌ Stream reader error", err));
+    idempotencyClient.on("error", (err) => console.error("❌ idempotencyClient error", err));
+    messageProcessingClient.on("error", (err) => console.error("❌ idempotencyClient error", err));
+    messageCompletedClient.on("error", (err) => console.error("❌ idempotencyClient error", err));
+    idempotencyClient.on("error", (err) => console.error("❌ idempotencyClient error", err));
     publisher.on("error", (err) => console.error("❌ Publisher error", err));
     subscriber.on("error", (err) => console.error("❌ Subscriber error", err));
 
@@ -31,6 +38,9 @@ export async function connectRedis() {
       redis.connect().catch(() => { }),
       streamReader.connect().catch(() => { }),
       streamAck.connect().catch(() => { }),
+      idempotencyClient.connect().catch(() => { }),
+      messageProcessingClient.connect().catch(() => { }),
+      messageCompletedClient.connect().catch(() => { }),
       publisher.connect().catch(() => { }),
       subscriber.connect().catch(() => { })
     ]);

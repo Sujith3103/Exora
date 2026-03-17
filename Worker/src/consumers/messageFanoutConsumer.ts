@@ -1,4 +1,4 @@
-import { publisher, redis, streamAck, streamReader } from "../utils/redisClient";
+import { idempotencyClient, messageProcessingClient, publisher, redis, streamAck, streamReader } from "../utils/redisClient";
 
 type RedisStreamMessage = {
     id: string;
@@ -47,18 +47,61 @@ export const processMessageFanOutEvent = async () => {
             console.log(ids)
             await Promise.all(
                 streamData.messages.map(async (msg) => {
-
                     const payload = msg.message;
 
-                    const parsedMessage = JSON.parse(payload.message);
+                    let parsedMessage;
+                    try {
+                        parsedMessage = {
+                            message: JSON.parse(payload.message),
+                            messageId: payload.messageId
+                        };
+                    } catch (err) {
+                        console.error("❌ JSON parse failed", err);
+                        return;
+                    }
 
-                    console.log("Parsed:", parsedMessage);
+                    const { messageId, message } = parsedMessage;
 
-                    const publish = await publisher.publish("message-events", payload.message);
-                    console.log("published : ", publish)
+                    const lockKey = `lock:${messageId}`;
+                    const completedKey = `completed:${messageId}`;
+
+                    try {
+                        const lock = await messageProcessingClient.set(lockKey, "1", {
+                            NX: true,
+                            EX: 60
+                        });
+
+                        if (!lock) {
+                            console.log("Already processing");
+                            return;
+                        }
+
+                        const isCompleted = await idempotencyClient.exists(completedKey);
+                        if (isCompleted) {
+                            console.log("Duplicate skipped");
+                            return;
+                        }
+
+                        await publisher.publish(
+                            "message-events",
+                            JSON.stringify(message)
+                        );
+
+                        console.log("✅ Published:", messageId);
+
+                        await idempotencyClient.set(completedKey, "1", {
+                            EX: 3600 
+                        });
+
+                    } catch (err) {
+                        console.error("❌ Processing failed:", messageId, err);
+
+                        // 👉 Hook: retry stream (add your retry logic here)
+                        // await retryClient.xAdd("retry-stream", "*", { ... })
+
+                    }
                 })
             );
-
             const ack = await streamAck.xAck(
                 "message-events-stream",
                 "fanout-consumer-group",
