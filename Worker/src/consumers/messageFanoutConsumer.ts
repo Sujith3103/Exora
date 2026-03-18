@@ -1,4 +1,4 @@
-import { idempotencyClient, messageCompletedClient, messageProcessingClient, publisher, redis, streamAck, streamReader } from "../utils/redisClient";
+import { idempotencyClient, messageCompletedClient, messageProcessingClient, publisher, redis, retrySchedulerClient, streamAck, streamReader } from "../utils/redisClient";
 
 type RedisStreamMessage = {
     id: string;
@@ -17,6 +17,14 @@ const CONCURRENCY = 5; // How many you process in parallel
 
 let isRunning = true;
 
+const baseDelay = 1000; // 1 sec
+const maxDelay = 60000; // 1 min
+
+function getBackoffDelay(retryCount: number) {
+    const jitter = Math.random() * 200; // avoid thundering herd
+    return Math.min(baseDelay * (2 ** retryCount) + jitter, maxDelay);
+}
+
 process.on("SIGINT", () => { console.log("Shutting down consumer..."); isRunning = false; });
 process.on("SIGTERM", () => { console.log("Shutting down consumer..."); isRunning = false; });
 
@@ -24,8 +32,8 @@ export const processMessageFanOutEvent = async () => {
 
     while (isRunning) {
 
-        console.log("GONNA READ THE GROUP   ")
-        console.time("read");
+        // console.log("GONNA READ THE GROUP   ")
+        // console.time("read");
 
         const response = await streamReader.xReadGroup(
             "fanout-consumer-group",
@@ -33,7 +41,7 @@ export const processMessageFanOutEvent = async () => {
             [{ key: "message-events-stream", id: ">" }],
             { COUNT: BATCH_SIZE, BLOCK: BLOCK_MS }
         )
-        console.timeEnd("read");
+        // console.timeEnd("read");
         if (response) {
             console.log("got stuff here")
         }
@@ -49,32 +57,36 @@ export const processMessageFanOutEvent = async () => {
             console.time("batch-process")
             await Promise.all(
                 streamData.messages.map(async (msg) => {
-                    const payload = msg.message;
-
-                    let parsedMessage;
+                    console.log("msg : ",msg)
                     try {
-                        parsedMessage = {
-                            message: JSON.parse(payload.message),
-                            messageId: payload.messageId
-                        };
-                    } catch (err) {
-                        console.error("JSON parse failed", err);
-                        return;
-                    }
+                        const payload = msg.message;
 
-                    const { messageId, message } = parsedMessage;
+                        let parsedMessage;
+                        try {
+                            parsedMessage = {
+                                message: JSON.parse(payload.message),
+                                messageId: payload.messageId,
+                                retryCount: JSON.parse(payload.retryCount)
+                            };
+                        } catch (err) {
+                            console.error("JSON parse failed", err);
+                            return;
+                        }
 
-                    const lockKey = `lock:${messageId}`;
-                    const completedKey = `completed:${messageId}`;
+                        const { messageId, message, retryCount } = parsedMessage;
+                        console.log(parsedMessage)
 
-                    const pipeline = messageProcessingClient.multi()
-                    const pipeline2 = messageCompletedClient.multi()
+                        const lockKey = `lock:${messageId}`;
+                        const completedKey = `completed:${messageId}`;
 
-                    try {
+                        const pipeline = messageProcessingClient.multi()
+                        const pipeline2 = messageCompletedClient.multi()
+
+                        // throw new Error("Testing catch block");
 
                         pipeline.set(lockKey, '1', { NX: true, EX: 60 })
                         pipeline.exists(completedKey);
-                    
+
                         const [lockRes, isCompleted] = await pipeline.exec()
 
                         if (!lockRes) {
@@ -89,27 +101,53 @@ export const processMessageFanOutEvent = async () => {
 
 
                         pipeline2.publish("message-events", JSON.stringify(message))
-                        pipeline2.set(completedKey,'1',{EX:3600})
+                        pipeline2.set(completedKey, '1', { EX: 3600 })
 
                         await pipeline2.exec()
+                        await streamAck.xAck(
+                            "message-events-stream",
+                            "fanout-consumer-group",
+                            msg.id
+                        );
 
                     } catch (err) {
-                        console.error("Processing failed:", messageId, err);
+                        console.error("Processing failed:", msg);
 
-                        // 👉 Hook: retry stream (add your retry logic here)
-                        // await retryClient.xAdd("retry-stream", "*", { ... })
+                        const retryCount = Number(msg.message.retryCount);
+                        if (retryCount >= 5) {
+                            console.log("push to dead letter queue")
+                            return
+                        }
 
+                        const delay = getBackoffDelay(retryCount);
+                        const nextRetryAt = Date.now() + delay;
+
+                        const retryPayload = {
+                            ...msg.message,
+                            retryCount: retryCount + 1,
+                            nextRetryAt
+                        };
+                        console.time("retry-schedule")
+
+                        const retrySchedulerPipeline = retrySchedulerClient.multi()
+
+                        retrySchedulerPipeline.zAdd("retry:zset", {
+                            score: nextRetryAt,
+                            value: JSON.stringify(retryPayload)
+                        })
+                        retrySchedulerPipeline.xAck(
+                            "message-events-stream",
+                            "fanout-consumer-group",
+                            msg.id
+                        );
+                        await retrySchedulerPipeline.exec()
+                        
+                        console.timeEnd("retry-schedule")
                     }
                 })
             );
             console.timeEnd("batch-process")
-            const ack = await streamAck.xAck(
-                "message-events-stream",
-                "fanout-consumer-group",
-                ids[0]
-            );
-            console.log("ack completed : ", ack)
         }
     }
 
- }
+}

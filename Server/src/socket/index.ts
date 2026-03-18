@@ -32,7 +32,7 @@ const SERVER_ID = "server-1"
 
 export const initSocket = () => {
     io.use(socketAuthMiddleware);
-    
+
     // SUBSCRIBED TO USER PRESENCE EVENT ( online / offline )
     subscriber.subscribe("presence-events", (message: string) => {
         const event: PresenceEvent = JSON.parse(message)
@@ -45,9 +45,16 @@ export const initSocket = () => {
         io.to(event.conversationId).emit("typing:event", event)
     })
 
-    subscriber.subscribe("message-events", (message: string) => {
+    subscriber.subscribe("message-events", async(message: string) => {
         const event: MessageInfo = JSON.parse(message)
         io.to(event.conversationId).emit("message:receive", event)
+        const now: Date = new Date()
+        if (event.createdAt) {
+            const createdTime = new Date(event.createdAt)
+            const timeTaken = now.getTime() - createdTime.getTime();
+            console.log("time taken : ",timeTaken)
+            await redis.lPush("latency:list", timeTaken.toString());
+        }
     })
 
     io.on("connection", async (socket) => {
@@ -96,10 +103,11 @@ export const initSocket = () => {
                 '*',
                 {
                     message: JSON.stringify(message),
-                    messageId: messageId
+                    messageId: messageId,
+                    retryCount: JSON.stringify(0)
                 }
             )
-            console.log("addd event:",res)
+            console.log("addd event:", res)
             // try {
             //     const res = await prisma.message.create({
             //         data: {
