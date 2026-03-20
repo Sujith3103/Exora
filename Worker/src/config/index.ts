@@ -32,3 +32,20 @@ export type ClickMetaData = {
   // Custom dynamic fields for flexibility
   [key: string]: any;
 };
+
+
+export const TRANSIENT_RULES = [
+  /ECONNREFUSED/,
+  /ETIMEDOUT/,
+  /EAI_AGAIN/,
+  /timeout/i,
+  /network error/i
+]
+
+export const PERMANENT_RULES = [
+  /validation/i,
+  /invalid/i,
+  /missing/i,
+  /not found/i,
+  /schema/i,
+]

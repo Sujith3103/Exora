@@ -1,4 +1,4 @@
-import { BookOpen, House, BookMarked, MessageCircle, Ticket, BarChart } from 'lucide-react'
+import { BookOpen, House, BookMarked, MessageCircle, Ticket, BarChart, Code, Code2 } from 'lucide-react'
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store";
 import { Link } from 'react-router-dom';
@@ -29,9 +29,9 @@ const SideBar = () => {
         },
         {
             icon: <BarChart />,
-            title:'Analytics',
-            link:'instructor/analytics/revenue',
-            role:'instructor'
+            title: 'Analytics',
+            link: 'instructor/analytics/revenue',
+            role: 'instructor'
         }
     ]
 
@@ -66,7 +66,7 @@ const SideBar = () => {
             <div>
                 {
                     User_sidebarItmes.map((items, index) => (
-                        <Link key={index} className='flex items-center gap-2 mt-4' to={`${items.link}`}>
+                        <Link key={index} className='flex items-center gap-2 mt-4 hover:text-gray-500' to={`${items.link}`}>
 
                             {items.icon}
                             <p>{items.title}</p>
@@ -77,13 +77,24 @@ const SideBar = () => {
                 {
                     user?.role === "INSTRUCTOR" ?
                         Instructor_sideBarItems.map((items, index) => (
-                            <Link key={index} className='flex items-center gap-2 mt-4' to={`${items.link}`}>
+                            <Link key={index} className='flex items-center gap-2 mt-4 hover:text-gray-500' to={`${items.link}`}>
 
                                 {items.icon}
                                 <p>{items.title}</p>
 
                             </Link>
                         )) : null
+                }
+                {
+                    user?.role === 'DEVELOPER' &&
+                    <Link className='flex items-center gap-2 mt-4 hover:text-gray-500' to={'/developer/dashboard'}>
+
+                        <div className='flex space-x-2'>
+                            <Code2 />
+                            <p>Developer</p>
+                        </div>
+
+                    </Link>
                 }
             </div>
 

@@ -10,23 +10,26 @@ datasource db {
 }
 
 model User {
-  id                           String              @id @default(uuid())
+  id                           String                    @id @default(uuid())
   name                         String
-  email                        String              @unique
-  createdAt                    DateTime            @default(now())
+  email                        String                    @unique
+  createdAt                    DateTime                  @default(now())
   password                     String
-  role                         Role                @default(USER)
-  updatedAt                    DateTime            @updatedAt
-  rememberMe                   Boolean             @default(false)
+  role                         Role                      @default(USER)
+  updatedAt                    DateTime                  @updatedAt
+  rememberMe                   Boolean                   @default(false)
   cartId                       String?
   usersomehing                 String?
   cart                         Cart?
+  ConversationParticipant      ConversationParticipant[]
   coupons                      Coupon[]
-  instructorCouponApplications CouponApplication[] @relation("InstructorApplications")
-  studentCouponApplications    CouponApplication[] @relation("StudentApplications")
+  instructorCouponApplications CouponApplication[]       @relation("InstructorApplications")
+  studentCouponApplications    CouponApplication[]       @relation("StudentApplications")
+  Message                      Message[]
   clicks                       UserClick[]
+  UserLectureProgress          UserLectureProgress[]
   profile                      UserProfile?
-  UserPurchase                 UserPurchase[]      @relation("studentPurchase")
+  UserPurchase                 UserPurchase[]            @relation("studentPurchase")
   security                     UserSecurity?
   courses                      Course[]
 }
@@ -138,6 +141,7 @@ model Course {
   thumbnailId            String?
   thumbnailUrl           String?
   updatedAt              DateTime?               @updatedAt
+  congradulationsMessage String?
   CourseAnalytics        CourseAnalytics?
   courseRevenueAnalytics CourseRevenueAnalytics?
   revenueHistory         CourseRevenueHistory[]
@@ -241,17 +245,18 @@ model Resource {
 }
 
 model Lecture {
-  id            String        @id @default(uuid())
-  title         String
-  freePreview   Boolean       @default(false)
-  lengthNum     Int?
-  lengthStr     String?
-  createdAt     DateTime      @default(now())
-  sectionId     String
-  order         Int
-  section       Section       @relation(fields: [sectionId], references: [id])
-  lectureAssets LectureAsset?
-  Resource      Resource[]
+  id                  String                @id @default(uuid())
+  title               String
+  freePreview         Boolean               @default(false)
+  lengthNum           Int?
+  lengthStr           String?
+  createdAt           DateTime              @default(now())
+  sectionId           String
+  order               Int
+  section             Section               @relation(fields: [sectionId], references: [id])
+  lectureAssets       LectureAsset?
+  Resource            Resource[]
+  UserLectureProgress UserLectureProgress[]
 }
 
 model LectureAsset {
@@ -276,10 +281,91 @@ model CouponRedemption {
   createdAt DateTime @default(now())
 }
 
+model Conversation {
+  id                      String                    @id
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime
+  userId                  String?
+  ConversationParticipant ConversationParticipant[]
+  Message                 Message[]
+}
+
+model ConversationParticipant {
+  id              String       @id
+  conversationId  String
+  userId          String
+  lastMessageRead Boolean
+  isImportant     Boolean
+  messageReplied  Boolean
+  Conversation    Conversation @relation(fields: [conversationId], references: [id])
+  User            User         @relation(fields: [userId], references: [id])
+}
+
+model CourseProgress {
+  id          String    @id
+  userId      String
+  courseId    String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+
+  @@unique([userId, courseId])
+}
+
+model DeadLetterQueue {
+  eventId       String    @id @unique
+  retryCount    Int
+  failedAt      DateTime
+  eventType     EventType
+  error         String?
+  status        DLQStatus
+  eventMetaData Json?
+}
+
+model Message {
+  id               String       @id
+  conversationId   String
+  senderId         String
+  content          String
+  automatedMessage Boolean?
+  createdAt        DateTime     @default(now())
+  Conversation     Conversation @relation(fields: [conversationId], references: [id])
+  User             User         @relation(fields: [senderId], references: [id])
+}
+
+model RefreshToken {
+  id        String   @id
+  userId    String
+  tokenHash String   @unique
+  deviceId  String
+  userAgent String
+  ipAddress String
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+
+  @@index([userId])
+}
+
+model UserLectureProgress {
+  id         String   @id
+  userId     String
+  lectureId  String
+  courseId   String
+  watchedSec Int      @default(0)
+  completed  Boolean  @default(false)
+  updatedAt  DateTime
+  createdAt  DateTime @default(now())
+  Lecture    Lecture  @relation(fields: [lectureId], references: [id])
+  User       User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, lectureId])
+  @@index([userId, courseId])
+}
+
 enum Role {
   ADMIN
   INSTRUCTOR
   USER
+  DEVELOPER
 }
 
 enum Gender {
@@ -330,4 +416,14 @@ enum LectureAssetStatus {
 enum AssetType {
   VIDEO
   PDF
+}
+
+enum DLQStatus {
+  failed
+  success
+}
+
+enum EventType {
+  notification
+  message
 }

@@ -1,4 +1,9 @@
+import { classifyError } from "../helper-functions/errorClassifier";
 import { retryConsumerClient, streamReader } from "../utils/redisClient";
+
+
+const TRANSIENT_STATUS_CODES = [429, 500, 502, 503, 504];
+const PERMANENT_STATUS_CODES = [400, 401, 403, 404];
 
 let isRunning = true
 
@@ -24,7 +29,6 @@ export const processMessageRetryConsumer = async () => {
         }
 
         for (const job of jobs) {
-            // console.log(JSON.parse(job))
             const parsed = JSON.parse(job);
             const res = await retryConsumerClient.xAdd(
                 "message-events-stream",
@@ -33,7 +37,7 @@ export const processMessageRetryConsumer = async () => {
                     message: parsed.message,
                     messageId: parsed.messageId,
                     retryCount: JSON.stringify(parsed.retryCount),
-                    nextRetryAt: JSON.stringify(parsed.nextRetryAt)
+                    nextRetryAt: JSON.stringify(parsed.nextRetryAt),
                 }
             )
 

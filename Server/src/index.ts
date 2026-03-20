@@ -38,6 +38,7 @@ import course_route from './routes/user/course_route'
 import message_route from './routes/user/message_route'
 import trackEvent_route from './routes/click'
 import analytics_route from './routes/instructor/analytics_route'
+import DLQ_Route from './routes/developer/DLQ_route'
 import { connectRedis, redis } from "./utils/redisClient";
 import { socketConnection } from "./config/socket";
 import { initSocket } from "./socket";
@@ -73,6 +74,9 @@ app.get("/health", (req, res) => {
 app.use('/api/instructor/course', instructor_course_route)
 app.use('/api/instructor/coupon', coupon_route)
 app.use('/api/instructor/analytics', analytics_route)
+
+//DEVELOPER
+app.use('/api/developer/dead-letter-queue', DLQ_Route)
 
 // -------------------- SUPABASE --------------------
 const supabaseUrl = "https://aywktugruubporzskjdt.supabase.co";

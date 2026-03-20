@@ -19,6 +19,7 @@ enum Role {
   ADMIN
   INSTRUCTOR
   USER
+  DEVELOPER
 }
 
 enum Gender {
@@ -150,6 +151,25 @@ model Conversation {
   userId                  String?
 }
 
+model DeadLetterQueue {
+  eventId String @id @unique
+  eventMetaData Json?
+  retryCount Int
+  failedAt DateTime
+  eventType EventType
+  error String?
+  status DLQStatus
+}
+
+enum DLQStatus {
+  failed
+  success
+}
+
+enum EventType {
+  notification
+  message
+}
 // model ConversationParticipant {
 //   id             String @id @default(uuid())
 //   userId         String

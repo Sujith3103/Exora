@@ -30,6 +30,9 @@ import { useSelector } from "react-redux"
 import type { RootState } from "./store"
 import Suga from "./suga"
 import TeachPage from "./pages/student-view/Teach/teachPage"
+import DeveloperDashboard from "./pages/developer-view/dashboard/dashboard"
+import DeveloperLayout from "./components/layout/developerLayout/developerLayout"
+import DeadLetterQueue from "./pages/developer-view/deadLetterQueue/deadLetterQueue"
 
 // setIsComposingMessage: React.Dispatch<React.SetStateAction<boolean>>
 
@@ -118,6 +121,11 @@ function App() {
           <Route path="revenue" element={<RevenueDashboard />} />
         </Route>
 
+        {/* DEVELOPER ROUTES */}
+        {/* <Route path="/developer/dashboard" element={<RouteGuard element={<DeveloperLayout /> } /> } /> */}
+        <Route path="/developer/dashboard" element={<RouteGuard element={<DeveloperLayout /> } />}>
+          <Route path="dead-letter-queue" element={ <DeadLetterQueue />} />
+        </Route>
       </Routes>
       <ReactQueryDevtools initialIsOpen={false} />
       <Toaster

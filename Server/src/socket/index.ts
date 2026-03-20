@@ -26,7 +26,7 @@ type MessageInfo = {
     createdAt: string | null
     id: string | null
     senderId: string
-}
+}   
 
 const SERVER_ID = "server-1"
 
@@ -94,7 +94,7 @@ export const initSocket = () => {
             const event = JSON.stringify(message)
             publisher.publish("typing-events", event)
         })
-
+        
         socket.on('message:send', async (message) => {
             console.log(message)
             const messageId = randomUUID()
@@ -104,8 +104,9 @@ export const initSocket = () => {
                 {
                     message: JSON.stringify(message),
                     messageId: messageId,
-                    retryCount: JSON.stringify(0)
-                }
+                    retryCount: JSON.stringify(0),
+                    type: 'message'
+                } 
             )
             console.log("addd event:", res)
             // try {
