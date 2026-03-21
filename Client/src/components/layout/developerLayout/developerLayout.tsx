@@ -59,7 +59,7 @@ const DeveloperLayout = () => {
             )}
 
             {/* 🔥 Main Content */}
-            <section className="flex-1">
+            <section className="flex-1 bg-slate-200">
                 {/* Navbar */}
                 <div className="bg-neutral-100 w-full p-2 flex items-center">
                     {/* ☰ Menu icon (mobile only) */}

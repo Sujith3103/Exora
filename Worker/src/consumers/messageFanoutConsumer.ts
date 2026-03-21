@@ -142,7 +142,7 @@ export const processMessageFanOutEvent = async () => {
                         );
 
                     }
-
+                                
                     catch (Err) {
                             
                         console.error("Processing failed:", msg.message.message);
@@ -157,7 +157,7 @@ export const processMessageFanOutEvent = async () => {
                                         msg
                                     })
                                 ),
-                                await prisma.deadLetterQueue.create({
+                                     await prisma.deadLetterQueue.create({
                                     data: {
                                         eventId: msg.message.messageId,
                                         eventMetaData: metadata,

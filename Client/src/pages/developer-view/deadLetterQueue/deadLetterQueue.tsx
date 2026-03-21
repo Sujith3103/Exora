@@ -1,3 +1,4 @@
+import MessageDetailPannel from "@/components/developer-view/messageDetailPannel/messageDetailPannel"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -9,13 +10,31 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { useDLQ } from "@/hooks/queries/useDLQ"
-import { Copy } from "lucide-react"
+import { type DLQItem, useDLQ } from "@/hooks/queries/useDLQ"
+import { useRef, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 const DeadLetterQueue = () => {
 
-
     const { data: dlqData, isLoading: isDLQLoading } = useDLQ()
+
+    const [hoverData, setHoverData] = useState<DLQItem>();
+
+    const navigate = useNavigate()
+
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const handleEnter = () => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+    };
+
+    const handleLeave = () => {
+        timeoutRef.current = setTimeout(() => {
+            setHoverData(undefined);
+        }, 200);
+    };
 
     if (isDLQLoading) {
         return
@@ -46,44 +65,71 @@ const DeadLetterQueue = () => {
                         </TableHeader>
 
                         {/* ✅ Body */}
+
                         <TableBody className="divide-y">
-                            {
-                                dlqData?.map((data) => (
-                                    <TableRow className="hover:bg-muted/50 transition">
+                            {dlqData?.map((data) => (
+                                <TableRow
+                                    key={data.eventId}
+                                    className="hover:bg-muted/50 transition relative"
 
-                                        <TableCell><Checkbox /></TableCell>
+                                >
+                                    <TableCell><Checkbox /></TableCell>
 
-                                        <TableCell className="items-center">{data.eventId}</TableCell>
-                                        <TableCell className="text-center">{data.eventType}</TableCell>
-                                        <TableCell className="text-center">{data.error} some error</TableCell>
-                                        <TableCell className="text-center">{data.retryCount}</TableCell>
-                                        <TableCell className="items-center">{new Date(data.failedAt).toLocaleString()}</TableCell>
-                                        <TableCell className="text-center">
-                                            <span className="text-red-500 font-medium">{data.status}</span>
-                                        </TableCell>
-                                        <TableCell className="text-center space-x-2 w-[200px] ">
-                                            <Button size="sm" variant="outline">
-                                                View Details
-                                            </Button>
-                                            <Button size="sm" variant="outline" className="w-20">
-                                                Retry
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            }
+                                    <TableCell className="font-mono text-xs">
+                                        {data.eventId.slice(0, 12)}...
+                                    </TableCell>
 
+                                    <TableCell className="text-center">{data.eventType}</TableCell>
 
-                            {/* ✅ Status with color */}
+                                    <TableCell className="text-center text-red-400 truncate max-w-[150px]">
+                                        {data.error || "No error"}
+                                    </TableCell>
 
+                                    <TableCell className="text-center">{data.retryCount}</TableCell>
 
-                            {/* ✅ Buttons */}
+                                    <TableCell className="text-center text-sm text-muted-foreground">
+                                        {new Date(data.failedAt).toLocaleString()}
+                                    </TableCell>
 
+                                    <TableCell className="text-center">
+                                        <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-medium">
+                                            {data.status}
+                                        </span>
+                                    </TableCell>
 
+                                    <TableCell className="text-right space-x-2">
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onMouseEnter={() => {
+                                                if (timeoutRef.current) {
+                                                    clearTimeout(timeoutRef.current);
+                                                }
+                                                setHoverData(data);
+                                            }}
+                                            onMouseLeave={handleLeave}
+                                        >
+                                            View
+                                        </Button>
+                                        <Button size="sm" variant="outline" onClick={() => navigate(`/developer/dashboard/dead-letter-queue/${data.eventId}`)}>
+                                            Retry
+                                        </Button>
+                                    </TableCell>
 
+                                    {/* 🔥 Floating Panel */}
+                                </TableRow>
+                            ))}
                         </TableBody>
                     </Table>
                 </Card>
+                {hoverData && (
+                    <div className="absolute right-40 top-10 z-50 mt-2 "
+                    onMouseEnter={()=>handleEnter()}
+                    onMouseLeave={()=>handleLeave()}
+                    >
+                        <MessageDetailPannel {...hoverData} />
+                    </div>
+                )}
             </section>
         </div>
     )

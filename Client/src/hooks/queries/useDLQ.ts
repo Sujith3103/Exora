@@ -1,5 +1,5 @@
 import server from "@/api/axiosinstance"
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 
 export type DLQEventMetaData = {
     id: string;
@@ -27,6 +27,9 @@ export const useDLQ =  () => {
         queryFn: async () => {
             const res = await server.get('/developer/dead-letter-queue')
             return res.data.dlqData
-        }
+        },
+        placeholderData: keepPreviousData,
+        refetchOnWindowFocus: false,
+        staleTime: 1000 * 60 * 5
     })
 }

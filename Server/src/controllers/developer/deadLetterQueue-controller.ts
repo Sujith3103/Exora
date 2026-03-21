@@ -11,9 +11,9 @@ export const getDeadLetterQueueEvents = async (req: Request, res: Response) => {
             success: true,
             message: "fetched dlq Data successfully",
             dlqData
-        })
+        })              
     } catch (err) {
-
+        
         return res.status(500).json({
             success: false,
             message: "failed to retrieve dlq data"
