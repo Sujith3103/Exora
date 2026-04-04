@@ -312,13 +312,14 @@ model CourseProgress {
 }
 
 model DeadLetterQueue {
-  eventId       String    @id @unique
+  eventId       String         @id @unique
   retryCount    Int
   failedAt      DateTime
   eventType     EventType
   error         String?
   status        DLQStatus
   eventMetaData Json?
+  RetryAttempt  RetryAttempt[]
 }
 
 model Message {
@@ -359,6 +360,18 @@ model UserLectureProgress {
 
   @@unique([userId, lectureId])
   @@index([userId, courseId])
+}
+
+model RetryAttempt {
+  id              String          @id @default(uuid())
+  eventId         String
+  attemptType     AttemptType
+  attemptNo       Int
+  status          AttemptStatus
+  error           String?
+  executedAt      DateTime        @default(now())
+  metadata        Json?
+  DeadLetterQueue DeadLetterQueue @relation(fields: [eventId], references: [eventId])
 }
 
 enum Role {
@@ -426,4 +439,15 @@ enum DLQStatus {
 enum EventType {
   notification
   message
+}
+
+enum AttemptStatus {
+  SUCCESS
+  FAILED
+}
+
+enum AttemptType {
+  AUTO
+  FINAL
+  MANUAL
 }

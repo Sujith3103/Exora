@@ -1,11 +1,12 @@
 import { Button } from '@/components/ui/button'
-import React, { useState } from 'react'
+import  { useState } from 'react'
 import DLQ_Logger from './logger/DLQ_Logger'
 import DLQ_Latency from './latency/DLQ_Latency'
 
 const METRICS_TABS = [
   { id: 'logger', label: 'Logger', component: DLQ_Logger },
-  { id: 'latency', label: 'Latency', component: DLQ_Latency }
+  { id: 'latency', label: 'Latency', component: DLQ_Latency },
+  { id: 'log-history', label: 'Log-History', component: DLQ_Latency }
 ]
 
 const DQLMetrics = () => {
@@ -20,7 +21,7 @@ const DQLMetrics = () => {
       <h1 className="text-3xl font-bold font-display mt-5">
         DLQ METRICS
       </h1>
-
+ 
       {/* Tabs */}
       <div className="flex gap-2 mt-3">
         {METRICS_TABS.map(tab => (

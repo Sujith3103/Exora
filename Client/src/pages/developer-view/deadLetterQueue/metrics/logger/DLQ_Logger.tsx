@@ -86,11 +86,11 @@ const DLQ_Logger = () => {
     if (!item) return <p className="p-4">No data found</p>
 
     return (
-        <div className="w-full flex gap-4 max-h-[100vh] overflow-y-scroll">
+        <div className="w-full flex gap-4 max-h-[100vh] ">
 
             {/* LEFT PANEL */}
             <section className="w-1/2">
-                <Card className="h-[70vh] flex flex-col p-0 gap-3">
+                <Card className="h-[70vh] flex flex-col p-0 gap-3 rounded-sm">
 
                     {/* HEADER */}
                     <div className="flex items-center justify-between border-b px-4 py-3">
@@ -161,14 +161,13 @@ const DLQ_Logger = () => {
 
             {/* RIGHT PANEL */}
             <section className="w-1/2">
-                <Card className="h-[70vh] flex flex-col">
-
+                <Card className="h-[70vh] flex flex-col rounded-sm p-0 pt-3 gap-1">
                     <div className="border-b px-4 py-2">
                         <h3 className="font-semibold text-lg">Execution Timeline</h3>
                     </div>
 
-                    <div className="flex-1 overflow-auto p-4 space-y-4">
-                        <Timeline item={editedItem || item} />
+                    <div className="flex-1 overflow-auto px-2">
+                        <Timeline />
                     </div>
 
                 </Card>

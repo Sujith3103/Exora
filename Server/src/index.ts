@@ -17,7 +17,7 @@ export interface AuthUserPayload extends JwtPayload {
   id: string;
   name: string;
   email: string;
-  role: 'USER' | 'ADMIN'; // or string if you have more roles
+  role: 'USER' | 'ADMIN' | 'DEVELOPER'; // or string if you have more roles
 }
 
 declare module 'express-serve-static-core' {

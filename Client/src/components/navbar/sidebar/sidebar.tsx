@@ -1,4 +1,4 @@
-import { BookOpen, House, BookMarked, MessageCircle, Ticket, BarChart, Code, Code2 } from 'lucide-react'
+import { BookOpen, House, BookMarked, MessageCircle, Ticket, BarChart, Code2 } from 'lucide-react'
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store";
 import { Link } from 'react-router-dom';

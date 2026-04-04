@@ -152,13 +152,17 @@ model Conversation {
 }
 
 model DeadLetterQueue {
-  eventId String @id @unique
+  eventId       String   @id @unique
   eventMetaData Json?
-  retryCount Int
-  failedAt DateTime
-  eventType EventType
-  error String?
-  status DLQStatus
+  eventType     EventType
+
+  status        DLQStatus
+  error         String?
+
+  failedAt      DateTime
+  retryCount    Int      // auto retry count (1–5)
+
+  attempts      RetryAttempt[]  // relation
 }
 
 enum DLQStatus {
@@ -170,6 +174,36 @@ enum EventType {
   notification
   message
 }
+
+model RetryAttempt {
+  id          String   @id @default(uuid())
+
+  eventId     String
+  dlq         DeadLetterQueue @relation(fields: [eventId], references: [eventId])
+
+  attemptType AttemptType   // AUTO | FINAL | MANUAL
+
+  attemptNo   Int           // 1,2,3,4,5... (very important)
+  status      AttemptStatus // SUCCESS | FAILED
+
+  error       String?
+  executedAt  DateTime      @default(now())
+
+  metadata    Json?         // optional (payload snapshot, debug info)
+}
+
+enum AttemptType {
+  AUTO
+  FINAL   // 5th retry
+  MANUAL
+}
+
+enum AttemptStatus {
+  SUCCESS
+  FAILED
+}
+
+
 // model ConversationParticipant {
 //   id             String @id @default(uuid())
 //   userId         String

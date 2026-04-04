@@ -28,9 +28,8 @@ import MyLearning from "./pages/student-view/my-learning/myLearning"
 import CoursePlayer from "./pages/student-view/course-player/course_player"
 import { useSelector } from "react-redux"
 import type { RootState } from "./store"
-import Suga from "./suga"
+// import Suga from "./suga"
 import TeachPage from "./pages/student-view/Teach/teachPage"
-import DeveloperDashboard from "./pages/developer-view/dashboard/dashboard"
 import DeveloperLayout from "./components/layout/developerLayout/developerLayout"
 import DeadLetterQueue from "./pages/developer-view/deadLetterQueue/deadLetterQueue"
 import DQLMetrics from "./pages/developer-view/deadLetterQueue/metrics/DQLMetrics"
@@ -67,7 +66,7 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="suga" element={ <Suga />} />
+        {/* <Route path="suga" element={ <Suga />} /> */}
         <Route path="/" element={<RouteGuard element={<NavBarLayout />} />}>
           <Route path="" element={<StudentViewHomePage />} />
         </Route>

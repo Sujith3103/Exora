@@ -46,7 +46,7 @@ const DeadLetterQueue = () => {
 
             <section>
                 <Card className="px-2 py-2">
-                    <Table className="">
+                    <Table className="overflow-y-scroll">
                         {/* ✅ Header */}
                         <TableHeader className="border-b">
                             <TableRow>

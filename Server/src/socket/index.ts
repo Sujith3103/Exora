@@ -47,6 +47,7 @@ export const initSocket = () => {
 
     subscriber.subscribe("message-events", async(message: string) => {
         const event: MessageInfo = JSON.parse(message)
+        console.log("event : ",event)
         io.to(event.conversationId).emit("message:receive", event)
         const now: Date = new Date()
         if (event.createdAt) {
@@ -105,7 +106,8 @@ export const initSocket = () => {
                     message: JSON.stringify(message),
                     messageId: messageId,
                     retryCount: JSON.stringify(0),
-                    type: 'message'
+                    type: 'message',
+                    attemptType:'AUTO'
                 } 
             )
             console.log("addd event:", res)
