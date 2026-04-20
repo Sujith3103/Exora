@@ -6,6 +6,7 @@ import ReactJson from '@microlink/react-json-view'
 import Timeline from './timeLine'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { useSocket } from '@/context/socketContext'
 
 type DLQItem = {
     eventId: string
@@ -16,25 +17,33 @@ type DLQItem = {
     [key: string]: any
 }
 
+type Props = {
+    editedItem: DLQItem | null
+    setEditedItem: React.Dispatch<React.SetStateAction<DLQItem | null>>
+    isReplaying: boolean
+    setIsReplaying: React.Dispatch<React.SetStateAction<boolean>>
+}
+
 const capitalizeFirst = (str: string) => {
     if (!str) return str
     return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-const DLQ_Logger = () => {
-
-    const { id } = useParams<{ id: string }>()
-    const { data } = useDLQ()
-
-    const item = (data as DLQItem[] | undefined)?.find(
-        d => d.eventId === id
-    )
+const DLQ_Logger = ({ editedItem, setEditedItem, isReplaying, setIsReplaying }: Props) => {
 
     const [editMode, setEditMode] = useState(false)
     //jsontext is what you see when you click the edit button
     const [jsonText, setJsonText] = useState('')
-    const [editedItem, setEditedItem] = useState<DLQItem | null>(null)
+    // const [editedItem, setEditedItem] = useState<DLQItem | null>(null)
     const [jsonError, setJsonError] = useState<string | null>(null)
+
+    const { id } = useParams<{ id: string }>()
+    const { data } = useDLQ()
+    const { socket } = useSocket()
+
+    const item = (data as DLQItem[] | undefined)?.find(
+        d => d.eventId === id
+    )
 
     useEffect(() => {
         if (item) {
@@ -71,7 +80,7 @@ const DLQ_Logger = () => {
     //saving of edited json
     const handleSave = () => {
         if (jsonError) {
-            toast.error("Fix JSON errors before saving", { style: { justifyContent: 'center' }, duration:1500})
+            toast.error("Fix JSON errors before saving", { style: { justifyContent: 'center' }, duration: 1500 })
             return
         }
 
@@ -79,9 +88,20 @@ const DLQ_Logger = () => {
             toast.success("JSON ready for retry", { style: { justifyContent: 'center' }, duration: 1500 })
             setEditMode(false)
         } catch {
-            toast.error("Invalid JSON format", { style: { justifyContent: 'center' }, duration:2500})
+            toast.error("Invalid JSON format", { style: { justifyContent: 'center' }, duration: 2500 })
         }
     }
+
+    useEffect(() => {
+
+        if (!socket) return
+        
+        socket.on('dlq:replay:result', (eventData: any) => {
+            setEditedItem(eventData.updatedDLQ)
+            setJsonText(JSON.stringify(eventData.updatedDLQ, null, 2))
+        })
+
+    }, [socket])
 
     if (!item) return <p className="p-4">No data found</p>
 
@@ -129,7 +149,7 @@ const DLQ_Logger = () => {
 
                         {!editMode ? (
                             <ReactJson
-                                src={editedItem || item}   
+                                src={editedItem || item}
                                 collapsed={2}
                                 displayDataTypes={false}
                                 enableClipboard={false}
@@ -167,7 +187,7 @@ const DLQ_Logger = () => {
                     </div>
 
                     <div className="flex-1 overflow-auto px-2">
-                        <Timeline />
+                        <Timeline isReplaying={isReplaying} setIsReplaying={setIsReplaying} />
                     </div>
 
                 </Card>

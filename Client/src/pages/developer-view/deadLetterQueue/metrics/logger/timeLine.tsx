@@ -1,4 +1,5 @@
 import server from "@/api/axiosinstance"
+import { useSocket } from "@/context/socketContext"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 
@@ -9,34 +10,59 @@ type TimelineEvent = {
     message?: string
 }
 
-const Timeline = () => {
-    const [events, setEvents] = useState<TimelineEvent[]>([])
-    const [loading, setLoading] = useState(true)
+type LastAttemptData = {
+    attemptNumber: number
+    type: string
+    status: 'SUCCESS' | 'FAILED' | 'RETRYING'
+}
 
+type Props = {
+    isReplaying: boolean
+    setIsReplaying: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const Timeline = ({ isReplaying, setIsReplaying }: Props) => {
+
+    const [events, setEvents] = useState<TimelineEvent[]>([])
+    const [lastAttempData, setLastAttemptData] = useState<LastAttemptData>({
+        attemptNumber: 0,
+        status: 'FAILED',
+        type: ''
+    })
+    const [loading, setLoading] = useState(true)
+    const { socket } = useSocket()
     const { id } = useParams()
+
+    const formatEvent = (attempt: any) => {
+        const formatted: TimelineEvent[] = attempt.metadata.map((m: any) => ({
+            step: m.stage,
+            status: m.isError
+                ? 'FAILED'
+                : m.status === 'Processing'
+                    ? 'RETRYING'
+                    : 'SUCCESS',
+            timestamp: attempt.executedAt,
+            message: m.message
+        }))
+        setEvents(formatted)
+    }
 
     const getExecutionTimeline = async () => {
         try {
             const res = await server.get(
                 `/developer/dead-letter-queue/execution/timeline/${id}`
             )
-            console.log(res)
             const attempt = res.data?.lastAttempt
 
             if (attempt) {
-                const formatted: TimelineEvent[] = attempt.metadata.map((m: any) => ({
-                    step: m.stage,
-                    status: m.isError
-                        ? 'FAILED'
-                        : m.status === 'Processing'
-                            ? 'RETRYING'
-                            : 'SUCCESS',
-                    timestamp: attempt.executedAt,
-                    message: m.message
-                }))
-
-                setEvents(formatted)
+                formatEvent(attempt)
             }
+
+            setLastAttemptData({
+                attemptNumber: res.data.lastAttempt.attemptNo,
+                status: res.data.lastAttempt.status,
+                type: res.data.lastAttempt.attemptType
+            })
         } catch (err) {
             console.error(err)
         } finally {
@@ -48,8 +74,30 @@ const Timeline = () => {
         getExecutionTimeline()
     }, [])
 
-    if (loading) {
-        return <p className="text-sm text-gray-400">Loading timeline...</p>
+    useEffect(() => {
+        if (!socket) return
+
+        socket.on('dlq:replay:result', (event: any) => {
+            formatEvent(event.lastAttempt)
+            setLastAttemptData({
+                attemptNumber: event.lastAttempt.attemptNo,
+                status: event.lastAttempt.status,
+                type: event.lastAttempt.attemptType
+            })
+            setIsReplaying(false)
+        })
+
+        return () => {
+            socket.off('dlq-replay-events')
+        }
+    }, [socket])
+
+
+    if (loading || isReplaying) {
+        return <div className="h-full w-full flex justify-center items-center">
+            <div className="w-12 h-12 border-2 border-gray-300 border-t-black rounded-full animate-spin">
+            </div>
+        </div>
     }
 
     if (!events.length) {
@@ -59,6 +107,7 @@ const Timeline = () => {
             </div>
         )
     }
+
 
     return (
         <div className="w-full h-full bg-[#0a0a0a] text-gray-200">
@@ -70,7 +119,7 @@ const Timeline = () => {
                         EXECUTION TIMELINE
                     </h2>
                     <p className="text-xs text-gray-500 mt-1">
-                        Attempt #5 • Final • Failed
+                        Attempt #{lastAttempData.attemptNumber} • {lastAttempData.type} • {lastAttempData.status}
                     </p>
                 </div>
 

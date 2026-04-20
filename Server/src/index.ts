@@ -107,13 +107,12 @@ async function startServer() {
 
     httpServer.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
-    });
+    }); 
   } catch (error) {
     console.error("Failed to connect Redis or start server:", error);
     process.exit(1);
   }
 }
-
 process.on("SIGINT", async () => {
   console.log("Shutting down worker...");
   try {

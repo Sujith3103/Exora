@@ -45,6 +45,7 @@ export const initSocket = () => {
         io.to(event.conversationId).emit("typing:event", event)
     })
 
+    // PUSHING THE MESSAGE TO THE USER
     subscriber.subscribe("message-events", async(message: string) => {
         const event: MessageInfo = JSON.parse(message)
         console.log("event : ",event)
@@ -58,6 +59,12 @@ export const initSocket = () => {
         }
     })
 
+    subscriber.subscribe("dlq-replay-events", async (message: any) => {
+        console.log("got the sub- [dlq-replay-event]")
+        const dlqEvent = JSON.parse(message)
+        io.to(dlqEvent.userId.toString()).emit('dlq:replay:result',dlqEvent)
+    })
+ 
     io.on("connection", async (socket) => {
         console.log("Socket connected:", socket.id);
 
@@ -65,6 +72,7 @@ export const initSocket = () => {
         const user = socket.data.user
 
         socket.join(userId);
+        console.log("socket joined")
 
         let conversationId: string;
 
@@ -99,6 +107,7 @@ export const initSocket = () => {
         socket.on('message:send', async (message) => {
             console.log(message)
             const messageId = randomUUID()
+
             const res = await redis.xAdd(
                 "message-events-stream",
                 '*',

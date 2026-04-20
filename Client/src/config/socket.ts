@@ -2,8 +2,8 @@
 import { io } from "socket.io-client";
 
 // If backend is running locally:
-// const URL = "http://localhost:8800";  
-const URL = "https://exora-giu2.onrender.com";  
+const URL = "http://localhost:8800";  
+// const URL = "https://exora-giu2.onrender.com";  
 
 // If deployed, replace with your backend URL
 // e.g., "https://api.myapp.com"
