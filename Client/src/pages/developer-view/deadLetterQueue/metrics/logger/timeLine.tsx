@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 
 type TimelineEvent = {
+    err: string
     step: string
     status: 'SUCCESS' | 'FAILED' | 'RETRYING'
     timestamp: string
@@ -35,6 +36,7 @@ const Timeline = ({ isReplaying, setIsReplaying }: Props) => {
 
     const formatEvent = (attempt: any) => {
         const formatted: TimelineEvent[] = attempt.metadata.map((m: any) => ({
+            err: m.error,
             step: m.stage,
             status: m.isError
                 ? 'FAILED'
@@ -42,7 +44,7 @@ const Timeline = ({ isReplaying, setIsReplaying }: Props) => {
                     ? 'RETRYING'
                     : 'SUCCESS',
             timestamp: attempt.executedAt,
-            message: m.message
+            message: m.message,
         }))
         setEvents(formatted)
     }
@@ -88,63 +90,69 @@ const Timeline = ({ isReplaying, setIsReplaying }: Props) => {
         })
 
         return () => {
-            socket.off('dlq-replay-events')
+            socket.off('dlq:replay:result')
         }
     }, [socket])
 
 
     if (loading || isReplaying) {
-        return <div className="h-full w-full flex justify-center items-center">
-            <div className="w-12 h-12 border-2 border-gray-300 border-t-black rounded-full animate-spin">
+        return (
+            <div className="h-full w-full flex justify-center items-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
             </div>
-        </div>
+        )
     }
 
     if (!events.length) {
         return (
-            <div className="text-sm text-gray-400">
+            <div className="text-sm text-gray-400 px-4 py-2">
                 No execution logs available
             </div>
         )
     }
 
-
     return (
-        <div className="w-full h-full bg-[#0a0a0a] text-gray-200">
+        <div className="w-full h-full bg-[#0a0a0a] text-gray-200 overflow-auto">
 
             {/* HEADER */}
-            <div className="px-6 py-4 border-b border-[#1f1f1f] flex items-center justify-between">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-[#1f1f1f] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+
                 <div>
-                    <h2 className="text-sm font-semibold tracking-wide text-gray-100">
+                    <h2 className="text-xs sm:text-sm font-semibold tracking-wide text-gray-100">
                         EXECUTION TIMELINE
                     </h2>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                         Attempt #{lastAttempData.attemptNumber} • {lastAttempData.type} • {lastAttempData.status}
                     </p>
                 </div>
 
-                <div className="text-xs px-2 py-1 border border-red-500/30 text-red-400 rounded">
-                    FAILED
+                <div className={`text-[10px] sm:text-xs px-2 py-1 border ${lastAttempData.status === 'SUCCESS' ? 'border-green-500/30 text-green-400' : 'border-red-500/30 text-red-400'} rounded w-fit`}>
+                    {lastAttempData.status}
                 </div>
             </div>
 
             {/* BODY */}
-            <div className="px-6 py-4 flex flex-col">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 flex flex-col">
 
                 {events.map((event, index) => (
-                    <div key={index} className="flex gap-4 py-4 border-b border-[#141414] last:border-none">
+                    <div
+                        key={index}
+                        className="flex gap-3 sm:gap-4 py-3 sm:py-4 border-b border-[#141414] last:border-none"
+                    >
 
-                        {/* LEFT COLUMN (timeline) */}
-                        <div className="flex flex-col items-center w-6">
+                        {/* LEFT COLUMN */}
+                        <div className="flex flex-col items-center w-5 sm:w-6">
+
                             <div
                                 className={`w-2 h-2 rounded-full
-                            ${event.status === 'FAILED'
+                                ${event.status === 'FAILED'
                                         ? 'bg-red-500'
                                         : event.status === 'RETRYING'
                                             ? 'bg-yellow-400'
                                             : 'bg-green-500'
                                     }`}
                             />
+
                             {index !== events.length - 1 && (
                                 <div className="w-[1px] flex-1 bg-[#2a2a2a] mt-2" />
                             )}
@@ -153,17 +161,17 @@ const Timeline = ({ isReplaying, setIsReplaying }: Props) => {
                         {/* MAIN CONTENT */}
                         <div className="flex flex-col w-full">
 
-                            {/* Top Row */}
-                            <div className="flex items-center justify-between">
+                            {/* TOP ROW */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
 
-                                <div className="flex items-center gap-3">
-                                    <span className="text-sm font-medium text-gray-100">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                    <span className="text-xs sm:text-sm font-medium text-gray-100">
                                         {event.step}
                                     </span>
 
                                     <span
-                                        className={`text-[10px] uppercase tracking-wide px-2 py-[2px] rounded
-                                    ${event.status === 'FAILED'
+                                        className={`text-[9px] sm:text-[10px] uppercase tracking-wide px-2 py-[2px] rounded
+                                        ${event.status === 'FAILED'
                                                 ? 'bg-red-500/10 text-red-400'
                                                 : event.status === 'RETRYING'
                                                     ? 'bg-yellow-500/10 text-yellow-400'
@@ -174,15 +182,22 @@ const Timeline = ({ isReplaying, setIsReplaying }: Props) => {
                                     </span>
                                 </div>
 
-                                <span className="text-[11px] text-gray-500">
+                                <span className="text-[10px] sm:text-[11px] text-gray-500">
                                     {new Date(event.timestamp).toLocaleTimeString()}
                                 </span>
                             </div>
 
-                            {/* Message */}
+                            {/* MESSAGE */}
                             {event.message && (
-                                <div className="mt-2 text-sm text-gray-400 leading-relaxed">
+                                <div className="mt-2 text-xs sm:text-sm text-gray-400 leading-relaxed break-words">
                                     {event.message}
+                                </div>
+                            )}
+
+                            {/* ERROR */}
+                            {event.err && (
+                                <div className="mt-2 text-xs sm:text-sm text-red-300 leading-relaxed break-words">
+                                    {event.err}
                                 </div>
                             )}
                         </div>

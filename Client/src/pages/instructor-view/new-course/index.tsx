@@ -28,7 +28,7 @@ const NewCourse = () => {
 
     const fetchComponentInUrl = () => {
         return location.pathname.split('/')[5]
-    }
+    } 
 
     const handleClick_saveChanges = async () => {
 

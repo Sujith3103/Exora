@@ -32,9 +32,7 @@ const capitalizeFirst = (str: string) => {
 const DLQ_Logger = ({ editedItem, setEditedItem, isReplaying, setIsReplaying }: Props) => {
 
     const [editMode, setEditMode] = useState(false)
-    //jsontext is what you see when you click the edit button
     const [jsonText, setJsonText] = useState('')
-    // const [editedItem, setEditedItem] = useState<DLQItem | null>(null)
     const [jsonError, setJsonError] = useState<string | null>(null)
 
     const { id } = useParams<{ id: string }>()
@@ -63,11 +61,9 @@ const DLQ_Logger = ({ editedItem, setEditedItem, isReplaying, setIsReplaying }: 
         }
     }
 
-    //handles the edit of json
     const handleChange = (value: string) => {
         setJsonText(value)
 
-        //try is used so when invalid json->it doesnt break the page
         try {
             const parsed = JSON.parse(value)
             setEditedItem(parsed)
@@ -77,7 +73,6 @@ const DLQ_Logger = ({ editedItem, setEditedItem, isReplaying, setIsReplaying }: 
         }
     }
 
-    //saving of edited json
     const handleSave = () => {
         if (jsonError) {
             toast.error("Fix JSON errors before saving", { style: { justifyContent: 'center' }, duration: 1500 })
@@ -93,24 +88,26 @@ const DLQ_Logger = ({ editedItem, setEditedItem, isReplaying, setIsReplaying }: 
     }
 
     useEffect(() => {
-
         if (!socket) return
-        
+
         socket.on('dlq:replay:result', (eventData: any) => {
             setEditedItem(eventData.updatedDLQ)
             setJsonText(JSON.stringify(eventData.updatedDLQ, null, 2))
         })
 
+        return () => {
+            socket.off('dlq:replay:result')
+        }
     }, [socket])
 
     if (!item) return <p className="p-4">No data found</p>
 
     return (
-        <div className="w-full flex gap-4 max-h-[100vh] ">
-
+        <div className="w-full flex flex-col lg:flex-row gap-4">
+            
             {/* LEFT PANEL */}
-            <section className="w-1/2">
-                <Card className="h-[70vh] flex flex-col p-0 gap-3 rounded-sm">
+            <section className="w-full lg:w-1/2">
+                <Card className="h-[60vh] lg:h-[70vh] flex flex-col p-0 gap-3 rounded-sm">
 
                     {/* HEADER */}
                     <div className="flex items-center justify-between border-b px-4 py-3">
@@ -145,7 +142,7 @@ const DLQ_Logger = ({ editedItem, setEditedItem, isReplaying, setIsReplaying }: 
                     </div>
 
                     {/* JSON VIEWER / EDITOR */}
-                    <div className="flex-1 overflow-auto px-4">
+                    <div className="flex-1 overflow-auto px-2 sm:px-4">
 
                         {!editMode ? (
                             <ReactJson
@@ -180,13 +177,13 @@ const DLQ_Logger = ({ editedItem, setEditedItem, isReplaying, setIsReplaying }: 
             </section>
 
             {/* RIGHT PANEL */}
-            <section className="w-1/2">
-                <Card className="h-[70vh] flex flex-col rounded-sm p-0 pt-3 gap-1">
+            <section className="w-full lg:w-1/2">
+                <Card className="h-[60vh] lg:h-[70vh] flex flex-col rounded-sm p-0 pt-3 gap-1">
                     <div className="border-b px-4 py-2">
                         <h3 className="font-semibold text-lg">Execution Timeline</h3>
                     </div>
 
-                    <div className="flex-1 overflow-auto px-2">
+                    <div className="flex-1 overflow-auto px-2 sm:px-3">
                         <Timeline isReplaying={isReplaying} setIsReplaying={setIsReplaying} />
                     </div>
 

@@ -56,7 +56,7 @@ export const initSocket = () => {
             const timeTaken = now.getTime() - createdTime.getTime();
             console.log("time taken : ",timeTaken)
             await redis.lPush("latency:list", timeTaken.toString());
-        }
+        } 
     })
 
     subscriber.subscribe("dlq-replay-events", async (message: any) => {

@@ -9,8 +9,8 @@ const DeveloperLayout = () => {
     const [open, setOpen] = useState(false);
 
     return (
-        <div className="h-screen w-full flex">
-            {/* 🔥 Sidebar (desktop) */}
+        <div className="h-screen w-full flex overflow-hidden">
+            {/* Sidebar (desktop) */}
             <section className="hidden lg:block w-1/6 bg-slate-800 text-white p-5 space-y-10">
                 <h1 className="text-center font-bold text-xl">DEV DASHBOARD</h1>
 
@@ -26,16 +26,14 @@ const DeveloperLayout = () => {
                 </div>
             </section>
 
-            {/* 🔥 Mobile Sidebar (overlay) */}
+            {/* Mobile Sidebar */}
             {open && (
                 <div className="fixed inset-0 z-50 flex">
-                    {/* backdrop */}
                     <div
                         className="bg-black/50 w-full"
                         onClick={() => setOpen(false)}
                     />
 
-                    {/* drawer */}
                     <div className="w-64 bg-slate-800 text-white p-5 space-y-10 absolute left-0 top-0 h-full">
                         <div className="flex justify-between items-center">
                             <h1 className="font-bold text-lg">DEV DASHBOARD</h1>
@@ -58,21 +56,22 @@ const DeveloperLayout = () => {
                 </div>
             )}
 
-            {/* 🔥 Main Content */}
-            <section className="flex-1 bg-slate-200">
+            {/* Main Content */}
+            <section className="flex-1 bg-slate-200 flex flex-col overflow-hidden">
                 {/* Navbar */}
                 <div className="bg-neutral-100 w-full p-2 flex items-center">
-                    {/* ☰ Menu icon (mobile only) */}
                     <Menu
                         className="lg:hidden cursor-pointer"
                         onClick={() => setOpen(true)}
                     />
 
-                    {/* Right side */}
                     <p className="ml-auto">A</p>
                 </div>
 
-                <Outlet />
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto">
+                    <Outlet />
+                </div>
             </section>
         </div>
     );

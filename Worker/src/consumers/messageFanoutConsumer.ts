@@ -34,7 +34,7 @@ const sampleError = {
     }
 }
 
-const logExecutionMessages = ['processing pipeline 1','completed processing pipeline 1','processing pipeline 2','completed processing pipeline 2','acknowledging stream']
+const logExecutionMessages = ['processing pipeline 1', 'completed processing pipeline 1', 'processing pipeline 2', 'completed processing pipeline 2', 'acknowledging stream']
 
 const baseDelay = 1000; // 1 sec
 const maxDelay = 10000; // 1 min
@@ -86,7 +86,7 @@ export const processMessageFanOutEvent = async () => {
 
             const ids = streamData.messages.map(msg => msg.id);
             console.log(ids)
-        
+
             console.time("batch-process")
             await Promise.all(
                 streamData.messages.map(async (msg) => {
@@ -109,7 +109,7 @@ export const processMessageFanOutEvent = async () => {
                             console.error("JSON parse failed", err);
                             return;
                         }
-                        
+
                         const { messageId, message, retryCount } = parsedMessage;
                         console.log("Parsed message: ", parsedMessage)
 
@@ -126,8 +126,6 @@ export const processMessageFanOutEvent = async () => {
                         //PIPELINE FOR LOCKKEY AND COMPLETEDKEY
                         const pipeline = messageProcessingClient.multi()
                         const pipeline2 = messageCompletedClient.multi()
-
-
 
                         pipeline.set(lockKey, '1', { NX: true, EX: 5 })
                         pipeline.exists(completedKey);
@@ -156,7 +154,7 @@ export const processMessageFanOutEvent = async () => {
                         const err = new Error(sampleError.message);
                         (err as any).response = sampleError.response;
 
-                        throw err;
+                        // throw err;
                         logExecution.push({
                             stage: 'pipeline-2',
                             status: 'PROCESSING',
@@ -188,17 +186,58 @@ export const processMessageFanOutEvent = async () => {
                             isError: false,
                             message: 'Acknowledged stream'
                         })
+                        if (payload.attemptType == 'MANUAL') {
+
+                            const metadata = JSON.parse(msg.message.message)
+                            const retryCount = Number(msg.message.retryCount);
+                            const attemptType = msg.message.attemptType
+                            
+                            await prisma.retryAttempt.create({
+                                data: {
+                                    attemptNo: retryCount,
+                                    attemptType: 'MANUAL',
+                                    status: 'SUCCESS',
+                                    eventId: msg.message.messageId,
+                                    metadata: logExecution as Prisma.InputJsonValue,
+                                    error: ''
+                                }
+                            })
+
+                            const updatedDLQ = await prisma.deadLetterQueue.update({
+                                data: {
+                                    eventMetaData: metadata,
+                                    failedAt: new Date(),
+                                    retryCount: Number(msg.message.retryCount),
+                                    status: 'success',
+                                },
+                                where: {
+                                    eventId: msg.message.messageId
+                                }
+                            })
+
+                            const lastAttempt = await prisma.retryAttempt.findFirst({
+                                where: { eventId: msg.message.messageId },
+                                orderBy: { attemptNo: 'desc' }
+                            });
+                            console.log("last attempt : ", lastAttempt)
+
+                            const dlqEvent = {
+                                lastAttempt, updatedDLQ, userId: msg.message.userId
+                            }
+
+                            await publisher.publish("dlq-replay-events", JSON.stringify(dlqEvent))
+                        }
                     }
-           
+
                     catch (Err) {
-                        console.log("error : ",Err)
+                        console.log("error : ", Err)
                         logExecution.push({
                             stage: 'Error',
-                            status: 'FAILED',     
+                            status: 'FAILED',
                             error: JSON.stringify(Err),
                             isError: true,
-                            message: logExecutionMessages[logExecution.length+1] || ''
-                        })  
+                            message: logExecutionMessages[logExecution.length + 1] || ''
+                        })
                         console.log("msg : ", msg.message)
                         const metadata = JSON.parse(msg.message.message)
                         const retryCount = Number(msg.message.retryCount);
@@ -252,12 +291,12 @@ export const processMessageFanOutEvent = async () => {
                             })
 
                             const updatedDLQ = await prisma.deadLetterQueue.update({
-                                 data: {
+                                data: {
                                     eventMetaData: metadata,
                                     failedAt: new Date(),
                                     retryCount: Number(msg.message.retryCount),
                                     status: 'failed',
-                                }, 
+                                },
                                 where: {
                                     eventId: msg.message.messageId
                                 }
@@ -267,14 +306,14 @@ export const processMessageFanOutEvent = async () => {
                                 where: { eventId: msg.message.messageId },
                                 orderBy: { attemptNo: 'desc' }
                             });
-                            console.log("last attempt : ",lastAttempt)
+                            console.log("last attempt : ", lastAttempt)
 
                             const dlqEvent = {
-                                lastAttempt,updatedDLQ,userId:msg.message.userId
+                                lastAttempt, updatedDLQ, userId: msg.message.userId
                             }
 
                             await publisher.publish("dlq-replay-events", JSON.stringify(dlqEvent))
-                        }
+                        } 
 
                         const delay = getBackoffDelay(retryCount);
                         const nextRetryAt = Date.now() + delay;
@@ -296,13 +335,13 @@ export const processMessageFanOutEvent = async () => {
                             };
                         }
                         //THE DATA SENT TO THE RETRY CONSUMER
-
+   
                         console.time("retry-schedule")
 
                         const retrySchedulerPipeline = retrySchedulerClient.multi()
 
-                        if (attemptType !== 'MANUAL' && attemptType != undefined) {   
-                            console.log("-----------------gonna retry again------------------",attemptType)
+                        if (attemptType !== 'MANUAL' && attemptType != undefined) {
+                            console.log("-----------------gonna retry again------------------", attemptType)
                             retrySchedulerPipeline.zAdd("retry:zset", {
                                 score: nextRetryAt,
                                 value: JSON.stringify(retryPayload)

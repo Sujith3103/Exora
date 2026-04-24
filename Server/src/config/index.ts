@@ -28,3 +28,7 @@ export type ClickMetaData = {
   // Custom dynamic fields for flexibility
   [key: string]: any;
 };
+
+export const RATE_LIMITS = {
+  USER: {capacity:10, refill: 1}
+}

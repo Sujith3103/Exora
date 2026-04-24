@@ -1,0 +1,13 @@
+# Use this workspace to collaborate
+workspace:
+  id: 0a1768e9-b02c-49aa-81c4-f527e9cfae70
+
+cloudResources:
+  collections:
+    ..\postman\collections\Exora: 34103461-2d539f64-1007-44d9-9024-61c5ebefc8d3
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/

@@ -235,7 +235,7 @@ const ChatArea = () => {
 
   useEffect(() => {
     console.log("chat : ", chatMessage)
-  }, chatMessage)
+  }, [chatMessage])
 
   //TYPING EVENT
   // useEffect(() => {

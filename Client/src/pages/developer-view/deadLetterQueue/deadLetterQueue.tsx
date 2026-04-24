@@ -92,7 +92,7 @@ const DeadLetterQueue = () => {
                                     </TableCell>
 
                                     <TableCell className="text-center">
-                                        <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-medium">
+                                        <span className={`${data.status == 'failed' ? 'bg-red-100 text-red-600 ' : 'bg-green-100 text-green-600 '} px-2 py-1 rounded text-xs font-medium`}>
                                             {data.status}
                                         </span>
                                     </TableCell>

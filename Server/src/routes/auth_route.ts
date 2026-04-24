@@ -16,7 +16,7 @@ router.get('/check-auth', AuthenticateMiddleware, (req: any, res: any) => {
         message: 'authenticated user',
         data: {
             user
-        }
+        } 
     })
 })
 // router.get('/login',)
