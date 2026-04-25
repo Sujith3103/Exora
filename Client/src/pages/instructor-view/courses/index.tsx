@@ -1,14 +1,6 @@
 import server from "@/api/axiosinstance";
 import { Button } from "@/components/ui/button";
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableHead,
-    TableHeader,
-    TableRow,
-    TableCell,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableHead, TableHeader, TableRow, TableCell, } from "@/components/ui/table";
 import type { AppDispatch, RootState } from "@/store";
 import { addNewCourse, removeCourse, setCourseDetails } from "@/store/courseSlice";
 import { Edit, Plus, Trash } from "lucide-react";
@@ -17,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import InstructorCoursesSkeleton from "./courseSkeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 const InstructorCourses = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -27,6 +20,7 @@ const InstructorCourses = () => {
     );
 
     const [contentFetching, setContentFetching] = useState(false)
+    const [isCreatingCourse,setIsCreatingCourse] = useState<boolean>(false)
 
     // Placeholder image for empty courses
     const PLACEHOLDER_IMAGE = "/images/placeholder.png";
@@ -36,27 +30,31 @@ const InstructorCourses = () => {
     }
 
     const handleClick_AddNewCourse = async () => {
+        setIsCreatingCourse(true)
         try {
             const response = await server.post("/instructor/course/create-new");
             if (response.data.success) {
-                console.log("created course: ", response.data);
                 // Update Redux state with the new course
                 dispatch(addNewCourse(response.data.newCourse));
                 navigate(`/profile/instructor/courses/edit/course-landing/${response.data.newCourse.id}`)
             }
         } catch (error) {
+            toast.error("failed to create course", { style: { justifyContent: "center" } })
             console.error("Failed to create course:", error);
+        }
+        finally {
+            setIsCreatingCourse(false)
         }
     };
 
-    const handleClick_deleteCourse = async(courseId:string) => {
-        try{
+    const handleClick_deleteCourse = async (courseId: string) => {
+        try {
             dispatch(removeCourse(courseId))
             const result = await server.delete(`/instructor/course/${courseId}`)
-            if(result.data.success){
-                // react - toast
+            if (result.data.success) {
+                toast.success("deleted the course successfully", { style: { justifyContent: "center" } })
             }
-        }catch(err){
+        } catch (err) {
             console.log(err)
         }
     }
@@ -84,7 +82,7 @@ const InstructorCourses = () => {
     }
 
     return (
-        <div className="w-full h-full p-5 flex flex-col">
+        <div className={`w-full h-full p-5 flex flex-col ${isCreatingCourse? 'cursor-progress' : ''}`}>
             <h1 className="text-3xl font-semibold">My Courses</h1>
 
             <div className="w-full mt-10 p-2 flex items-center">
@@ -92,6 +90,7 @@ const InstructorCourses = () => {
                 <Button
                     className="ml-auto bg-blue-500 hover:bg-blue-400 rounded-sm"
                     onClick={handleClick_AddNewCourse}
+                    disabled={isCreatingCourse}
                 >
                     <Plus /> New
                 </Button>

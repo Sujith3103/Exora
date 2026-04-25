@@ -1,0 +1,13 @@
+$kind: http-request
+name: http://localhost:8800/api/courses?category=web-development&page=1&limit=10
+url: http://localhost:8800/api/courses?category=web-development&page=1&limit=10
+method: GET
+queryParams:
+  category: web-development
+  page: "1"
+  limit: "10"
+auth:
+  type: jwt
+  credentials:
+    addTokenTo: header
+order: 933892146071881

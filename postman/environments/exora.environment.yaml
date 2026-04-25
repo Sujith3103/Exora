@@ -1,0 +1,8 @@
+name: exora
+values:
+  - key: token
+    enabled: true
+    value: ''
+  - key: userId
+    enabled: true
+    value: ''

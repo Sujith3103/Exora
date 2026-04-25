@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { validateCourse } from "./hooks"
 import Instructor_CourseInfo from "@/components/instructor-view/course-info/courseInfo"
+import { toast } from "sonner"
 
 const NewCourse = () => {
 
@@ -28,7 +29,7 @@ const NewCourse = () => {
 
     const fetchComponentInUrl = () => {
         return location.pathname.split('/')[5]
-    } 
+    }
 
     const handleClick_saveChanges = async () => {
 
@@ -37,11 +38,20 @@ const NewCourse = () => {
             setIsValid(valid.valid)
         }
 
-        const response = await server.put(`/instructor/course/${id}/landing`, {
-            courseInformation: courseData
-        })
-        if (response.data.success) {
+        try {
+            const response = await server.put(
+                `/instructor/course/${id}/landing`,
+                { courseInformation: courseData }
+            );
+
+            if (response.data.success) {
+                //smth here but i forgot as it was long time ago
+            }
+
+        } catch (err: any) {
+
         }
+   
     }
 
     const handleClick_PublishCourse = async () => {
@@ -96,16 +106,16 @@ const NewCourse = () => {
                 <div className="flex">
                     <TabsList className="flex justify-start rounded-none bg-transparent p-0">
                         <TabsTrigger
-                            className="relative bg-transparent rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black  data-[state=active]:font-semibold  after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform  data-[state=active]:after:scale-x-100"
+                            className="relative bg-transparent cursor-pointer hover:bg-slate-100 rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black  data-[state=active]:font-semibold  after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform  data-[state=active]:after:scale-x-100"
                             onClick={() => navigate(`/profile/instructor/courses/edit/course-landing/${id}`)} value="course-landing">course-landing</TabsTrigger>
                         <TabsTrigger
-                            className="relative bg-transparent rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black  data-[state=active]:font-semibold  after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform  data-[state=active]:after:scale-x-100"
+                            className="relative bg-transparent cursor-pointer hover:bg-slate-100 rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black  data-[state=active]:font-semibold  after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform  data-[state=active]:after:scale-x-100"
                             onClick={() => navigate(`/profile/instructor/courses/edit/course-curriculum/${id}`)} value="course-curriculum">course-curriculum</TabsTrigger>
                         <TabsTrigger
-                            className="relative bg-transparent rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black  data-[state=active]:font-semibold  after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform  data-[state=active]:after:scale-x-100"
+                            className="relative bg-transparent cursor-pointer hover:bg-slate-100 rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black  data-[state=active]:font-semibold  after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform  data-[state=active]:after:scale-x-100"
                             onClick={() => navigate(`/profile/instructor/courses/edit/course-message/${id}`)} value="course-message">course-message</TabsTrigger>
                         <TabsTrigger
-                            className="relative bg-transparent rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black  data-[state=active]:font-semibold  after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform  data-[state=active]:after:scale-x-100"
+                            className="relative bg-transparent cursor-pointer hover:bg-slate-100 rounded-none border-none shadow-none px-4 py-2 text-gray-600 data-[state=active]:text-black  data-[state=active]:font-semibold  after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:scale-x-0 after:bg-black after:transition-transform  data-[state=active]:after:scale-x-100"
                             onClick={() => navigate(`/profile/instructor/courses/edit/course-info/${id}`)} value="course-info">course-info</TabsTrigger>
                     </TabsList>
                     {

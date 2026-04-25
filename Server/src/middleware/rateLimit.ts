@@ -2,11 +2,11 @@ import { NextFunction, Request, Response } from "express";
 import { redis_rateLimit } from "../utils/redisClient";
 import { scriptSha } from "../helpers/loadRateLimiterScript";
 
-export const rateLimit = () => {
+export const rateLimitMiddleWare = () => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
             const userId = req.user?.id || req.ip;
-
+            console.log("RATE LIMIT MIDDLEWARE HIT:", req.method, req.originalUrl);
             const key = `rate_limit:user:${userId}:path:${req.path}`;
 
             const capacity = req.method === "GET" ? 5 : 2;
@@ -23,7 +23,7 @@ export const rateLimit = () => {
                         refillRate.toString(),
                         now.toString(),
                         "1",
-                    ], 
+                    ],  
                 }
             ) as [number, number];
 

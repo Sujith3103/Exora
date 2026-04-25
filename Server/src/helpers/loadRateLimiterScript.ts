@@ -4,7 +4,7 @@ import { redis_rateLimit } from "../utils/redisClient";
 
 let scriptSha: string;
 
-export async function loadRateLimiterScript() {
+export async function   loadRateLimiterScript() {
     const luaPath = path.join(process.cwd(), "src/scripts/rateLimiter.lua");
     const luaScript = fs.readFileSync(luaPath, "utf-8");
 

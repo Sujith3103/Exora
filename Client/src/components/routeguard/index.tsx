@@ -76,7 +76,7 @@ const RouteGuard = ({ element }: any) => {
     }
 
     if (isAuthenticated && location.pathname.includes('developer') && user?.role != 'DEVELOPER') {
-        return navigate(-1)
+        return navigate('/')
     }
 
     if (!isAuthenticated && location.pathname.includes('developer')) {
