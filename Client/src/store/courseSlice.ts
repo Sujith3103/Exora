@@ -14,6 +14,7 @@ interface CourseDetails {
     thumbnailUrl?: string;
     category: CourseCategory; // 👈 category restricted
     duration: string;
+    lengthNum?: number
     pricing: number;
     level: "beginner" | "intermediate" | "advanced";
     status: "published" | "drafted";
@@ -182,7 +183,7 @@ const courseSlice = createSlice({
             }
         },
         //-------------------------------------------------Course Curriculum----------------------------------------------------------------------
-        
+
         setCourseSection(state: courseState, action: PayloadAction<Section[]>) {
             state.sections = [...action.payload]
 
@@ -261,7 +262,7 @@ const courseSlice = createSlice({
             }
         },
 
-        removeCourse(state: courseState,action:PayloadAction<string>){
+        removeCourse(state: courseState, action: PayloadAction<string>) {
             state.courseData = state.courseData.filter(c => c.id != action.payload)
         },
         removeCourseRequirement(state: courseState, action: PayloadAction<number>) {
@@ -277,7 +278,7 @@ const courseSlice = createSlice({
 
 
 export const { courseSliceLoadingStart, setCourseDetails, updateCourseLecture, setCourseImage, setCourseInformation,
-    setCourseLandingDescription, setCourseSection, updateCourseSection, deleteLecture, deleteSection,removeCourse,
-    setLectureAsset, updateLectureTitle, updateSectionTitle, setResource, removeResource, addNewCourse, 
+    setCourseLandingDescription, setCourseSection, updateCourseSection, deleteLecture, deleteSection, removeCourse,
+    setLectureAsset, updateLectureTitle, updateSectionTitle, setResource, removeResource, addNewCourse,
     courseSliceLoadingStop, setCourseRequirements, removeCourseRequirement } = courseSlice.actions
 export default courseSlice.reducer

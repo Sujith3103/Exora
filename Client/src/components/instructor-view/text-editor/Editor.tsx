@@ -1,6 +1,6 @@
 "use client";
 
-import  { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -9,7 +9,7 @@ import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
 
 import type { RootState, AppDispatch } from "@/store";
-import { setCourseLandingDescription } from "@/store/courseSlice";
+import { updateCourseLanding } from "@/store/insturctor/courseLandingSlice";
 import Toolbar from "./ToolbarPlugin";
 import "./Editor.css";
 
@@ -17,9 +17,12 @@ type EditorProps = { placeholder: string };
 
 export default function Editor({ placeholder }: EditorProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const courseData = useSelector(
-    (state: RootState) => state.course.courseInformation
+
+  const description = useSelector(
+    (state: RootState) => state.courseLanding.data?.description
   );
+
+  const isInitialized = useRef(false);
 
   const editor = useEditor({
     extensions: [
@@ -32,33 +35,36 @@ export default function Editor({ placeholder }: EditorProps) {
       OrderedList,
       ListItem,
     ],
-    content: courseData?.description || "<p></p>",
+    content: "<p></p>",
     autofocus: true,
+
     onUpdate({ editor }) {
       const json = editor.getJSON();
+
       const isEmpty =
-        json.content.length === 1 &&
+        json.content?.length === 1 &&
         json.content[0].type === "paragraph" &&
         (!json.content[0].content || json.content[0].content.length === 0);
 
       dispatch(
-        setCourseLandingDescription({
-          description: isEmpty ? null : JSON.stringify(json),
+        updateCourseLanding({
+          description: isEmpty ? "" : JSON.stringify(json),
         })
       );
     },
   });
 
+  // ✅ Initialize ONLY once (prevents cursor jump)
   useEffect(() => {
-    if (courseData?.description && editor) {
+    if (editor && description && !isInitialized.current) {
       try {
-        const json = JSON.parse(courseData.description);
-        editor.commands.setContent(json);
+        editor.commands.setContent(JSON.parse(description));
+        isInitialized.current = true;
       } catch (e) {
-        console.error("Failed to load content:", e);
+        console.error("Failed to parse description", e);
       }
     }
-  }, [courseData?.description, editor]);
+  }, [editor, description]);
 
   return (
     <div className="flex flex-col border border-gray-300 rounded-lg shadow-md bg-white overflow-hidden">
@@ -69,7 +75,8 @@ export default function Editor({ placeholder }: EditorProps) {
           editor={editor}
           className="editor-content outline-none min-h-[120px] w-full p-2"
         />
-        {!courseData?.description && (
+
+        {!description && (
           <div className="absolute top-5 left-5 text-gray-400 pointer-events-none">
             {placeholder}
           </div>

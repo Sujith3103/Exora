@@ -3,8 +3,8 @@ import { toast } from "sonner";
 
 const server = axios.create({
   // baseURL: "http://localhost:8800/api",
-  baseURL: "http://localhost:3000/api",
-  // baseURL:"https://exora-giu2.onrender.com/api",
+  // baseURL: "http://localhost:3000/api",
+  baseURL:"https://exora-giu2.onrender.com/api",
 });
 
 server.interceptors.request.use(config => {

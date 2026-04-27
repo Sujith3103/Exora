@@ -22,7 +22,8 @@ export const GetAllCourses = async (req: Request, res: Response) => {
                 thumbnailUrl: true,
                 pricing: true,
                 status: true,
-                lengthStr: true
+                lengthStr: true,
+                lengthNum: true,
             }
         });
 
@@ -231,7 +232,6 @@ export const updateCourseLanding = async (req: Request, res: Response) => {
             },
         });
 
-        console.log("updated: ", updated)
 
         // Respond with updated courseInformation
         res.status(200).json({
@@ -266,7 +266,6 @@ export const CreateLecture = async (req: Request, res: Response) => {
             }
         })
 
-        console.log("created lecture :", createdLecture)
 
         return res.status(200).json({
             success: true,
@@ -305,7 +304,6 @@ export const CreateSection = async (req: Request, res: Response) => {
             },
         });
 
-        console.log("created section : ", createdSection)
 
         return res.status(201).json({ success: true, section: createdSection });
     } catch (error) {
@@ -314,7 +312,6 @@ export const CreateSection = async (req: Request, res: Response) => {
     }
 };
 export const createResource = async (req: Request, res: Response) => {
-    console.log(req.body)
     const { title, link } = req.body
     const { lectureId } = req.params
     try {
@@ -434,7 +431,7 @@ export const UpdateSectionTitle = async (req: Request, res: Response) => {
 
 export const UpdateLectureTitle = async (req: Request, res: Response) => {
     const userId = req.user?.id as string;
-    console.log(req.body)
+
     const { title } = req.body;
     const { lectureId, sectionId } = req.params;
 
@@ -504,8 +501,8 @@ export const updateCourseMessage = async (req: Request, res: Response) => {
         const result = await prisma.course.update({
             where: { id: courseId },
             data: {
-                welcomeMessage:welcomeMessage,
-                congradulationsMessage:congradulationsMessage,
+                welcomeMessage: welcomeMessage,
+                congradulationsMessage: congradulationsMessage,
             },
         })
 

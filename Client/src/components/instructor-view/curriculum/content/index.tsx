@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card"
 import type { Lectures } from "@/store/courseSlice"
 import { Edit2 } from "lucide-react"
 import NewContent from "./new-content"
+import { useEffect } from "react"
 
 
 type ContentProps = {
@@ -20,7 +21,7 @@ type ContentProps = {
   setShowSubContent: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const Content = ({ lecture, showContent, setShowContent,setShowSubContent }: ContentProps) => {
+const Content = ({ lecture, showContent, setShowContent, setShowSubContent }: ContentProps) => {
 
   // const [isEditContent, setIsEditContent] = useState(false)
 
@@ -34,7 +35,7 @@ const Content = ({ lecture, showContent, setShowContent,setShowSubContent }: Con
   }
 
   if (showContent.selectingContent || showContent.uploadingContent && lecture.lectureAssets?.status === 'published') {
-    return <NewContent sectionId={lecture.sectionId} showContent={showContent} setShowContent={setShowContent} lectureId={lecture.id} lectureData={lecture} setShowSubContent={setShowSubContent}/>
+    return <NewContent sectionId={lecture.sectionId} showContent={showContent} setShowContent={setShowContent} lectureId={lecture.id} lectureData={lecture} setShowSubContent={setShowSubContent} />
   }
 
   return (
@@ -55,7 +56,15 @@ const Content = ({ lecture, showContent, setShowContent,setShowSubContent }: Con
           <div className="flex-col justify-center ml-2 items-center">
             {/* contents right of image */}
             <p className="font-semibold">{lecture.lectureAssets?.title}</p>
-            <p >duration</p>
+            <p >duration : {
+              lecture.lengthNum! < 60 ? <>
+                {lecture.lengthNum} secs
+              </>
+                :
+                <>
+                  {lecture.lengthNum! / 3600} hrs
+                </>
+            }</p>
             <div className="flex gap-2 items-center cursor-pointer" onClick={handleClick_EditContent}>
               <Edit2 strokeWidth={1} className="text-purple-700" size={17} />
               <p className="text-purple-700">Edit Content</p>
@@ -64,7 +73,10 @@ const Content = ({ lecture, showContent, setShowContent,setShowSubContent }: Con
         </div>
         <div className=" ml-auto">
           {/* right part */}
-          <Button className="bg-purple-600 hover:bg-purple-600 cursor-pointer text-white rounded-sm w-30"> Preview </Button>
+          {/* lecture.lectureAssets.url */}
+          <Button className="bg-purple-600 hover:bg-purple-600 cursor-pointer text-white rounded-sm w-30"
+            onClick={() => window.open(lecture?.lectureAssets?.url, "_blank")}
+          > Preview </Button>
         </div>
       </div>
     </div>

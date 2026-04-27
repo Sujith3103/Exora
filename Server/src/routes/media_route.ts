@@ -99,7 +99,7 @@ router.post(
       const result = await uploadMediaToCloudinary(req.file.path);
       const isVideo = result.resource_type === "video";
       const duration = isVideo ? result.duration || 0 : 0;
-
+      console.log("video duration : ",duration)
       let thumbnailUrl: string | null = null;
       if (isVideo) {
         thumbnailUrl = cloudinary.url(result.public_id, {
@@ -184,8 +184,9 @@ router.put(
       const result = await uploadMediaToCloudinary(req.file.path);
       const isVideo = result.resource_type === "video";
       const newDuration = isVideo ? result.duration || 0 : 0;
+      console.log("video duration : ", newDuration)
 
-      let thumbnailUrl: string | null = null;
+      let thumbnailUrl: string | null = null; 
       if (isVideo) {
         thumbnailUrl = cloudinary.url(result.public_id, {
           resource_type: "video",

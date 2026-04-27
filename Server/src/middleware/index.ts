@@ -15,7 +15,6 @@ export const AuthenticateMiddleware = (
       message: 'Authorization header is missing or malformed',
     });
     }
-  console.log("path : ",req.path)
   const token = authHeader.split(' ')[1];
 
   try {

@@ -8,7 +8,6 @@ import OverView from "./components/profile-components/overview"
 import RouteGuard from "./components/routeguard"
 import InstructorCourses from "./pages/instructor-view/courses"
 import NewCourse from "./pages/instructor-view/new-course"
-import CourseLanding from "./components/instructor-view/course-landing"
 import CourseCurriculum from "./components/instructor-view/curriculum"
 import CourseMessage from "./components/instructor-view/course-messages"
 import StudentViewCourseLayout from "./components/layout/courseLayout"
@@ -28,11 +27,12 @@ import MyLearning from "./pages/student-view/my-learning/myLearning"
 import CoursePlayer from "./pages/student-view/course-player/course_player"
 import { useSelector } from "react-redux"
 import type { RootState } from "./store"
-// import Suga from "./suga"
 import TeachPage from "./pages/student-view/Teach/teachPage"
 import DeveloperLayout from "./components/layout/developerLayout/developerLayout"
 import DeadLetterQueue from "./pages/developer-view/deadLetterQueue/deadLetterQueue"
 import DQLMetrics from "./pages/developer-view/deadLetterQueue/metrics/DQLMetrics"
+import Suga from "./suga"
+import CourseLanding from "./components/instructor-view/course-landing-test"
 
 // setIsComposingMessage: React.Dispatch<React.SetStateAction<boolean>>
 
@@ -66,7 +66,7 @@ function App() {
   return (
     <>
       <Routes>
-        {/* <Route path="suga" element={ <Suga />} /> */}
+        <Route path="suga" element={ <Suga />} />
         <Route path="/" element={<RouteGuard element={<NavBarLayout />} />}>
           <Route path="" element={<StudentViewHomePage />} />
         </Route>

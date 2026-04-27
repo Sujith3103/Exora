@@ -6,7 +6,7 @@ export const rateLimitMiddleWare = () => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
             const userId = req.user?.id || req.ip;
-            console.log("RATE LIMIT MIDDLEWARE HIT:", req.method, req.originalUrl);
+            // console.log("RATE LIMIT MIDDLEWARE HIT:", req.method, req.originalUrl);
             const key = `rate_limit:user:${userId}:path:${req.path}`;
 
             const capacity = req.method === "GET" ? 5 : 2;

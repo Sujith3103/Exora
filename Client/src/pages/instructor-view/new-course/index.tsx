@@ -1,17 +1,18 @@
 import server from "@/api/axiosinstance"
-import CourseLanding from "@/components/instructor-view/course-landing"
+// import CourseLanding from "@/components/instructor-view/course-landing"
 import CourseMessage from "@/components/instructor-view/course-messages"
 import CourseCurriculum from "@/components/instructor-view/curriculum"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { AppDispatch, RootState } from "@/store"
-import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseInformation, setCourseSection } from "@/store/courseSlice"
+import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseInformation, setCourseSection, type CourseInfo } from "@/store/courseSlice"
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { validateCourse } from "./hooks"
 import Instructor_CourseInfo from "@/components/instructor-view/course-info/courseInfo"
 import { toast } from "sonner"
+import CourseLanding from "./course-landing/courseLanding"
 
 const NewCourse = () => {
 
@@ -21,6 +22,28 @@ const NewCourse = () => {
     const sections = useSelector((state: RootState) => state.course.sections)
 
     const [isValid, setIsValid] = useState(false)
+
+     const [courseLandingState, setCourseLandingState] = useState<CourseInfo>({
+            category: '',
+            description: '',
+            id: '',
+            language: '',
+            lengthNum: 0,
+            lengthStr: '',
+            level: '',
+            objectives: '',
+            pricing: 0,
+            primaryLanguage: '',
+            requirements: [],
+            searchkey: '',
+            slug: '',
+            status: 'draft',
+            subtitle: '',
+            title: '',
+            welcomeMessage: '',
+            thumbnailId: '',
+            thumbnailUrl: ''
+        })
 
     const navigate = useNavigate()
     const { id } = useParams<{ id: string }>();
@@ -51,7 +74,7 @@ const NewCourse = () => {
         } catch (err: any) {
 
         }
-   
+
     }
 
     const handleClick_PublishCourse = async () => {
@@ -65,18 +88,6 @@ const NewCourse = () => {
         }
     }
 
-
-    const fetchCourseLanding = async () => {
-        dispatch(courseSliceLoadingStart())
-        const valInTab = fetchComponentInUrl()
-        if (valInTab != 'course-landing') return
-
-        const response = await server.get(`/instructor/course/${id}/landing`)
-        if (response.data.success) {
-            dispatch(setCourseInformation({ fromServer: true, data: response.data.course }))
-        }
-        dispatch(courseSliceLoadingStop())
-    }
 
     const FetchSectionsWhenIdle = () => {
         if ('requestIdleCallback' in window) {
@@ -95,7 +106,6 @@ const NewCourse = () => {
     }
 
     useEffect(() => {
-        fetchCourseLanding()
         fetchComponentInUrl()
         FetchSectionsWhenIdle()
     }, [])
@@ -122,8 +132,8 @@ const NewCourse = () => {
                         fetchComponentInUrl() != 'course-curriculum' && isValid ? (
                             <Button className="ml-auto" onClick={handleClick_PublishCourse}>Publish Course</Button>
                         ) : (
-
-                            <Button className="ml-auto bg-white text-black border hover:bg-white cursor-pointer border-black" onClick={handleClick_saveChanges}>Save Changes</Button>
+                            <></>
+                            // <Button className="ml-auto bg-white text-black border hover:bg-white cursor-pointer border-black" onClick={handleClick_saveChanges}>Save Changes</Button>
                         )
 
                     }

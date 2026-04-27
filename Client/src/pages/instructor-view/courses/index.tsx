@@ -20,7 +20,7 @@ const InstructorCourses = () => {
     );
 
     const [contentFetching, setContentFetching] = useState(false)
-    const [isCreatingCourse,setIsCreatingCourse] = useState<boolean>(false)
+    const [isCreatingCourse, setIsCreatingCourse] = useState<boolean>(false)
 
     // Placeholder image for empty courses
     const PLACEHOLDER_IMAGE = "/images/placeholder.png";
@@ -82,7 +82,7 @@ const InstructorCourses = () => {
     }
 
     return (
-        <div className={`w-full h-full p-5 flex flex-col ${isCreatingCourse? 'cursor-progress' : ''}`}>
+        <div className={`w-full h-full p-5 flex flex-col ${isCreatingCourse ? 'cursor-progress' : ''}`}>
             <h1 className="text-3xl font-semibold">My Courses</h1>
 
             <div className="w-full mt-10 p-2 flex items-center">
@@ -132,7 +132,9 @@ const InstructorCourses = () => {
                                         {course.category || "none"}
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        {course.duration || "none"}
+                                        {course.lengthNum ? <>
+                                            {(course.lengthNum / 3600).toFixed(3)} hrs
+                                        </> : "none"}
                                     </TableCell>
                                     <TableCell className="text-center">
                                         {course.pricing || "0"}
@@ -145,12 +147,12 @@ const InstructorCourses = () => {
                                     </TableCell>
                                     <TableCell className="flex justify-center text-center gap-3">
                                         <Edit
-                                            className="text-gray-500"
+                                            className="text-gray-500 cursor-pointer"
                                             onClick={() => handleClick_EditCourse(course.id)}
                                         />
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
-                                                <Trash className="text-red-500" />
+                                                <Trash className="text-red-500 cursor-pointer" />
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
                                                 <AlertDialogHeader>
