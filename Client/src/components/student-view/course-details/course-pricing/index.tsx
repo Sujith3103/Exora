@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertCircle } from "lucide-react";
@@ -16,10 +16,10 @@ import useCartMutation from "@/hooks/mutations/useCartMutation";
 import useCouponMutation from "@/hooks/mutations/useCouponMutation";
 import usePurchaseMutation from "@/hooks/mutations/usePurchaseMutation";
 
-import { addCartItemToDb, getCartItemsFromIDB } from "@/lib/indexdb";
+import {  getCartItemsFromIDB } from "@/lib/indexdb";
 import type { RootState } from "@/store";
 import type { CourseDetails } from "@/store/courseDetailsSlice";
-import type { CartItem } from "@/store/cartSlice";
+import { addItem, type CartItem } from "@/store/cartSlice";
 import server from "@/api/axiosinstance";
 
 
@@ -63,6 +63,7 @@ const Student_CourseDetailsPricing = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const queryClient = useQueryClient();
     const inputRef = useRef<HTMLInputElement>(null);
+    const dispatch = useDispatch()
 
     const params = searchParams.get("couponCode");
 
@@ -150,7 +151,7 @@ const Student_CourseDetailsPricing = () => {
             addedAt: Date.now(),
         };
 
-        isAuthenticated ? addToCart.mutate(item) : addCartItemToDb(item);
+        isAuthenticated ? addToCart.mutate(item) : dispatch(addItem(item))
         fetchCartItems();
     };
 
@@ -243,12 +244,15 @@ const Student_CourseDetailsPricing = () => {
     /** Validate or auto-apply coupon */
     useEffect(() => {
         if (course?.id && params) {
-            getUserBoughtCourses()
+            if (isAuthenticated) {
+                getUserBoughtCourses()
+            }
             handleValidateCoupon(false);
         } else if (course?.id && !params) {
-            getUserBoughtCourses()
+            if (isAuthenticated) {
+                getUserBoughtCourses()
+            }
             setIsCouponFetching(true);
-
             validateCouponOnLogin.mutate(
                 {
                     courseId: course.id,
@@ -373,11 +377,11 @@ const Student_CourseDetailsPricing = () => {
                             userBoughtCourses.has(id)
                                 ? (
                                     // Render if user has bought the course
-                                  'Go to Course'
+                                    'Go to Course'
                                 )
                                 : (
                                     // Render if user hasn't bought the course
-                                   'Buy Now'
+                                    'Buy Now'
                                 )
                         }
                     </Button>

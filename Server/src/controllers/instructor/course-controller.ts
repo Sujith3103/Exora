@@ -14,7 +14,7 @@ export const GetAllCourses = async (req: Request, res: Response) => {
         // Get all courses by an instructor
         const instructorCourses = await prisma.course.findMany({
             where: { instructorId: userId },
-            select: {
+            select: { 
                 id: true,
                 title: true,
                 level: true,

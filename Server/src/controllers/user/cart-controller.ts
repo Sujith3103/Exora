@@ -99,14 +99,16 @@ export const removeItemFromCart = async (req: Request, res: Response) => {
 
         res.status(200).json({
             success: true,
-            message: "removed the item from the cart"
+            message: "removed the item from the cart",
+            itemId: itemId
         })
 
     } catch (err) {
         console.log(err)
         return res.status(500).json({
             success: false,
-            message: "failed to remove item from cart"
+            message: "failed to remove item from cart",
+            itemId:itemId
         })
     }
 }

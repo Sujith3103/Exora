@@ -17,7 +17,7 @@ export const useCart = () => {
             return ''
         },
         staleTime: Infinity,
-        enabled:false
+        enabled: isAuthenticated
     })
 
 }

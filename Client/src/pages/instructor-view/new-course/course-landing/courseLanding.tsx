@@ -10,11 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { courseCategories, courseLevelOptions, languageOptions } from '@/config/config'
 import type { CourseInfo } from '@/store/courseSlice'
 import { CircleQuestionMark, X } from 'lucide-react'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useInstructorCourse } from '@/hooks/queries/instructor/useCourse'
-import { useQueryClient } from '@tanstack/react-query'
 import { type TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from '@/store'
 import { addRequirement, removeRequirement, setCourseLanding, updateCourseLanding } from '@/store/insturctor/courseLandingSlice'
@@ -89,11 +88,9 @@ const CourseLanding = () => {
 
     const { id } = useParams<{ id: string }>();
 
-    const queryClient = useQueryClient();
     const { data: courseData } = useInstructorCourse({ courseId: id! })
 
     const requirementsInputRef = useRef<HTMLInputElement>(null);
-    const pricingRef = useRef<HTMLInputElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const handleChange = (e: any, field: any) => {

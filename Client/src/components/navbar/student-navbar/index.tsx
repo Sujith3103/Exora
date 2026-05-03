@@ -2,31 +2,52 @@ import { Button } from '@/components/ui/button'
 import { Bell, CircleUser, GraduationCap, MenuSquareIcon } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import {  useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import type { RootState } from "../../../store";
 // import server from '@/api/axiosinstance';
 // import { updateUserRole } from '@/store/authSlice';
 import ExploreMenu from './exploreMenu';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import NavBar_sm from './small-screen';
+import { useCart } from '@/hooks/queries/useCart';
 
 
 
 const StudentNavbar = () => {
 
     const [isNavbar, setIsNavBar] = useState(false)
+    const [itemsInCart, setItemsInCart] = useState<number>(0)
 
     // const dispatch = useDispatch<AppDispatch>()
     const navigate = useNavigate()
 
+    const { data: cartData } = useCart()
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
     const user = useSelector((state: RootState) => state.auth.user)
+    const initialCartState = useSelector((state: RootState) => state.cart.data)
+
     // const handleClick_ChangeRole = async () => {
     //     const response = await server.put('/user/change-role')
     //     if (response.data.success) {
     //         dispatch(updateUserRole("INSTRUCTOR"))
     //     }
     // }
+
+    const fetchCartItems = async () => {
+        if (isAuthenticated && cartData) {
+            // setItemsInCart(cartData)
+            const filteredCartItems = cartData.data.filter((c: any) => c.status == "ACTIVE")
+            setItemsInCart(filteredCartItems.length)
+
+        } else {
+            const filteredCartItems = initialCartState.filter(c => c.status == "ACTIVE")
+            setItemsInCart(filteredCartItems.length)
+        }
+    }
+
+    useEffect(() => {
+        fetchCartItems()
+    }, [initialCartState,cartData])
 
     return (
         <>
@@ -62,7 +83,7 @@ const StudentNavbar = () => {
                             <circle cx="20" cy="21" r="1"></circle>
                             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                         </svg>
-                        <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-purple-600 rounded-full text-white text-xs font-semibold px-1.5">2</span>
+                        <span className="absolute top-0 right-0 -mt-1 -mr-2 bg-purple-600 rounded-full text-white text-xs font-semibold px-1.5">{itemsInCart}</span>
                     </button>
 
                     {isAuthenticated ?

@@ -3,8 +3,6 @@ import { Card } from "@/components/ui/card"
 import type { Lectures } from "@/store/courseSlice"
 import { Edit2 } from "lucide-react"
 import NewContent from "./new-content"
-import { useEffect } from "react"
-
 
 type ContentProps = {
   lecture: Lectures

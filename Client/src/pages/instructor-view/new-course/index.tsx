@@ -4,46 +4,44 @@ import CourseMessage from "@/components/instructor-view/course-messages"
 import CourseCurriculum from "@/components/instructor-view/curriculum"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { AppDispatch, RootState } from "@/store"
-import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseInformation, setCourseSection, type CourseInfo } from "@/store/courseSlice"
+import type { AppDispatch } from "@/store"
+import { courseSliceLoadingStart, courseSliceLoadingStop, setCourseSection } from "@/store/courseSlice"
 import { useEffect, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
-import { validateCourse } from "./hooks"
 import Instructor_CourseInfo from "@/components/instructor-view/course-info/courseInfo"
-import { toast } from "sonner"
 import CourseLanding from "./course-landing/courseLanding"
 
 const NewCourse = () => {
 
     const dispatch = useDispatch<AppDispatch>()
 
-    const courseData = useSelector((state: RootState) => state.course.courseInformation)
-    const sections = useSelector((state: RootState) => state.course.sections)
+    // const courseData = useSelector((state: RootState) => state.course.courseInformation)
+    // const sections = useSelector((state: RootState) => state.course.sections)
 
     const [isValid, setIsValid] = useState(false)
 
-     const [courseLandingState, setCourseLandingState] = useState<CourseInfo>({
-            category: '',
-            description: '',
-            id: '',
-            language: '',
-            lengthNum: 0,
-            lengthStr: '',
-            level: '',
-            objectives: '',
-            pricing: 0,
-            primaryLanguage: '',
-            requirements: [],
-            searchkey: '',
-            slug: '',
-            status: 'draft',
-            subtitle: '',
-            title: '',
-            welcomeMessage: '',
-            thumbnailId: '',
-            thumbnailUrl: ''
-        })
+    //  const [courseLandingState, setCourseLandingState] = useState<CourseInfo>({
+    //         category: '',
+    //         description: '',
+    //         id: '',
+    //         language: '',
+    //         lengthNum: 0,
+    //         lengthStr: '',
+    //         level: '',
+    //         objectives: '',
+    //         pricing: 0,
+    //         primaryLanguage: '',
+    //         requirements: [],
+    //         searchkey: '',
+    //         slug: '',
+    //         status: 'draft',
+    //         subtitle: '',
+    //         title: '',
+    //         welcomeMessage: '',
+    //         thumbnailId: '',
+    //         thumbnailUrl: ''
+    //     })
 
     const navigate = useNavigate()
     const { id } = useParams<{ id: string }>();
@@ -54,30 +52,32 @@ const NewCourse = () => {
         return location.pathname.split('/')[5]
     }
 
-    const handleClick_saveChanges = async () => {
+    // const handleClick_saveChanges = async () => {
 
-        if (courseData) {
-            const valid = validateCourse({ courseData, sections });
-            setIsValid(valid.valid)
-        }
+    //     if (courseData) {
+    //         const valid = validateCourse({ courseData, sections });
+    //         setIsValid(valid.valid)
+    //     }
 
-        try {
-            const response = await server.put(
-                `/instructor/course/${id}/landing`,
-                { courseInformation: courseData }
-            );
+    //     try {
+    //         const response = await server.put(
+    //             `/instructor/course/${id}/landing`,
+    //             { courseInformation: courseData }
+    //         );
 
-            if (response.data.success) {
-                //smth here but i forgot as it was long time ago
-            }
+    //         if (response.data.success) {
+    //             //smth here but i forgot as it was long time ago
+    //         }
 
-        } catch (err: any) {
+    //     } catch (err: any) {
 
-        }
+    //     }
 
-    }
+    // }
 
     const handleClick_PublishCourse = async () => {
+        //must remove this-----------------------------------------------------------------------------------------------
+        setIsValid(false)
         try {
             const response = await server.patch(`/instructor/course/${id}/publish`)
             if (response.data.success) {

@@ -32,7 +32,7 @@ import DeveloperLayout from "./components/layout/developerLayout/developerLayout
 import DeadLetterQueue from "./pages/developer-view/deadLetterQueue/deadLetterQueue"
 import DQLMetrics from "./pages/developer-view/deadLetterQueue/metrics/DQLMetrics"
 import Suga from "./suga"
-import CourseLanding from "./components/instructor-view/course-landing-test"
+import CourseLanding from "./pages/instructor-view/new-course/course-landing/courseLanding"
 
 // setIsComposingMessage: React.Dispatch<React.SetStateAction<boolean>>
 

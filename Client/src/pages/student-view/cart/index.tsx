@@ -12,6 +12,7 @@ import CartItems from '@/components/student-view/cart-comp/cartItem/CartItem'
 import { type CartItem, fetchCart } from '@/store/cartSlice'
 import { getCartItemsFromIDB } from '@/lib/indexdb'
 import CartPageSkeleton from './cartPageSkeleton'
+import { useCart } from '@/hooks/queries/useCart'
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -19,7 +20,8 @@ const Cart = () => {
 
   const user = useSelector((state: RootState) => state.auth.user);
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
-  const { data: cartData } = useSelector((state: RootState) => state.cart);
+  const { data: cartDataFromSlice } = useSelector((state: RootState) => state.cart);
+  const { data: cartData, isLoading: isCartFromServerLoading } = useCart()
   const isloading = useSelector((state: RootState) => state.auth.loading)
   const isLoading = useSelector((state: RootState) => state.cart.loading)
 
@@ -46,14 +48,32 @@ const Cart = () => {
     }
   }, [isloading]);
 
-  const activeCart = cartData.filter(c => c.status === "ACTIVE");
-  const savedItems = cartData.filter(c => c.status === "SAVED_LATER");
+  const activeCart = useMemo(() => {
+    if (isAuthenticated) {
+      console.log("cart data : ",cartData)
+      return cartData?.data?.filter((c: any) => c.status === "ACTIVE") ?? []
+    }
+    else {
+      return cartDataFromSlice?.filter((c: any) => c.status === "ACTIVE") ?? []
+      
+    }
+  }, [cartData, cartDataFromSlice, isAuthenticated])
+
+  const savedItems = useMemo(() => {
+    if (isAuthenticated) {
+      return cartData?.data?.filter((c: any) => c.status === "SAVED_LATER") ?? []
+
+    }
+    else {
+      return cartDataFromSlice?.filter((c: any) => c.status === "SAVED_LATER") ?? []
+    }
+  }, [cartData, cartDataFromSlice, isAuthenticated])
   const totalCartItemsPrice = useMemo(
-    () => activeCart.reduce((acc, c) => acc + c.price, 0),
+    () => activeCart?.reduce((acc: any, c: any) => acc + c.price, 0),
     [activeCart]
   );
 
-  if (isLoading) {
+  if (isLoading || isCartFromServerLoading) {
     return <CartPageSkeleton />
   }
 
@@ -63,10 +83,10 @@ const Cart = () => {
       <h1 className='text-5xl font-bold'>Shopping Cart</h1>
 
       <div className='flex w-full'>
-        <p className='mt-10 font-bold mb-2'>{activeCart.length} Courses in Cart</p>
+        <p className='mt-10 font-bold mb-2'>{activeCart?.length} Courses in Cart</p>
       </div>
 
-      {(activeCart.length === 0 && savedItems.length === 0) && (
+      {((activeCart?.length === 0 && savedItems.length === 0) || (cartData == undefined && isAuthenticated)) && (
         <Card className='w-full h-[50vh] items-center'>
           <img src={EmptyCartImg} className='aspect-video h-[180px] w-[240px]' />
           <p className='font-semibold sm:px-5 px-2'>Your cart is empty. Keep shopping to find a course!</p>
@@ -77,25 +97,25 @@ const Cart = () => {
       <div className='flex w-full h-full'>
         {/* cart items */}
         <div className='w-full'>
-          {activeCart.length > 0 &&
+          {activeCart?.length > 0 &&
             <div className='w-full space-y-3'>
-              {activeCart.map((item) => (
+              {activeCart?.map((item: any) => (
                 <CartItems key={item.courseId} item={item} status='cart' />
               ))}
             </div>
           }
 
-          {savedItems.length > 0 && (
+          {savedItems?.length > 0 && (
             <>
               <p className='mt-10 font-bold mb-2'>Saved For Later</p>
-              {savedItems.map((item) => (
+              {savedItems.map((item: any) => (
                 <CartItems key={item.courseId} item={item} status='savedLater' />
               ))}
             </>
           )}
         </div>
 
-        {(savedItems.length > 0 || activeCart.length > 0) && (
+        {(savedItems?.length > 0 || activeCart?.length > 0) && (
           <div className="bg--200 w-1/2">
             <div className='ml-20 px-3'>
               <span className="text-muted-foreground font-bold">Total:</span>

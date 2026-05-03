@@ -1,6 +1,6 @@
 // store/cartSlice.ts
 import { createSlice, type PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
-import { getCartItemsFromIDB, deleteCartItemFromIDB, editCartItemStatusInIDB } from "@/lib/indexdb";
+import { getCartItemsFromIDB, deleteCartItemFromIDB, editCartItemStatusInIDB, addCartItemToDb } from "@/lib/indexdb";
 import server from "@/api/axiosinstance";
 
 
@@ -79,11 +79,14 @@ const cartSlice = createSlice({
   initialState: initialCartSliceState,
   reducers: {
     addItem(state, action: PayloadAction<CartItem>) {
+      console.log("adding item to Idb")
       state.data.push(action.payload);
+      addCartItemToDb(action.payload)
     },
     removeItem(state, action: PayloadAction<string>) {
       state.data = state.data.filter((item) => item.courseId !== action.payload);
       // ❌ not recommended to call async here
+      console.log("delete cart from idb in slice")
       void deleteCartItemFromIDB(action.payload);
     },
     moveToSavedLater(state, action: PayloadAction<{item:string,isAuthenticated:boolean}>) {

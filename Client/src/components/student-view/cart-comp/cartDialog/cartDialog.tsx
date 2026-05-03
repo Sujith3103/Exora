@@ -57,6 +57,14 @@ const CartDialog = ({ cartItem }: CartDialogProps) => {
     const filteredItems = selectedItems.filter(
       (c) => !cartData.some(cart => cart.courseId === c.courseId)
     );
+    // console.log("cart data:",cartData)
+    const itemsAlreadyInCart = selectedItems.filter(
+      (c:any) => cartData.some(cart => cart.courseId === c.courseId)
+    )
+
+    itemsAlreadyInCart.forEach((item) => {
+      deleteCartItemFromIDB(item.courseId)
+    })
 
     batchUpdateCart.mutate(filteredItems)
   };

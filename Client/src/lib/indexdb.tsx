@@ -52,7 +52,7 @@ export async function editCartItemStatusInIDB(courseId: string, newStatus: "ACTI
     return updatedItem;
 }
 
-export async function saveCourseToIDB() {
-    const db = await dbPromise
+// export async function saveCourseToIDB() {
+//     const db = await dbPromise
     
-}
+// }

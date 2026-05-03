@@ -25,7 +25,7 @@ const clickSchema = z.object({
 
 router.post("", async (req: Request, res: Response) => {
     try {
-        // ✅ validate with Zod
+        //  validate with Zod
         const parsed = clickSchema.safeParse(req.body);
         if (!parsed.success) {
             return res.status(400).json({ message: parsed.error.message });
@@ -241,7 +241,7 @@ router.get("/for-you/:userId", async (req: Request, res: Response) => {
             category: {
                 in: interestedCategories, 
             },
-        },
+        },  
         select: {
             id: true,
             category: true,
